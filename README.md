@@ -1,4 +1,4 @@
-# 🏪 Shopiverse
+# Shopiverse
 
 **A 3D Virtual Store Experience Platform — Google Street View Meets E-Commerce**
 
@@ -6,7 +6,7 @@ Transform any physical retail store into an immersive, navigable 3D shopping exp
 
 ---
 
-## 🎯 Vision
+## Vision
 
 Shopiverse bridges the gap between physical retail and online shopping by creating an immersive virtual store experience. Think **Google Street View**, but for shopping — where customers can:
 
@@ -367,20 +367,6 @@ shopiverse/
 - [ ] Automated hotspot detection
 - [ ] Smart analytics insights
 
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
-
----
-
 ## 💡 Why Shopiverse?
 
 > *"The future of retail isn't just online or offline — it's everywhere."*
@@ -390,7 +376,3 @@ Small businesses deserve the same immersive shopping experiences that major reta
 **Transform your store. Engage your customers. Grow your business.**
 
 ---
-
-<p align="center">
-  <strong>Built with ❤️ for small businesses</strong>
-</p>
