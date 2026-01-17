@@ -49,8 +49,8 @@ body {
 /* Entrance dot - pulsating indicator on store door */
 .entrance-dot {
     position: absolute;
-    top: 45%;
-    left: 50%;
+    top: 68%;
+    left: 45%;
     transform: translate(-50%, -50%);
     width: 60px;
     height: 60px;
