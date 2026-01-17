@@ -8,7 +8,7 @@
         {
             "id": "entrance",
             "name": "Store Entrance",
-            "gaussian": "/gaussians/entrance.ply",
+            "gaussian": "/gaussians/teaser.ply",
             "connections": [
                 {
                     "target": "main-floor",
@@ -21,7 +21,7 @@
         {
             "id": "main-floor",
             "name": "Main Floor",
-            "gaussian": "/gaussians/main-floor.ply",
+            "gaussian": "/gaussians/teaser.ply",
             "connections": [
                 {
                     "target": "entrance",
@@ -49,7 +49,7 @@
         {
             "id": "clothing-left",
             "name": "Women's Collection",
-            "gaussian": "/gaussians/clothing-left.ply",
+            "gaussian": "/gaussians/teaser.ply",
             "connections": [
                 {
                     "target": "main-floor",
@@ -62,7 +62,7 @@
         {
             "id": "clothing-right",
             "name": "Men's Collection",
-            "gaussian": "/gaussians/clothing-right.ply",
+            "gaussian": "/gaussians/teaser.ply",
             "connections": [
                 {
                     "target": "main-floor",
@@ -75,7 +75,7 @@
         {
             "id": "accessories",
             "name": "Accessories Corner",
-            "gaussian": "/gaussians/accessories.ply",
+            "gaussian": "/gaussians/teaser.ply",
             "connections": [
                 {
                     "target": "main-floor",

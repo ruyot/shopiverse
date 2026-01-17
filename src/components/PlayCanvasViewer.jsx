@@ -1,69 +1,163 @@
-import { useMemo } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import { useStoreState } from '../stores/useStoreState'
 import storeConfig from '../data/store-config.json'
 import './PlayCanvasViewer.css'
 
 /**
- * PlayCanvas Model Viewer embed
- * 
- * The PlayCanvas model-viewer supports:
- * - glTF/GLB models
- * - 3D Gaussian Splats (.ply files from ML-SHARP)
- * - Equirectangular images (360° panoramas as fallback)
- * 
- * URL parameters:
- * - ?load=URL - Load a 3D model or Gaussian splat
- * - ?cameraPosition=x,y,z - Set initial camera position
+ * PlayCanvas Gaussian Splat Viewer
+ * Renders .ply Gaussian splat files using PlayCanvas engine
  */
 export function PlayCanvasViewer() {
+    const canvasRef = useRef(null)
+    const appRef = useRef(null)
     const { currentPivotId, isTransitioning } = useStoreState()
 
     const currentPivot = useMemo(() => {
         return storeConfig.pivotPoints.find(p => p.id === currentPivotId)
     }, [currentPivotId])
 
-    // Build the PlayCanvas viewer URL with current pivot's model/image
-    const viewerUrl = useMemo(() => {
-        const baseUrl = 'https://playcanvas.com/viewer'
+    // Initialize PlayCanvas app
+    useEffect(() => {
+        if (!canvasRef.current || typeof pc === 'undefined') return
 
-        // If pivot has a gaussian splat file, load it
-        if (currentPivot?.gaussian) {
-            return `${baseUrl}?load=${encodeURIComponent(currentPivot.gaussian)}`
+        // Create PlayCanvas application
+        const app = new pc.Application(canvasRef.current, {
+            mouse: new pc.Mouse(canvasRef.current),
+            touch: new pc.TouchDevice(canvasRef.current),
+            graphicsDeviceOptions: {
+                antialias: true,
+                alpha: false,
+                preserveDrawingBuffer: false,
+                preferWebGl2: true
+            }
+        })
+
+        app.setCanvasFillMode(pc.FILLMODE_FILL_WINDOW)
+        app.setCanvasResolution(pc.RESOLUTION_AUTO)
+
+        // Configure scene
+        app.scene.ambientLight = new pc.Color(0.2, 0.2, 0.2)
+        app.scene.rendering.toneMapping = pc.TONEMAP_ACES
+        app.scene.rendering.gammaCorrection = pc.GAMMA_SRGB
+
+        // Create camera
+        const camera = new pc.Entity('camera')
+        camera.addComponent('camera', {
+            clearColor: new pc.Color(0.05, 0.05, 0.08),
+            fov: 75,
+            nearClip: 0.1,
+            farClip: 1000
+        })
+        camera.setPosition(0, 1.6, 3)
+        camera.lookAt(0, 1, 0)
+        app.root.addChild(camera)
+
+        // Add orbit camera controls
+        const script = camera.addComponent('script')
+
+        // Simple orbit controls via mouse
+        let isDragging = false
+        let lastX = 0, lastY = 0
+        let rotX = 0, rotY = 0
+
+        canvasRef.current.addEventListener('mousedown', (e) => {
+            isDragging = true
+            lastX = e.clientX
+            lastY = e.clientY
+        })
+
+        canvasRef.current.addEventListener('mousemove', (e) => {
+            if (!isDragging) return
+            const dx = e.clientX - lastX
+            const dy = e.clientY - lastY
+            rotY -= dx * 0.3
+            rotX -= dy * 0.3
+            rotX = Math.max(-60, Math.min(60, rotX))
+            camera.setEulerAngles(rotX, rotY, 0)
+            lastX = e.clientX
+            lastY = e.clientY
+        })
+
+        canvasRef.current.addEventListener('mouseup', () => { isDragging = false })
+        canvasRef.current.addEventListener('mouseleave', () => { isDragging = false })
+
+        // Scroll to zoom
+        canvasRef.current.addEventListener('wheel', (e) => {
+            const pos = camera.getPosition()
+            const forward = camera.forward.clone().mulScalar(e.deltaY * 0.01)
+            camera.setPosition(pos.sub(forward))
+        })
+
+        // Add ambient light
+        const light = new pc.Entity('light')
+        light.addComponent('light', {
+            type: 'directional',
+            color: new pc.Color(1, 1, 1),
+            intensity: 1
+        })
+        light.setEulerAngles(45, 45, 0)
+        app.root.addChild(light)
+
+        app.start()
+        appRef.current = app
+
+        // Handle resize
+        const handleResize = () => {
+            app.resizeCanvas()
+        }
+        window.addEventListener('resize', handleResize)
+
+        return () => {
+            window.removeEventListener('resize', handleResize)
+            app.destroy()
+        }
+    }, [])
+
+    // Load Gaussian splat when pivot changes
+    useEffect(() => {
+        if (!appRef.current || !currentPivot?.gaussian) return
+
+        const app = appRef.current
+        const plyPath = currentPivot.gaussian
+
+        // Remove existing splat entity if any
+        const existingSplat = app.root.findByName('splat')
+        if (existingSplat) {
+            existingSplat.destroy()
         }
 
-        // If pivot has an image, we'll show a placeholder for now
-        // In production, this would be a processed Gaussian splat
-        return baseUrl
+        // Load the PLY file as a GSplat asset
+        const asset = new pc.Asset('splat', 'gsplat', {
+            url: plyPath
+        })
+
+        asset.on('load', () => {
+            const splatEntity = new pc.Entity('splat')
+            splatEntity.addComponent('gsplat', {
+                asset: asset
+            })
+            splatEntity.setLocalScale(1, 1, 1)
+            app.root.addChild(splatEntity)
+            console.log('Gaussian splat loaded:', plyPath)
+        })
+
+        asset.on('error', (err) => {
+            console.error('Failed to load Gaussian splat:', err)
+        })
+
+        app.assets.add(asset)
+        app.assets.load(asset)
+
     }, [currentPivot])
 
     return (
         <div className="playcanvas-viewer">
-            {/* Embed PlayCanvas model-viewer */}
-            <iframe
-                src={viewerUrl}
-                title="3D Store View"
-                className={`viewer-iframe ${isTransitioning ? 'transitioning' : ''}`}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-            />
+            <canvas ref={canvasRef} className={`viewer-canvas ${isTransitioning ? 'transitioning' : ''}`} />
 
-            {/* Placeholder when no model is loaded */}
-            {!currentPivot?.gaussian && (
-                <div className="viewer-placeholder">
-                    <div className="placeholder-content">
-                        <div className="placeholder-icon">
-                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                                <polyline points="3.27 6.96 12 12 20.73 6.96" />
-                                <line x1="12" y1="22.08" x2="12" y2="12" />
-                            </svg>
-                        </div>
-                        <h3>{currentPivot?.name || 'Store View'}</h3>
-                        <p>Gaussian splat will be loaded here</p>
-                        <span className="placeholder-hint">
-                            Add .ply files from ML-SHARP to see 3D views
-                        </span>
-                    </div>
+            {/* Loading indicator */}
+            {isTransitioning && (
+                <div className="viewer-loading">
+                    <div className="loading-spinner" />
                 </div>
             )}
 
