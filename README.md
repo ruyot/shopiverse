@@ -19,7 +19,7 @@ This platform empowers **small and medium-sized businesses** to establish a comp
 
 ---
 
-## 🖼️ How It Works
+## How It Works
 
 ### The Core Concept
 
@@ -28,15 +28,15 @@ This platform empowers **small and medium-sized businesses** to establish a comp
 │                        SHOPIVERSE FLOW                              │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│   📸 Capture          🔄 Process           🌐 Deploy               │
+│   Capture             Process              Deploy                   │
 │   ───────────         ──────────           ────────                 │
-│   Take photos    →    Stitch & enhance  →  Host virtual store      │
-│   at pivot points     with Sharp.js        as web experience       │
+│   Take photos    →    Stitch & enhance  →  Host virtual store       │
+│   at pivot points     with Sharp.js        as web experience        │
 │                                                                     │
-│   🧭 Navigate         🛒 Shop              📊 Analyze              │
+│   Navigate            Shop                 Analyze                  │
 │   ───────────         ──────               ───────────              │
-│   Click-to-move   →   Select products  →   Track engagement        │
-│   between views       & checkout           & behavior              │
+│   Click-to-move   →   Select products  →   Track engagement         │
+│   between views       & checkout           & behavior               │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -62,14 +62,14 @@ The navigation mimics Google Street View's intuitive interface:
           │ Aisle  │ │ Center │ │ Aisle  │
           │ Left   │ │ Floor  │ │ Right  │
           └────┬───┘ └───┬────┘ └───┬────┘
-               │         │         │
+               │         │          │
           [Shelf]    [Display]   [Shelf]
           Hotspot    Hotspot     Hotspot
 ```
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 ### For Customers
 
@@ -85,15 +85,15 @@ The navigation mimics Google Street View's intuitive interface:
 
 | Feature | Description |
 |---------|-------------|
-| **Digital Presence** | Stand out with an immersive shopping experience |
-| **Customer Analytics** | Track which products/areas get the most attention |
-| **Engagement Metrics** | Measure dwell time, navigation paths, click patterns |
+| **Digital Presence**  | Stand out with an immersive shopping experience |
+| **Customer Analytics**| Track which products/areas get the most attention |
+| **Engagement Metrics**| Measure dwell time, navigation paths, click patterns |
 | **Low Barrier Entry** | No 3D modeling required — just photos |
-| **Easy Updates** | Replace product images/info without re-shooting |
+| **Easy Updates**      | Replace product images/info without re-shooting |
 
 ---
 
-## 🛠️ Technical Architecture
+## Technical Architecture
 
 ### Technology Stack
 
@@ -101,9 +101,9 @@ The navigation mimics Google Street View's intuitive interface:
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         FRONTEND                                    │
 ├─────────────────────────────────────────────────────────────────────┤
-│  Framework        │  Next.js / Vite + React                        │
-│  Panorama Viewer  │  Pannellum.js / Photo Sphere Viewer            │
-│  3D Rendering     │  Three.js (for advanced effects)               │
+│  Framework        │  Next.js / Vite + React                         │
+│  Panorama Viewer  │  Pannellum.js / Photo Sphere Viewer             │
+│  3D Rendering     │  Three.js (for advanced effects)                │
 │  Styling          │  CSS3 with modern animations                    │
 │  State Management │  React Context / Zustand                        │
 └─────────────────────────────────────────────────────────────────────┘
@@ -219,7 +219,7 @@ const storeGraph = {
 
 ---
 
-## 📊 Analytics & Business Intelligence
+## Analytics & Business Intelligence
 
 ### Tracked Events
 
@@ -236,29 +236,29 @@ const storeGraph = {
 ### Dashboard Metrics
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    STORE ANALYTICS DASHBOARD                        │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  📈 Visitor Overview          🗺️ Navigation Heatmap                │
+┌────────────────────────────────────────────────────────────────────┐
+│                    STORE ANALYTICS DASHBOARD                       │
+├────────────────────────────────────────────────────────────────────┤
+│                                                                    │
+│  Visitor Overview             Navigation Heatmap                   |
 │  ┌───────────────────┐       ┌───────────────────┐                 │
 │  │ Today: 1,234      │       │    [Entry]        │                 │
 │  │ This Week: 8,521  │       │       ↓           │                 │
 │  │ Avg. Duration: 4m │       │  [Hot] → [Warm]   │                 │
 │  └───────────────────┘       └───────────────────┘                 │
-│                                                                     │
-│  🛍️ Top Products Viewed       💰 Conversion Funnel                  │
+│                                                                    │
+│  Top Products Viewed          Conversion Funnel                    │
 │  1. Blue Denim Jacket         Viewed Store: 1,234                  │
-│  2. Summer Dress              Viewed Product: 456                   │
-│  3. Canvas Sneakers           Started Checkout: 123                 │
-│  4. Leather Belt              Completed: 98                         │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+│  2. Summer Dress              Viewed Product: 456                  │
+│  3. Canvas Sneakers           Started Checkout: 123                │
+│  4. Leather Belt              Completed: 98                        │
+│                                                                    │
+└────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -293,7 +293,7 @@ npm run dev
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 shopiverse/
@@ -320,7 +320,7 @@ shopiverse/
 
 ---
 
-## 🎨 User Experience
+## User Experience
 
 ### Navigation Controls
 
@@ -341,9 +341,9 @@ shopiverse/
 
 ---
 
-## 🔮 Future Roadmap
+## Future Roadmap
 
-### Phase 1: MVP ✅
+### Phase 1: MVP 
 - [ ] Basic panorama viewer with navigation
 - [ ] Product hotspots and modals
 - [ ] Checkout redirection
@@ -367,7 +367,7 @@ shopiverse/
 - [ ] Automated hotspot detection
 - [ ] Smart analytics insights
 
-## 💡 Why Shopiverse?
+## Why Shopiverse?
 
 > *"The future of retail isn't just online or offline — it's everywhere."*
 
