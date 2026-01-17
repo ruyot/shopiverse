@@ -130,6 +130,20 @@ function App() {
                 </nav>
             )}
 
+            {/* Product hotspots */}
+            {currentViewpoint.hotspots?.map((hotspot) => (
+                <button
+                    key={hotspot.id}
+                    className="product-hotspot"
+                    style={{ left: `${hotspot.x}%`, top: `${hotspot.y}%` }}
+                    onClick={() => console.log('Clicked:', hotspot.label)}
+                    aria-label={hotspot.label}
+                >
+                    <span className="hotspot-ring" />
+                    <span className="hotspot-core" />
+                </button>
+            ))}
+
             {/* Keyboard hints */}
             <div className="keyboard-hints">
                 {isStoreFront ? 'Click the door to enter' : 'Use arrow keys to navigate'}

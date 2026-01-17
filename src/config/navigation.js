@@ -38,7 +38,14 @@ export const navigationConfig = {
         image: '/store_p1_left.png',
         connections: {
             back: 'storeP1'
-        }
+        },
+        hotspots: [
+            { id: 'jeans-1', x: 38, y: 42, label: 'Classic Denim' },
+            { id: 'jeans-2', x: 28, y: 42, label: 'Classic Denim' },
+            { id: 'jeans-3', x: 28, y: 65, label: 'Classic Denim' },
+            { id: 'jeans-4', x: 39, y: 64, label: 'Classic Denim' }
+        ]
+
     },
 
     // Right view from first position
@@ -49,6 +56,12 @@ export const navigationConfig = {
         connections: {
             back: 'storeP1'
         }
+        hotspots: [
+            { id: 'jeans-1', x: 38, y: 42, label: 'Classic Denim' },
+            { id: 'jeans-2', x: 28, y: 42, label: 'Classic Denim' },
+            { id: 'jeans-3', x: 28, y: 65, label: 'Classic Denim' },
+            { id: 'jeans-3', x: 39, y: 64, label: 'Classic Denim' }
+        ]
     },
 
     // Second position (deeper inside)
