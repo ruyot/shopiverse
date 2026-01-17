@@ -55,12 +55,11 @@ export const navigationConfig = {
         image: '/store_p1_right.png',
         connections: {
             back: 'storeP1'
-        }
+        },
         hotspots: [
-            { id: 'jeans-1', x: 38, y: 42, label: 'Classic Denim' },
-            { id: 'jeans-2', x: 28, y: 42, label: 'Classic Denim' },
-            { id: 'jeans-3', x: 28, y: 65, label: 'Classic Denim' },
-            { id: 'jeans-3', x: 39, y: 64, label: 'Classic Denim' }
+            { id: 'item-r1-1', x: 30, y: 35, label: 'Product 1' },
+            { id: 'item-r1-2', x: 50, y: 45, label: 'Product 2' },
+            { id: 'item-r1-3', x: 70, y: 40, label: 'Product 3' }
         ]
     },
 
@@ -83,7 +82,12 @@ export const navigationConfig = {
         image: '/store_p2_left.png',
         connections: {
             back: 'storeP2'
-        }
+        },
+        hotspots: [
+            { id: 'item-l2-1', x: 21, y: 45, label: 'Product 1' },
+            { id: 'item-l2-2', x: 30, y: 35, label: 'Product 2' },
+            { id: 'item-l2-3', x: 80, y: 55, label: 'Product 3' }
+        ]
     },
 
     // Right view from second position
@@ -93,7 +97,12 @@ export const navigationConfig = {
         image: '/store_p2_right.png',
         connections: {
             back: 'storeP2'
-        }
+        },
+        hotspots: [
+            { id: 'item-r2-1', x: 39, y: 50, label: 'Product 1' },
+            { id: 'item-r2-2', x: 57, y: 46, label: 'Product 2' },
+            { id: 'item-r2-3', x: 68, y: 42, label: 'Product 3' }
+        ]
     }
 }
 
