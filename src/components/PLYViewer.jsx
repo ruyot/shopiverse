@@ -31,7 +31,7 @@ export function PLYViewer({ plyPath, isActive }) {
         const viewer = new GaussianSplats3D.Viewer({
             'rootElement': containerRef.current,
             'cameraUp': [0, 1, 0],
-            'initialCameraPosition': [0, 0, 1], // Start from the front (positive Z)
+            'initialCameraPosition': [0, 0, 0.1], // Extremely close frame
             'initialCameraLookAt': [0, 0, 0],
             'halfPrecisionCovariancesOnGPU': true,
             'antialiased': true,
@@ -40,41 +40,41 @@ export function PLYViewer({ plyPath, isActive }) {
 
         viewerRef.current = viewer
 
-        // Load the splat file
+        // Load the main splat file first
         // Rotation: quaternion [x, y, z, w]
         // [1, 0, 0, 0] = 180 deg X rotation
         // [0, 0, 1, 0] = 180 deg Z rotation
-        viewer.addSplatScene(plyPath, {
+        const loadMain = viewer.addSplatScene(plyPath, {
             'showLoadingUI': false,
             'position': [0, 0, 0],
             'rotation': [1, 0, 0, 0], // Flip 180 around X
-            'scale': [1, 1, 1],
+            'scale': [2.5, 2.5, 2.5], // Scale up world to feel "inside" it
             'splatAlphaRemovalThreshold': 5 // Hide very transparent splats
         })
             .then(() => {
                 console.log('Splat loaded successfully')
                 setIsLoaded(true)
                 viewer.start()
-                
+
                 // WASD keyboard controls (SHARP-ML pattern)
                 const animate = () => {
                     if (!viewerRef.current) return
                     requestAnimationFrame(animate)
-                    
+
                     const keys = keysPressed.current
                     const moveSpeed = 0.05
                     const rotateSpeed = 0.02
-                    
+
                     if (keys.size > 0 && viewer.camera) {
                         const camera = viewer.camera
                         const controls = viewer.controls
-                        
+
                         // Get camera's forward and right vectors
                         const forward = new THREE.Vector3()
                         camera.getWorldDirection(forward)
                         const right = new THREE.Vector3()
                         right.crossVectors(forward, camera.up).normalize()
-                        
+
                         // W/S - move forward/backward
                         if (keys.has('w')) {
                             camera.position.addScaledVector(forward, moveSpeed)
@@ -88,7 +88,7 @@ export function PLYViewer({ plyPath, isActive }) {
                                 controls.target.addScaledVector(forward, -moveSpeed)
                             }
                         }
-                        
+
                         // A/D - strafe left/right
                         if (keys.has('a')) {
                             camera.position.addScaledVector(right, -moveSpeed)
@@ -102,7 +102,7 @@ export function PLYViewer({ plyPath, isActive }) {
                                 controls.target.addScaledVector(right, moveSpeed)
                             }
                         }
-                        
+
                         // Q/E - move up/down
                         if (keys.has('q')) {
                             camera.position.y -= moveSpeed
@@ -220,14 +220,14 @@ export function PLYViewer({ plyPath, isActive }) {
                     title="Admin Panel"
                 >
                     {/* Admin/Settings Icon SVG */}
-                    <svg 
-                        width="24" 
-                        height="24" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        strokeWidth="2" 
-                        strokeLinecap="round" 
+                    <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
                         strokeLinejoin="round"
                     >
                         <circle cx="12" cy="12" r="3" />
