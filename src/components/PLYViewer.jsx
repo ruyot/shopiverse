@@ -31,8 +31,8 @@ export function PLYViewer({ plyPath, isActive }) {
         const viewer = new GaussianSplats3D.Viewer({
             'rootElement': containerRef.current,
             'cameraUp': [0, 1, 0],
-            'initialCameraPosition': [0, 0, 0.1], // Extremely close frame
-            'initialCameraLookAt': [0, 0, 0],
+            'initialCameraPosition': [0, 0, -0.7], // Start deeper inside (past pillars)
+            'initialCameraLookAt': [0, 0, -1], // Look further ahead
             'halfPrecisionCovariancesOnGPU': true,
             'antialiased': true,
             'alphaRemovalThreshold': 2,
