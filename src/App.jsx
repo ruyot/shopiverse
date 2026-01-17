@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { navigationConfig, initialViewpoint } from './config/navigation'
 import { PLYViewer } from './components/PLYViewer'
+import { Terminal, X } from 'lucide-react'
 import './App.css'
 
 /**
@@ -14,6 +15,7 @@ function App() {
     const [currentId, setCurrentId] = useState(initialViewpoint)
     const [history, setHistory] = useState([initialViewpoint])
     const [isTransitioning, setIsTransitioning] = useState(false)
+    const [showCommands, setShowCommands] = useState(false)
 
     const currentViewpoint = navigationConfig[currentId]
     const connections = currentViewpoint?.connections || {}
@@ -158,6 +160,97 @@ function App() {
             <div className="keyboard-hints">
                 {isStoreFront ? 'Click the door to enter' : 'Use arrow keys to navigate'}
             </div>
+
+            {/* Command Palette Toggle */}
+            <button 
+                className="command-toggle"
+                onClick={() => setShowCommands(!showCommands)}
+                title="Show Controls"
+            >
+                <Terminal size={20} strokeWidth={2} />
+            </button>
+
+            {/* Command Palette */}
+            {showCommands && (
+                <div className="command-palette">
+                    <div className="command-header">
+                        <h3>CONTROLS</h3>
+                        <button 
+                            className="command-close"
+                            onClick={() => setShowCommands(false)}
+                        >
+                            <X size={18} strokeWidth={2} />
+                        </button>
+                    </div>
+                    <div className="command-list">
+                        <div className="command-section">
+                            <div className="command-section-title">3D MODE CONTROLS</div>
+                            <div className="command-item">
+                                <span className="command-key">W</span>
+                                <span className="command-desc">Move Forward</span>
+                            </div>
+                            <div className="command-item">
+                                <span className="command-key">A</span>
+                                <span className="command-desc">Strafe Left</span>
+                            </div>
+                            <div className="command-item">
+                                <span className="command-key">S</span>
+                                <span className="command-desc">Move Backward</span>
+                            </div>
+                            <div className="command-item">
+                                <span className="command-key">D</span>
+                                <span className="command-desc">Strafe Right</span>
+                            </div>
+                            <div className="command-item">
+                                <span className="command-key">Q</span>
+                                <span className="command-desc">Move Down</span>
+                            </div>
+                            <div className="command-item">
+                                <span className="command-key">E</span>
+                                <span className="command-desc">Move Up</span>
+                            </div>
+                            <div className="command-item">
+                                <span className="command-key">MOUSE</span>
+                                <span className="command-desc">Look Around</span>
+                            </div>
+                        </div>
+                        <div className="command-section">
+                            <div className="command-section-title">INTERACTIONS</div>
+                            <div className="command-item">
+                                <span className="command-key">CLICK</span>
+                                <span className="command-desc">Navigate / Interact</span>
+                            </div>
+                            <div className="command-item">
+                                <span className="command-key">SPACE</span>
+                                <span className="command-desc">Move Forward</span>
+                            </div>
+                        </div>
+                        <div className="command-section">
+                            <div className="command-section-title">NAVIGATION (2D MODE)</div>
+                            <div className="command-item">
+                                <span className="command-key">↑</span>
+                                <span className="command-desc">Move Forward</span>
+                            </div>
+                            <div className="command-item">
+                                <span className="command-key">↓</span>
+                                <span className="command-desc">Move Backward</span>
+                            </div>
+                            <div className="command-item">
+                                <span className="command-key">←</span>
+                                <span className="command-desc">Look Left</span>
+                            </div>
+                            <div className="command-item">
+                                <span className="command-key">→</span>
+                                <span className="command-desc">Look Right</span>
+                            </div>
+                            <div className="command-item">
+                                <span className="command-key">ENTER</span>
+                                <span className="command-desc">Move Forward</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
