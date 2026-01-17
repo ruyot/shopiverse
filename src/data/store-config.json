@@ -1,0 +1,150 @@
+{
+    "store": {
+        "id": "demo-boutique",
+        "name": "The Modern Boutique",
+        "description": "A curated collection of contemporary fashion and accessories"
+    },
+    "pivotPoints": [
+        {
+            "id": "entrance",
+            "name": "Store Entrance",
+            "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+            },
+            "connections": [
+                {
+                    "target": "main-floor",
+                    "label": "Enter Store",
+                    "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": -4
+                    },
+                    "direction": "forward"
+                }
+            ],
+            "hotspots": []
+        },
+        {
+            "id": "main-floor",
+            "name": "Main Floor",
+            "position": {
+                "x": 0,
+                "y": 0,
+                "z": -8
+            },
+            "connections": [
+                {
+                    "target": "entrance",
+                    "label": "Exit",
+                    "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 4
+                    },
+                    "direction": "back"
+                },
+                {
+                    "target": "clothing-left",
+                    "label": "Women's Section",
+                    "position": {
+                        "x": -4,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "direction": "left"
+                },
+                {
+                    "target": "clothing-right",
+                    "label": "Men's Section",
+                    "position": {
+                        "x": 4,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "direction": "right"
+                },
+                {
+                    "target": "accessories",
+                    "label": "Accessories",
+                    "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": -4
+                    },
+                    "direction": "forward"
+                }
+            ],
+            "hotspots": []
+        },
+        {
+            "id": "clothing-left",
+            "name": "Women's Collection",
+            "position": {
+                "x": -8,
+                "y": 0,
+                "z": -8
+            },
+            "connections": [
+                {
+                    "target": "main-floor",
+                    "label": "Back to Main",
+                    "position": {
+                        "x": 4,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "direction": "right"
+                }
+            ],
+            "hotspots": []
+        },
+        {
+            "id": "clothing-right",
+            "name": "Men's Collection",
+            "position": {
+                "x": 8,
+                "y": 0,
+                "z": -8
+            },
+            "connections": [
+                {
+                    "target": "main-floor",
+                    "label": "Back to Main",
+                    "position": {
+                        "x": -4,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "direction": "left"
+                }
+            ],
+            "hotspots": []
+        },
+        {
+            "id": "accessories",
+            "name": "Accessories Corner",
+            "position": {
+                "x": 0,
+                "y": 0,
+                "z": -16
+            },
+            "connections": [
+                {
+                    "target": "main-floor",
+                    "label": "Back to Main",
+                    "position": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 4
+                    },
+                    "direction": "back"
+                }
+            ],
+            "hotspots": []
+        }
+    ],
+    "products": []
+}

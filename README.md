@@ -30,25 +30,35 @@ This platform empowers **small and medium-sized businesses** to establish a comp
 │                                                                     │
 │   Capture             Process              Deploy                   │
 │   ───────────         ──────────           ────────                 │
-│   Take photos    →    Stitch & enhance  →  Host virtual store       │
-│   at pivot points     with Sharp.js        as web experience        │
+│   Take photos    →    ML-SHARP generates → Host 3D experience       │
+│   at pivot points     3D Gaussians         in browser               │
 │                                                                     │
 │   Navigate            Shop                 Analyze                  │
 │   ───────────         ──────               ───────────              │
-│   Click-to-move   →   Select products  →   Track engagement         │
-│   between views       & checkout           & behavior               │
+│   Move freely in  →   Select products  →   Track engagement         │
+│   synthesized 3D      & checkout           & behavior               │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+
+### ML-SHARP: The Magic Behind the 3D
+
+[Apple ML-SHARP](https://github.com/apple/ml-sharp) is a groundbreaking ML model that performs **monocular view synthesis** — generating photorealistic 3D views from a **single 2D image** in under one second.
+
+**How it works:**
+1. Feed a single photo into ML-SHARP
+2. ML-SHARP outputs 3D Gaussian splats (.ply files)
+3. These Gaussians render photorealistic novel views in real-time
+4. Users can look around freely, not just at fixed angles
 
 ### Navigation System
 
 The navigation mimics Google Street View's intuitive interface:
 
-1. **Pivot Points** — Strategic locations throughout the store where 360° images are captured
+1. **Pivot Points** — Strategic locations throughout the store where photos are captured
 2. **Navigation Arrows** — Clickable directional indicators to move between pivot points
 3. **Product Hotspots** — Clickable regions near shelves/displays that reveal products
-4. **Free Look** — Click and drag to look around from any pivot point
+4. **Free Look** — Move the camera within the synthesized 3D volume
 
 ```
                     ┌─────────┐
@@ -102,17 +112,23 @@ The navigation mimics Google Street View's intuitive interface:
 │                         FRONTEND                                    │
 ├─────────────────────────────────────────────────────────────────────┤
 │  Framework        │  Next.js / Vite + React                         │
-│  Panorama Viewer  │  Pannellum.js / Photo Sphere Viewer             │
-│  3D Rendering     │  Three.js (for advanced effects)                │
+│  3D Rendering     │  Three.js + 3D Gaussian Splat Renderer          │
 │  Styling          │  CSS3 with modern animations                    │
 │  State Management │  React Context / Zustand                        │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                    ML PROCESSING (Python/GPU)                       │
+├─────────────────────────────────────────────────────────────────────┤
+│  ML Model         │  Apple ML-SHARP (3D Gaussian synthesis)         │
+│  Runtime          │  Python 3.13 + PyTorch + CUDA                   │
+│  Output Format    │  3D Gaussian Splats (.ply files)                │
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         BACKEND                                     │
 ├─────────────────────────────────────────────────────────────────────┤
 │  Runtime          │  Node.js                                        │
-│  Image Processing │  Sharp.js (resize, optimize, perspective)       │
 │  API              │  REST / GraphQL                                 │
 │  Database         │  PostgreSQL / MongoDB                           │
 │  Analytics        │  Custom event tracking + dashboard              │
@@ -124,34 +140,37 @@ The navigation mimics Google Street View's intuitive interface:
 │  Hosting          │  Vercel / AWS / GCP                             │
 │  CDN              │  CloudFlare / AWS CloudFront                    │
 │  Payments         │  Stripe / PayPal integration                    │
-│  Storage          │  S3 / GCS for panoramic images                  │
+│  GPU Processing   │  AWS/GCP GPU instances for ML-SHARP             │
+│  Storage          │  S3 / GCS for images + .ply 3D files            │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Image Processing Pipeline
+### ML-SHARP Processing Pipeline
 
-Sharp.js handles server-side image processing for:
+Apple's ML-SHARP transforms single images into navigable 3D:
 
-1. **Optimization** — Compress images for fast loading
-2. **Perspective Correction** — Stretch/warp images for seamless viewing
-3. **Responsive Generations** — Create multiple resolutions for different devices
-4. **Thumbnail Previews** — Generate quick-load previews
+1. **Input** — Single 2D photograph from pivot point
+2. **Inference** — ML-SHARP generates 3D Gaussian parameters (~1 second on GPU)
+3. **Output** — .ply file containing 3D Gaussian splats
+4. **Render** — WebGL/Three.js renders Gaussians for novel view synthesis
 
-```javascript
-// Example: Image processing with Sharp.js
-const sharp = require('sharp');
+```bash
+# Process store images with ML-SHARP
+sharp predict -i /path/to/store-photos -o /path/to/gaussians
 
-async function processStoreImage(inputPath, outputPath) {
-  await sharp(inputPath)
-    .resize(4096, 2048, { fit: 'cover' })  // Panorama-ready
-    .jpeg({ quality: 85, progressive: true })
-    .toFile(outputPath);
-}
+# Output: 3D Gaussian splats (.ply) for each input image
+# These can be rendered from any nearby viewpoint in real-time
 ```
+
+**Key benefits:**
+- No 360° camera needed — just regular photos
+- True 3D depth, not just projected images
+- Photorealistic novel views
+- Real-time rendering in browser
 
 ---
 
-## 📐 System Design
+## System Design
 
 ### Data Models
 
@@ -264,7 +283,9 @@ const storeGraph = {
 
 - Node.js 18+ 
 - npm or yarn
-- A set of 360° panoramic photos of your store (or regular photos for stitching)
+- Python 3.13+ (for ML-SHARP processing)
+- CUDA-capable GPU (for ML-SHARP inference)
+- Regular photos of your store at key pivot points
 
 ### Installation
 
@@ -310,10 +331,12 @@ shopiverse/
 │   ├── services/            # API & analytics services
 │   ├── utils/               # Helper functions
 │   └── pages/               # Route pages
-├── server/                   # Backend (if needed)
+├── server/                   # Backend
 │   ├── api/                 # API routes
-│   ├── processing/          # Sharp.js image processing
 │   └── analytics/           # Event tracking
+├── ml-pipeline/              # ML-SHARP processing
+│   ├── process_images.py    # Image → 3D Gaussian conversion
+│   └── outputs/             # Generated .ply files
 ├── admin/                    # Store management dashboard
 └── docs/                     # Additional documentation
 ```
