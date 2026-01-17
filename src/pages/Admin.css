@@ -247,23 +247,30 @@
     font-family: 'Courier New', monospace;
 }
 
-.scene-status {
-    padding: 0 1rem;
+.scene-controls {
+    flex: 1;
+    max-width: 300px;
 }
 
-.status-badge {
-    padding: 0.4rem 0.8rem;
-    border-radius: 0;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+.scene-bg-input {
+    width: 100%;
+    background: #e8e8e8;
+    border: 2px solid #999;
+    color: #333;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    font-family: 'Courier New', monospace;
+    transition: all 0.2s ease;
 }
 
-.status-badge.active {
-    background: #ff6b35;
-    color: #fff;
-    border: 2px solid #e55a2b;
+.scene-bg-input:focus {
+    outline: none;
+    border-color: #666;
+    background: #fff;
+}
+
+.scene-bg-input::placeholder {
+    color: #999;
 }
 
 .scene-actions {
@@ -283,11 +290,293 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
 }
 
 .scene-btn:hover {
     background: #888;
     border-color: #555;
+}
+
+.scene-btn.room-toggle {
+    background: #ff3333;
+    border-color: #cc0000;
+    color: #fff;
+    font-weight: 900;
+    box-shadow: 0 0 10px rgba(255, 51, 51, 0.3);
+}
+
+.scene-btn.room-toggle:hover {
+    background: #ff0000;
+    border-color: #990000;
+    box-shadow: 0 0 15px rgba(255, 51, 51, 0.5);
+    transform: translateY(-1px);
+}
+
+.scene-btn.bg-changer {
+    background: #ff6b35;
+    border-color: #e55a2b;
+    color: #fff;
+    font-weight: 700;
+}
+
+.scene-btn.bg-changer:hover {
+    background: #e55a2b;
+    border-color: #d04a1b;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 3500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    animation: fadeIn 0.2s ease;
+}
+
+.modal-warning,
+.modal-bg-changer {
+    background: #d0d0d0;
+    border: 3px solid #999;
+    width: 100%;
+    max-width: 500px;
+    font-family: 'Courier New', monospace;
+}
+
+.modal-header {
+    background: #999;
+    border-bottom: 2px solid #666;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header.warning {
+    background: #ff3333;
+    border-bottom: 2px solid #cc0000;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.modal-close {
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+.modal-content {
+    padding: 1.5rem;
+}
+
+.modal-content p {
+    margin: 0 0 1rem 0;
+    font-size: 0.85rem;
+    color: #333;
+    line-height: 1.5;
+}
+
+.modal-scene-info {
+    background: #e8e8e8;
+    border: 2px solid #999;
+    padding: 0.75rem 1rem;
+    margin: 0 0 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.modal-scene-info strong {
+    font-size: 0.9rem;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.modal-scene-id {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.modal-warning-text {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    padding: 0.75rem;
+    color: #856404;
+    font-weight: 600;
+}
+
+.modal-footer {
+    background: #c0c0c0;
+    border-top: 2px solid #999;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.modal-btn {
+    background: #999;
+    border: 2px solid #666;
+    color: #fff;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Courier New', monospace;
+}
+
+.modal-btn:hover {
+    background: #888;
+    border-color: #555;
+}
+
+.modal-btn.cancel {
+    background: #666;
+    border-color: #444;
+}
+
+.modal-btn.cancel:hover {
+    background: #555;
+    border-color: #333;
+}
+
+.modal-btn.confirm-danger {
+    background: #ff3333;
+    border-color: #cc0000;
+}
+
+.modal-btn.confirm-danger:hover {
+    background: #ff0000;
+    border-color: #990000;
+}
+
+.modal-btn.confirm {
+    background: #ff6b35;
+    border-color: #e55a2b;
+}
+
+.modal-btn.confirm:hover {
+    background: #e55a2b;
+    border-color: #d04a1b;
+}
+
+/* Background Changer Specific */
+.bg-preview-section,
+.bg-input-section {
+    margin-bottom: 1.5rem;
+}
+
+.bg-preview-section label,
+.bg-input-section label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
+.bg-preview {
+    background: #fff;
+    border: 2px solid #999;
+    padding: 0.5rem;
+}
+
+.bg-preview img {
+    width: 100%;
+    height: 200px;
+    object-fit: contain;
+    border: 2px solid #999;
+    margin-bottom: 0.5rem;
+    background: #f5f5f5;
+}
+
+.bg-path {
+    font-size: 0.7rem;
+    color: #666;
+    word-break: break-all;
+    padding: 0.25rem 0.5rem;
+    background: #e8e8e8;
+}
+
+.modal-input {
+    width: 100%;
+    background: #e8e8e8;
+    border: 2px solid #999;
+    color: #333;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+    font-family: 'Courier New', monospace;
+    transition: all 0.2s ease;
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: #666;
+    background: #fff;
+}
+
+.modal-file-input {
+    display: none;
+}
+
+.modal-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: #999;
+    border: 2px solid #666;
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 0.75rem;
+}
+
+.modal-upload-btn:hover {
+    background: #888;
+    border-color: #555;
+}
+
+.modal-help-text {
+    font-size: 0.7rem;
+    color: #666;
+    line-height: 1.4;
+    margin: 0;
+    font-style: italic;
 }
 
 /* Scene Item Wrapper */
@@ -370,6 +659,23 @@
     font-size: 0.7rem;
     color: #999;
     font-family: 'Courier New', monospace;
+}
+
+/* Scenes Header */
+.scenes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.scenes-header h2 {
+    margin: 0;
+}
+
+.scenes-actions {
+    display: flex;
+    gap: 0.5rem;
 }
 
 /* Settings */

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { navigationConfig, initialViewpoint } from './config/navigation'
 import { PLYViewer } from './components/PLYViewer'
+import { ProductDetail } from './components/ProductDetail'
 import { Terminal, X } from 'lucide-react'
 import { getSettings } from './config/settings'
 import { getSceneHotspots } from './config/hotspots'
@@ -20,6 +21,7 @@ function App() {
     const [showCommands, setShowCommands] = useState(false)
     const [showHotspots, setShowHotspots] = useState(() => getSettings().showHotspots)
     const [currentHotspots, setCurrentHotspots] = useState([])
+    const [selectedHotspot, setSelectedHotspot] = useState(null)
 
     const currentViewpoint = navigationConfig[currentId]
     const connections = currentViewpoint?.connections || {}
@@ -188,7 +190,7 @@ function App() {
                         key={hotspot.id}
                         className="product-hotspot"
                         style={{ left: `${hotspot.x}%`, top: `${hotspot.y}%` }}
-                        onClick={() => console.log('Clicked:', hotspot.label)}
+                        onClick={() => setSelectedHotspot(hotspot)}
                         aria-label={hotspot.label}
                     >
                         <span className="hotspot-ring" />
@@ -291,6 +293,14 @@ function App() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Product Detail Modal */}
+            {selectedHotspot && (
+                <ProductDetail
+                    hotspot={selectedHotspot}
+                    onClose={() => setSelectedHotspot(null)}
+                />
             )}
         </div>
     )
