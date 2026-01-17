@@ -13,6 +13,7 @@ export function PLYViewer({ plyPath, isActive }) {
     const viewerRef = useRef(null)
     const [progress, setProgress] = useState(0)
     const [isLoaded, setIsLoaded] = useState(false)
+    const keysPressed = useRef(new Set())
 
     useEffect(() => {
         if (!containerRef.current || !plyPath) return
@@ -54,6 +55,70 @@ export function PLYViewer({ plyPath, isActive }) {
                 console.log('Splat loaded successfully')
                 setIsLoaded(true)
                 viewer.start()
+                
+                // WASD keyboard controls (SHARP-ML pattern)
+                const animate = () => {
+                    if (!viewerRef.current) return
+                    requestAnimationFrame(animate)
+                    
+                    const keys = keysPressed.current
+                    const moveSpeed = 0.05
+                    const rotateSpeed = 0.02
+                    
+                    if (keys.size > 0 && viewer.camera) {
+                        const camera = viewer.camera
+                        const controls = viewer.controls
+                        
+                        // Get camera's forward and right vectors
+                        const forward = new THREE.Vector3()
+                        camera.getWorldDirection(forward)
+                        const right = new THREE.Vector3()
+                        right.crossVectors(forward, camera.up).normalize()
+                        
+                        // W/S - move forward/backward
+                        if (keys.has('w')) {
+                            camera.position.addScaledVector(forward, moveSpeed)
+                            if (controls?.target) {
+                                controls.target.addScaledVector(forward, moveSpeed)
+                            }
+                        }
+                        if (keys.has('s')) {
+                            camera.position.addScaledVector(forward, -moveSpeed)
+                            if (controls?.target) {
+                                controls.target.addScaledVector(forward, -moveSpeed)
+                            }
+                        }
+                        
+                        // A/D - strafe left/right
+                        if (keys.has('a')) {
+                            camera.position.addScaledVector(right, -moveSpeed)
+                            if (controls?.target) {
+                                controls.target.addScaledVector(right, -moveSpeed)
+                            }
+                        }
+                        if (keys.has('d')) {
+                            camera.position.addScaledVector(right, moveSpeed)
+                            if (controls?.target) {
+                                controls.target.addScaledVector(right, moveSpeed)
+                            }
+                        }
+                        
+                        // Q/E - move up/down
+                        if (keys.has('q')) {
+                            camera.position.y -= moveSpeed
+                            if (controls?.target) {
+                                controls.target.y -= moveSpeed
+                            }
+                        }
+                        if (keys.has('e')) {
+                            camera.position.y += moveSpeed
+                            if (controls?.target) {
+                                controls.target.y += moveSpeed
+                            }
+                        }
+                    }
+                }
+                animate()
             })
             .catch(err => {
                 console.error('Failed to load splat:', err)
@@ -68,6 +133,40 @@ export function PLYViewer({ plyPath, isActive }) {
         }
 
     }, [plyPath])
+
+    // WASD keyboard controls (SHARP-ML pattern)
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            // Only handle WASD when not typing in an input
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+                return
+            }
+            const key = e.key.toLowerCase()
+            if (['w', 'a', 's', 'd', 'q', 'e'].includes(key)) {
+                keysPressed.current.add(key)
+            }
+        }
+
+        const handleKeyUp = (e) => {
+            const key = e.key.toLowerCase()
+            keysPressed.current.delete(key)
+        }
+
+        // Clear keys when window loses focus
+        const handleBlur = () => {
+            keysPressed.current.clear()
+        }
+
+        window.addEventListener('keydown', handleKeyDown)
+        window.addEventListener('keyup', handleKeyUp)
+        window.addEventListener('blur', handleBlur)
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown)
+            window.removeEventListener('keyup', handleKeyUp)
+            window.removeEventListener('blur', handleBlur)
+        }
+    }, [])
 
     if (!plyPath) return null
 
