@@ -1,0 +1,304 @@
+/* Hotspot Editor Overlay */
+.hotspot-editor-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.hotspot-editor {
+    background: #d0d0d0;
+    border: 3px solid #999;
+    width: 100%;
+    max-width: 1400px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Courier New', monospace;
+}
+
+/* Editor Header */
+.editor-header {
+    background: #999;
+    border-bottom: 2px solid #666;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.editor-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.editor-instructions {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.editor-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.editor-btn {
+    background: #d0d0d0;
+    border: 2px solid #666;
+    color: #333;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Courier New', monospace;
+}
+
+.editor-btn:hover {
+    background: #c0c0c0;
+    border-color: #555;
+}
+
+.save-btn {
+    background: #ff6b35;
+    border-color: #e55a2b;
+    color: #fff;
+}
+
+.save-btn:hover {
+    background: #e55a2b;
+    border-color: #d04a1b;
+}
+
+.close-btn:hover {
+    background: #b0b0b0;
+}
+
+/* Editor Content */
+.editor-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.editor-image-container {
+    flex: 1;
+    position: relative;
+    overflow: auto;
+    background: #e8e8e8;
+    border-right: 2px solid #999;
+}
+
+.editor-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    cursor: crosshair;
+    user-select: none;
+}
+
+/* Editor Hotspots */
+.editor-hotspot {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+.editor-hotspot-marker {
+    width: 20px;
+    height: 20px;
+    background: #ff6b35;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+
+.editor-hotspot-label-container {
+    position: absolute;
+    top: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    white-space: nowrap;
+}
+
+.editor-hotspot-label {
+    background: #333;
+    color: #fff;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 2px solid #666;
+    cursor: pointer;
+    min-width: 80px;
+    text-align: center;
+}
+
+.editor-hotspot-label:hover {
+    background: #444;
+}
+
+.editor-hotspot-input {
+    background: #fff;
+    color: #333;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 2px solid #ff6b35;
+    font-family: 'Courier New', monospace;
+    min-width: 150px;
+    outline: none;
+}
+
+.editor-hotspot-delete {
+    background: #d0d0d0;
+    border: 2px solid #999;
+    color: #333;
+    padding: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.editor-hotspot-delete:hover {
+    background: #ff6b35;
+    border-color: #e55a2b;
+    color: #fff;
+}
+
+/* Editor Sidebar */
+.editor-sidebar {
+    width: 320px;
+    background: #c0c0c0;
+    border-left: 2px solid #999;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.editor-sidebar h4 {
+    margin: 0;
+    padding: 1rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid #999;
+    background: #b0b0b0;
+}
+
+.editor-hotspot-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.75rem;
+}
+
+.editor-hotspot-item {
+    background: #d0d0d0;
+    border: 2px solid #999;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.editor-hotspot-item:last-child {
+    margin-bottom: 0;
+}
+
+.editor-hotspot-item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.editor-hotspot-item-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.editor-hotspot-item-coords {
+    font-size: 0.7rem;
+    color: #666;
+}
+
+.editor-hotspot-item-id {
+    font-size: 0.65rem;
+    color: #999;
+}
+
+.editor-hotspot-item-delete {
+    background: transparent;
+    border: 2px solid #999;
+    color: #666;
+    padding: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.editor-hotspot-item-delete:hover {
+    background: #ff6b35;
+    border-color: #e55a2b;
+    color: #fff;
+}
+
+.editor-empty-state {
+    text-align: center;
+    color: #666;
+    font-size: 0.8rem;
+    padding: 2rem 1rem;
+    line-height: 1.5;
+}
+
+/* Scrollbar Styling */
+.editor-image-container::-webkit-scrollbar,
+.editor-hotspot-list::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.editor-image-container::-webkit-scrollbar-track,
+.editor-hotspot-list::-webkit-scrollbar-track {
+    background: #b0b0b0;
+}
+
+.editor-image-container::-webkit-scrollbar-thumb,
+.editor-hotspot-list::-webkit-scrollbar-thumb {
+    background: #666;
+    border: 1px solid #999;
+}
+
+.editor-image-container::-webkit-scrollbar-thumb:hover,
+.editor-hotspot-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
