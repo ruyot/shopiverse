@@ -8,20 +8,11 @@
         {
             "id": "entrance",
             "name": "Store Entrance",
-            "position": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-            },
+            "gaussian": null,
             "connections": [
                 {
                     "target": "main-floor",
                     "label": "Enter Store",
-                    "position": {
-                        "x": 0,
-                        "y": 0,
-                        "z": -4
-                    },
                     "direction": "forward"
                 }
             ],
@@ -30,50 +21,26 @@
         {
             "id": "main-floor",
             "name": "Main Floor",
-            "position": {
-                "x": 0,
-                "y": 0,
-                "z": -8
-            },
+            "gaussian": null,
             "connections": [
                 {
                     "target": "entrance",
                     "label": "Exit",
-                    "position": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 4
-                    },
                     "direction": "back"
                 },
                 {
                     "target": "clothing-left",
                     "label": "Women's Section",
-                    "position": {
-                        "x": -4,
-                        "y": 0,
-                        "z": 0
-                    },
                     "direction": "left"
                 },
                 {
                     "target": "clothing-right",
                     "label": "Men's Section",
-                    "position": {
-                        "x": 4,
-                        "y": 0,
-                        "z": 0
-                    },
                     "direction": "right"
                 },
                 {
                     "target": "accessories",
                     "label": "Accessories",
-                    "position": {
-                        "x": 0,
-                        "y": 0,
-                        "z": -4
-                    },
                     "direction": "forward"
                 }
             ],
@@ -82,20 +49,11 @@
         {
             "id": "clothing-left",
             "name": "Women's Collection",
-            "position": {
-                "x": -8,
-                "y": 0,
-                "z": -8
-            },
+            "gaussian": null,
             "connections": [
                 {
                     "target": "main-floor",
                     "label": "Back to Main",
-                    "position": {
-                        "x": 4,
-                        "y": 0,
-                        "z": 0
-                    },
                     "direction": "right"
                 }
             ],
@@ -104,20 +62,11 @@
         {
             "id": "clothing-right",
             "name": "Men's Collection",
-            "position": {
-                "x": 8,
-                "y": 0,
-                "z": -8
-            },
+            "gaussian": null,
             "connections": [
                 {
                     "target": "main-floor",
                     "label": "Back to Main",
-                    "position": {
-                        "x": -4,
-                        "y": 0,
-                        "z": 0
-                    },
                     "direction": "left"
                 }
             ],
@@ -126,20 +75,11 @@
         {
             "id": "accessories",
             "name": "Accessories Corner",
-            "position": {
-                "x": 0,
-                "y": 0,
-                "z": -16
-            },
+            "gaussian": null,
             "connections": [
                 {
                     "target": "main-floor",
                     "label": "Back to Main",
-                    "position": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 4
-                    },
                     "direction": "back"
                 }
             ],
