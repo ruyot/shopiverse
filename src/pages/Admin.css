@@ -1,16 +1,17 @@
 .admin-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    color: #fff;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #e8e8e8;
+    color: #333;
+    font-family: 'Courier New', 'Courier', monospace;
+    letter-spacing: 0.5px;
 }
 
 /* Header */
 .admin-header {
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: #d0d0d0;
+    border-bottom: 2px solid #999;
     padding: 1.5rem 2rem;
+    box-shadow: none;
 }
 
 .admin-header-content {
@@ -22,60 +23,70 @@
 }
 
 .admin-header h1 {
-    font-size: 1.8rem;
+    font-size: 1.2rem;
     font-weight: 700;
     margin: 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'Courier New', monospace;
 }
 
 .back-to-store {
-    color: rgba(255, 255, 255, 0.8);
+    color: #333;
     text-decoration: none;
     padding: 0.5rem 1rem;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0;
+    background: #999;
+    border: 2px solid #666;
     transition: all 0.2s ease;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .back-to-store:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: #888;
     color: #fff;
+    border-color: #555;
 }
 
 /* Navigation Tabs */
 .admin-nav {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 1.5rem 2rem 0;
+    padding: 1rem 2rem 0;
     display: flex;
     gap: 0.5rem;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 2px solid #999;
+    background: #d0d0d0;
 }
 
 .admin-tab {
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.6);
+    color: #666;
     padding: 0.75rem 1.5rem;
-    font-size: 0.95rem;
-    font-weight: 500;
+    font-size: 0.8rem;
+    font-weight: 700;
     cursor: pointer;
     border-bottom: 3px solid transparent;
     transition: all 0.2s ease;
     position: relative;
     bottom: -2px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .admin-tab:hover {
-    color: rgba(255, 255, 255, 0.9);
-    background: rgba(255, 255, 255, 0.05);
+    color: #333;
+    background: #c0c0c0;
 }
 
 .admin-tab.active {
-    color: #fff;
-    border-bottom-color: #667eea;
+    color: #333;
+    border-bottom-color: #ff6b35;
+    font-weight: 700;
 }
 
 /* Content Area */
@@ -86,17 +97,25 @@
 }
 
 .admin-tab-content h2 {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     margin-bottom: 1.5rem;
-    font-weight: 600;
+    font-weight: 700;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 2px solid #ff6b35;
+    padding-bottom: 0.5rem;
+    display: inline-block;
 }
 
 .admin-tab-content h3 {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     margin-bottom: 1rem;
     margin-top: 2rem;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
+    font-weight: 700;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
 }
 
 /* Stats Grid */
@@ -108,20 +127,21 @@
 }
 
 .stat-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    background: #d0d0d0;
+    border: 2px solid #999;
+    border-radius: 0;
     padding: 1.5rem;
     display: flex;
     align-items: center;
     gap: 1rem;
     transition: all 0.2s ease;
+    position: relative;
 }
 
 .stat-card:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateY(-2px);
+    border-color: #ff6b35;
+    box-shadow: none;
+    transform: none;
 }
 
 .stat-icon {
@@ -133,21 +153,24 @@
 }
 
 .stat-label {
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.7rem;
+    color: #666;
     margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .stat-value {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     font-weight: 700;
+    color: #333;
 }
 
 /* Info Section */
 .info-section {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    background: #d0d0d0;
+    border: 2px solid #999;
+    border-radius: 0;
     padding: 1.5rem;
     margin-top: 2rem;
 }
@@ -159,23 +182,27 @@
 }
 
 .action-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
+    background: #ff6b35;
+    border: 2px solid #e55a2b;
     color: white;
     padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: 500;
+    border-radius: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 0.5rem;
     transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .action-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    background: #e55a2b;
+    transform: none;
+    box-shadow: none;
+    border-color: #d04a1b;
 }
 
 /* Scenes List */
@@ -186,9 +213,9 @@
 }
 
 .scene-item {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    background: #d0d0d0;
+    border: 2px solid #999;
+    border-radius: 0;
     padding: 1.5rem;
     display: flex;
     align-items: center;
@@ -197,7 +224,8 @@
 }
 
 .scene-item:hover {
-    background: rgba(255, 255, 255, 0.08);
+    border-color: #ff6b35;
+    box-shadow: none;
 }
 
 .scene-info {
@@ -205,14 +233,17 @@
 }
 
 .scene-name {
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 0.85rem;
+    font-weight: 700;
     margin-bottom: 0.25rem;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .scene-id {
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+    color: #666;
     font-family: 'Courier New', monospace;
 }
 
@@ -222,15 +253,17 @@
 
 .status-badge {
     padding: 0.4rem 0.8rem;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    font-weight: 600;
+    border-radius: 0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .status-badge.active {
-    background: rgba(76, 175, 80, 0.2);
-    color: #4caf50;
-    border: 1px solid rgba(76, 175, 80, 0.3);
+    background: #ff6b35;
+    color: #fff;
+    border: 2px solid #e55a2b;
 }
 
 .scene-actions {
@@ -239,18 +272,22 @@
 }
 
 .scene-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
+    background: #999;
+    border: 2px solid #666;
+    color: #fff;
     padding: 0.5rem 1rem;
-    border-radius: 6px;
-    font-size: 0.85rem;
+    border-radius: 0;
+    font-size: 0.7rem;
     cursor: pointer;
     transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
 }
 
 .scene-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: #888;
+    border-color: #555;
 }
 
 /* Settings */
@@ -259,9 +296,9 @@
 }
 
 .setting-item {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+    background: #d0d0d0;
+    border: 2px solid #999;
+    border-radius: 0;
     padding: 1rem;
     margin-bottom: 0.75rem;
 }
@@ -271,7 +308,11 @@
     align-items: center;
     gap: 0.75rem;
     cursor: pointer;
-    font-size: 0.95rem;
+    font-size: 0.8rem;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
 }
 
 .setting-item input[type="checkbox"] {
@@ -286,11 +327,12 @@
 }
 
 .setting-item input[type="number"] {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
+    background: #e8e8e8;
+    border: 2px solid #999;
+    color: #333;
     padding: 0.5rem;
-    border-radius: 6px;
+    border-radius: 0;
     width: 100px;
     margin-left: auto;
+    font-family: 'Courier New', monospace;
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { BarChart3, Palette, Zap, Gamepad2, Camera, RefreshCw, Settings } from 'lucide-react'
 import './Admin.css'
 
 /**
@@ -59,7 +60,7 @@ function OverviewTab() {
             
             <div className="stats-grid">
                 <div className="stat-card">
-                    <div className="stat-icon">📊</div>
+                    <div className="stat-icon"><BarChart3 size={32} strokeWidth={2} /></div>
                     <div className="stat-info">
                         <div className="stat-label">Total Scenes</div>
                         <div className="stat-value">7</div>
@@ -67,7 +68,7 @@ function OverviewTab() {
                 </div>
                 
                 <div className="stat-card">
-                    <div className="stat-icon">🎨</div>
+                    <div className="stat-icon"><Palette size={32} strokeWidth={2} /></div>
                     <div className="stat-info">
                         <div className="stat-label">3D Models</div>
                         <div className="stat-value">Active</div>
@@ -75,7 +76,7 @@ function OverviewTab() {
                 </div>
                 
                 <div className="stat-card">
-                    <div className="stat-icon">⚡</div>
+                    <div className="stat-icon"><Zap size={32} strokeWidth={2} /></div>
                     <div className="stat-info">
                         <div className="stat-label">Performance</div>
                         <div className="stat-value">Optimal</div>
@@ -83,7 +84,7 @@ function OverviewTab() {
                 </div>
                 
                 <div className="stat-card">
-                    <div className="stat-icon">🎮</div>
+                    <div className="stat-icon"><Gamepad2 size={32} strokeWidth={2} /></div>
                     <div className="stat-info">
                         <div className="stat-label">Controls</div>
                         <div className="stat-value">WASD + Mouse</div>
@@ -95,13 +96,13 @@ function OverviewTab() {
                 <h3>Quick Actions</h3>
                 <div className="action-buttons">
                     <button className="action-btn">
-                        <span>📸</span> Generate New Scene
+                        <Camera size={16} strokeWidth={2} /> Generate New Scene
                     </button>
                     <button className="action-btn">
-                        <span>🔄</span> Refresh All Scenes
+                        <RefreshCw size={16} strokeWidth={2} /> Refresh All Scenes
                     </button>
                     <button className="action-btn">
-                        <span>⚙️</span> Configure Settings
+                        <Settings size={16} strokeWidth={2} /> Configure Settings
                     </button>
                 </div>
             </div>
