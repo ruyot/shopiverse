@@ -6,15 +6,18 @@
  * - back: return to previous viewpoint
  * - left: view left side
  * - right: view right side
+ * 
+ * Each viewpoint has:
+ * - image: fallback 2D image
+ * - ply: 3D Gaussian splat model (set to null to use image fallback)
  */
 export const navigationConfig = {
     // Store entrance (outside)
-    // Set `ply` to a path like '/models/store_front.ply' when 3D model is ready
     storeFront: {
         id: 'storeFront',
         name: 'Store Entrance',
         image: '/store_front.png',
-        ply: null, // PLY 3D model path (null = use image fallback)
+        ply: '/store_front_gaussian.ply',
         connections: {
             forward: 'storeP1'
         }
@@ -25,6 +28,7 @@ export const navigationConfig = {
         id: 'storeP1',
         name: 'Inside - Position 1',
         image: '/store_p1.png',
+        ply: '/store_p1_gaussian.ply',
         connections: {
             back: 'storeFront',
             left: 'storeP1Left',
@@ -38,6 +42,7 @@ export const navigationConfig = {
         id: 'storeP1Left',
         name: 'Position 1 - Left View',
         image: '/store_p1_left.png',
+        ply: '/store_p1_left_gaussian.ply',
         connections: {
             back: 'storeP1'
         },
@@ -47,7 +52,6 @@ export const navigationConfig = {
             { id: 'jeans-3', x: 28, y: 65, label: 'Classic Denim' },
             { id: 'jeans-4', x: 39, y: 64, label: 'Classic Denim' }
         ]
-
     },
 
     // Right view from first position
@@ -55,6 +59,7 @@ export const navigationConfig = {
         id: 'storeP1Right',
         name: 'Position 1 - Right View',
         image: '/store_p1_right.png',
+        ply: '/store_p1_right_gaussian.ply',
         connections: {
             back: 'storeP1'
         },
@@ -70,6 +75,7 @@ export const navigationConfig = {
         id: 'storeP2',
         name: 'Inside - Position 2',
         image: '/store_p2.png',
+        ply: '/store_p2_gaussian.ply',
         connections: {
             back: 'storeP1',
             left: 'storeP2Left',
@@ -82,6 +88,7 @@ export const navigationConfig = {
         id: 'storeP2Left',
         name: 'Position 2 - Left View',
         image: '/store_p2_left.png',
+        ply: '/store_p2_left_gaussian.ply',
         connections: {
             back: 'storeP2'
         },
@@ -97,6 +104,7 @@ export const navigationConfig = {
         id: 'storeP2Right',
         name: 'Position 2 - Right View',
         image: '/store_p2_right.png',
+        ply: '/store_p2_right_gaussian.ply',
         connections: {
             back: 'storeP2'
         },
