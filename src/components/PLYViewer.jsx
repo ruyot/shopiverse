@@ -184,6 +184,58 @@ export function PLYViewer({ plyPath, isActive }) {
                 background: '#000'
             }}
         >
+            {/* Admin Icon - Top Left */}
+            {isActive && (
+                <a
+                    href="/admin.html"
+                    style={{
+                        position: 'absolute',
+                        top: '1.5rem',
+                        left: '1.5rem',
+                        width: '48px',
+                        height: '48px',
+                        background: 'rgba(0, 0, 0, 0.6)',
+                        backdropFilter: 'blur(10px)',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        textDecoration: 'none',
+                        border: '2px solid rgba(255, 255, 255, 0.2)',
+                        transition: 'all 0.2s ease',
+                        zIndex: 100,
+                        cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(0, 0, 0, 0.8)'
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)'
+                        e.currentTarget.style.transform = 'scale(1.05)'
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(0, 0, 0, 0.6)'
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'
+                        e.currentTarget.style.transform = 'scale(1)'
+                    }}
+                    title="Admin Panel"
+                >
+                    {/* Admin/Settings Icon SVG */}
+                    <svg 
+                        width="24" 
+                        height="24" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                    >
+                        <circle cx="12" cy="12" r="3" />
+                        <path d="M12 1v6m0 6v6m-6-6h6m6 0h-6M4.22 4.22l4.24 4.24m7.08 7.08l4.24 4.24M19.78 4.22l-4.24 4.24M9.46 14.54l-4.24 4.24" />
+                    </svg>
+                </a>
+            )}
+
             {!isLoaded && isActive && (
                 <div style={{
                     position: 'absolute',
