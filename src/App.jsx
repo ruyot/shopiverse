@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { navigationConfig, initialViewpoint } from './config/navigation'
 import { PLYViewer } from './components/PLYViewer'
 import { Terminal, X } from 'lucide-react'
+import { getSettings } from './config/settings'
+import { getSceneHotspots } from './config/hotspots'
 import './App.css'
 
 /**
@@ -16,11 +18,33 @@ function App() {
     const [history, setHistory] = useState([initialViewpoint])
     const [isTransitioning, setIsTransitioning] = useState(false)
     const [showCommands, setShowCommands] = useState(false)
+    const [showHotspots, setShowHotspots] = useState(() => getSettings().showHotspots)
+    const [currentHotspots, setCurrentHotspots] = useState([])
 
     const currentViewpoint = navigationConfig[currentId]
     const connections = currentViewpoint?.connections || {}
     const isStoreFront = currentId === 'storeFront'
     const hasPLY = !!currentViewpoint?.ply
+
+    // Load hotspots for current scene
+    useEffect(() => {
+        const hotspots = getSceneHotspots(currentId)
+        setCurrentHotspots(hotspots)
+    }, [currentId])
+
+    // Listen for hotspot changes
+    useEffect(() => {
+        const handleHotspotsChange = (event) => {
+            // Reload hotspots if they changed for current scene
+            if (!event.detail.sceneId || event.detail.sceneId === currentId) {
+                const hotspots = getSceneHotspots(currentId)
+                setCurrentHotspots(hotspots)
+            }
+        }
+
+        window.addEventListener('hotspotsChanged', handleHotspotsChange)
+        return () => window.removeEventListener('hotspotsChanged', handleHotspotsChange)
+    }, [currentId])
 
     // Navigate to a new viewpoint
     const navigateTo = useCallback((targetId) => {
@@ -34,6 +58,16 @@ function App() {
             setIsTransitioning(false)
         }, 200)
     }, [isTransitioning])
+
+    // Listen for settings changes from admin panel
+    useEffect(() => {
+        const handleSettingsChange = (event) => {
+            setShowHotspots(event.detail.showHotspots)
+        }
+
+        window.addEventListener('settingsChanged', handleSettingsChange)
+        return () => window.removeEventListener('settingsChanged', handleSettingsChange)
+    }, [])
 
     // Keyboard navigation
     useEffect(() => {
@@ -143,18 +177,25 @@ function App() {
             )}
 
             {/* Product hotspots */}
-            {currentViewpoint.hotspots?.map((hotspot) => (
-                <button
-                    key={hotspot.id}
-                    className="product-hotspot"
-                    style={{ left: `${hotspot.x}%`, top: `${hotspot.y}%` }}
-                    onClick={() => console.log('Clicked:', hotspot.label)}
-                    aria-label={hotspot.label}
-                >
-                    <span className="hotspot-ring" />
-                    <span className="hotspot-core" />
-                </button>
-            ))}
+            {showHotspots && currentHotspots.map((hotspot) => {
+                const settings = getSettings()
+                const isDisabled = settings.disabledHotspots[hotspot.id]
+                
+                if (isDisabled) return null
+                
+                return (
+                    <button
+                        key={hotspot.id}
+                        className="product-hotspot"
+                        style={{ left: `${hotspot.x}%`, top: `${hotspot.y}%` }}
+                        onClick={() => console.log('Clicked:', hotspot.label)}
+                        aria-label={hotspot.label}
+                    >
+                        <span className="hotspot-ring" />
+                        <span className="hotspot-core" />
+                    </button>
+                )
+            })}
 
             {/* Keyboard hints */}
             <div className="keyboard-hints">

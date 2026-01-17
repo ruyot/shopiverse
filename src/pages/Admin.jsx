@@ -1,5 +1,9 @@
-import { useState } from 'react'
-import { BarChart3, Palette, Zap, Gamepad2, Camera, RefreshCw, Settings, Terminal, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { BarChart3, Palette, Zap, Gamepad2, Camera, RefreshCw, Settings, Terminal, X, ChevronDown, ChevronRight } from 'lucide-react'
+import { getSettings, updateSettings } from '../config/settings'
+import { navigationConfig } from '../config/navigation'
+import { getSceneHotspots, saveSceneHotspots } from '../config/hotspots'
+import { HotspotEditor } from '../components/HotspotEditor'
 import './Admin.css'
 
 /**
@@ -191,57 +195,223 @@ function OverviewTab() {
 }
 
 function ScenesTab() {
-    const scenes = [
-        { id: 'storeFront', name: 'Store Entrance', status: 'Active' },
-        { id: 'storeP1', name: 'Inside - Position 1', status: 'Active' },
-        { id: 'storeP1Left', name: 'Inside - Left View', status: 'Active' },
-        { id: 'storeP1Right', name: 'Inside - Right View', status: 'Active' },
-        { id: 'storeP2', name: 'Inside - Position 2', status: 'Active' },
-        { id: 'storeP2Left', name: 'Inside - Left View 2', status: 'Active' },
-        { id: 'storeP2Right', name: 'Inside - Right View 2', status: 'Active' },
-    ]
+    const [settings, setSettings] = useState(() => getSettings())
+    const [expandedScenes, setExpandedScenes] = useState({})
+    const [editingScene, setEditingScene] = useState(null)
+    const [sceneHotspots, setSceneHotspots] = useState({})
+
+    const scenes = Object.values(navigationConfig)
+
+    // Load hotspots from storage on mount
+    useEffect(() => {
+        const hotspots = {}
+        scenes.forEach(scene => {
+            hotspots[scene.id] = getSceneHotspots(scene.id)
+        })
+        setSceneHotspots(hotspots)
+    }, [])
+
+    // Listen for hotspot changes
+    useEffect(() => {
+        const handleHotspotsChange = () => {
+            const hotspots = {}
+            scenes.forEach(scene => {
+                hotspots[scene.id] = getSceneHotspots(scene.id)
+            })
+            setSceneHotspots(hotspots)
+        }
+
+        window.addEventListener('hotspotsChanged', handleHotspotsChange)
+        return () => window.removeEventListener('hotspotsChanged', handleHotspotsChange)
+    }, [scenes])
+
+    const toggleScene = (sceneId) => {
+        setExpandedScenes(prev => ({
+            ...prev,
+            [sceneId]: !prev[sceneId]
+        }))
+    }
+
+    const toggleHotspot = (hotspotId) => {
+        const disabledHotspots = { ...settings.disabledHotspots }
+        if (disabledHotspots[hotspotId]) {
+            delete disabledHotspots[hotspotId]
+        } else {
+            disabledHotspots[hotspotId] = true
+        }
+        const updated = updateSettings({ disabledHotspots })
+        setSettings(updated)
+    }
+
+    const handleEditScene = (scene) => {
+        setEditingScene(scene)
+    }
+
+    const handleSaveHotspots = (hotspots) => {
+        // Save to hotspot storage
+        const success = saveSceneHotspots(editingScene.id, hotspots)
+        
+        if (success) {
+            console.log('Hotspots saved successfully')
+            // Update local state
+            setSceneHotspots(prev => ({
+                ...prev,
+                [editingScene.id]: hotspots
+            }))
+        } else {
+            console.error('Failed to save hotspots')
+        }
+        
+        setEditingScene(null)
+    }
+
+    const handleCloseEditor = () => {
+        setEditingScene(null)
+    }
 
     return (
         <div className="admin-tab-content">
             <h2>3D Scene Management</h2>
             
             <div className="scenes-list">
-                {scenes.map(scene => (
-                    <div key={scene.id} className="scene-item">
-                        <div className="scene-info">
-                            <div className="scene-name">{scene.name}</div>
-                            <div className="scene-id">{scene.id}</div>
+                {scenes.map(scene => {
+                    const hotspots = sceneHotspots[scene.id] || []
+                    const hasHotspots = hotspots.length > 0
+                    const isExpanded = expandedScenes[scene.id]
+                    
+                    // Create scene object with hotspots for editor
+                    const sceneWithHotspots = { ...scene, hotspots }
+                    
+                    return (
+                        <div key={scene.id} className="scene-item-wrapper">
+                            <div className="scene-item">
+                                <div className="scene-info">
+                                    <div className="scene-name">{scene.name}</div>
+                                    <div className="scene-id">{scene.id}</div>
+                                    {hasHotspots && (
+                                        <div className="scene-hotspot-count">
+                                            {hotspots.length} hotspot{hotspots.length !== 1 ? 's' : ''}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="scene-status">
+                                    <span className="status-badge active">Active</span>
+                                </div>
+                                <div className="scene-actions">
+                                    {hasHotspots && (
+                                        <button 
+                                            className="scene-btn"
+                                            onClick={() => toggleScene(scene.id)}
+                                        >
+                                            {isExpanded ? (
+                                                <ChevronDown size={14} strokeWidth={2} />
+                                            ) : (
+                                                <ChevronRight size={14} strokeWidth={2} />
+                                            )}
+                                            Hotspots
+                                        </button>
+                                    )}
+                                    <button 
+                                        className="scene-btn"
+                                        onClick={() => handleEditScene(sceneWithHotspots)}
+                                    >
+                                        Edit
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            {hasHotspots && isExpanded && (
+                                <div className="hotspots-dropdown">
+                                    <div className="hotspots-header">Product Hotspots</div>
+                                    {hotspots.map(hotspot => (
+                                        <div key={hotspot.id} className="hotspot-item">
+                                            <label className="hotspot-label">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={!settings.disabledHotspots[hotspot.id]}
+                                                    onChange={() => toggleHotspot(hotspot.id)}
+                                                />
+                                                <span className="hotspot-info">
+                                                    <span className="hotspot-name">{hotspot.label}</span>
+                                                    <span className="hotspot-id">{hotspot.id}</span>
+                                                    <span className="hotspot-coords">({hotspot.x}%, {hotspot.y}%)</span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                        <div className="scene-status">
-                            <span className="status-badge active">{scene.status}</span>
-                        </div>
-                        <div className="scene-actions">
-                            <button className="scene-btn">Edit</button>
-                            <button className="scene-btn">Regenerate</button>
-                        </div>
-                    </div>
-                ))}
+                    )
+                })}
             </div>
+
+            {editingScene && (
+                <HotspotEditor
+                    scene={editingScene}
+                    onSave={handleSaveHotspots}
+                    onClose={handleCloseEditor}
+                />
+            )}
         </div>
     )
 }
 
 function SettingsTab() {
+    const [settings, setSettings] = useState(() => getSettings())
+
+    const handleToggle = (key) => {
+        const updated = updateSettings({ [key]: !settings[key] })
+        setSettings(updated)
+    }
+
     return (
         <div className="admin-tab-content">
             <h2>Settings</h2>
             
             <div className="settings-section">
+                <h3>Display</h3>
+                <div className="setting-item">
+                    <label>
+                        <input 
+                            type="checkbox" 
+                            checked={settings.showHotspots}
+                            onChange={() => handleToggle('showHotspots')}
+                        />
+                        Show Product Hotspots
+                    </label>
+                </div>
+                <div className="setting-item">
+                    <label>
+                        <input 
+                            type="checkbox" 
+                            checked={settings.showNavigation}
+                            onChange={() => handleToggle('showNavigation')}
+                        />
+                        Show Navigation Arrows
+                    </label>
+                </div>
+            </div>
+
+            <div className="settings-section">
                 <h3>Rendering</h3>
                 <div className="setting-item">
                     <label>
-                        <input type="checkbox" defaultChecked />
+                        <input 
+                            type="checkbox" 
+                            checked={settings.enableAntialiasing}
+                            onChange={() => handleToggle('enableAntialiasing')}
+                        />
                         Enable Anti-aliasing
                     </label>
                 </div>
                 <div className="setting-item">
                     <label>
-                        <input type="checkbox" defaultChecked />
+                        <input 
+                            type="checkbox" 
+                            checked={settings.progressiveLoading}
+                            onChange={() => handleToggle('progressiveLoading')}
+                        />
                         Progressive Loading
                     </label>
                 </div>
