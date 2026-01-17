@@ -14,6 +14,7 @@ function App() {
 
     const currentViewpoint = navigationConfig[currentId]
     const connections = currentViewpoint?.connections || {}
+    const isStoreFront = currentId === 'storeFront'
 
     // Navigate to a new viewpoint
     const navigateTo = useCallback((targetId) => {
@@ -44,6 +45,10 @@ function App() {
                 case 'ArrowRight':
                     if (connections.right) navigateTo(connections.right)
                     break
+                case 'Enter':
+                case ' ':
+                    if (connections.forward) navigateTo(connections.forward)
+                    break
             }
         }
 
@@ -64,56 +69,70 @@ function App() {
                 <span>{currentViewpoint.name}</span>
             </header>
 
-            {/* Ground-level navigation arrows */}
-            <nav className="ground-nav">
-                {/* Forward arrow - center bottom */}
-                {connections.forward && (
-                    <button
-                        className="ground-arrow forward"
-                        onClick={() => navigateTo(connections.forward)}
-                        aria-label="Move forward"
-                    >
-                        <ChevronIcon />
-                    </button>
-                )}
+            {/* Store front entrance - pulsating dot */}
+            {isStoreFront && connections.forward && (
+                <button
+                    className="entrance-dot"
+                    onClick={() => navigateTo(connections.forward)}
+                    aria-label="Enter store"
+                >
+                    <span className="dot-ring" />
+                    <span className="dot-core" />
+                </button>
+            )}
 
-                {/* Back arrow - center, slightly above forward */}
-                {connections.back && (
-                    <button
-                        className="ground-arrow back"
-                        onClick={() => navigateTo(connections.back)}
-                        aria-label="Go back"
-                    >
-                        <ChevronIcon />
-                    </button>
-                )}
+            {/* Ground-level navigation arrows (not shown on store front) */}
+            {!isStoreFront && (
+                <nav className="ground-nav">
+                    {/* Forward arrow */}
+                    {connections.forward && (
+                        <button
+                            className="ground-arrow forward"
+                            onClick={() => navigateTo(connections.forward)}
+                            aria-label="Move forward"
+                        >
+                            <ChevronIcon />
+                        </button>
+                    )}
 
-                {/* Left arrow - ground level, left side */}
-                {connections.left && (
-                    <button
-                        className="ground-arrow left"
-                        onClick={() => navigateTo(connections.left)}
-                        aria-label="Look left"
-                    >
-                        <ChevronIcon />
-                    </button>
-                )}
+                    {/* Back arrow */}
+                    {connections.back && (
+                        <button
+                            className="ground-arrow back"
+                            onClick={() => navigateTo(connections.back)}
+                            aria-label="Go back"
+                        >
+                            <ChevronIcon />
+                        </button>
+                    )}
 
-                {/* Right arrow - ground level, right side */}
-                {connections.right && (
-                    <button
-                        className="ground-arrow right"
-                        onClick={() => navigateTo(connections.right)}
-                        aria-label="Look right"
-                    >
-                        <ChevronIcon />
-                    </button>
-                )}
-            </nav>
+                    {/* Left arrow */}
+                    {connections.left && (
+                        <button
+                            className="ground-arrow left"
+                            onClick={() => navigateTo(connections.left)}
+                            aria-label="Look left"
+                        >
+                            <ChevronIcon />
+                        </button>
+                    )}
+
+                    {/* Right arrow */}
+                    {connections.right && (
+                        <button
+                            className="ground-arrow right"
+                            onClick={() => navigateTo(connections.right)}
+                            aria-label="Look right"
+                        >
+                            <ChevronIcon />
+                        </button>
+                    )}
+                </nav>
+            )}
 
             {/* Keyboard hints */}
             <div className="keyboard-hints">
-                Use arrow keys to navigate
+                {isStoreFront ? 'Click the door to enter' : 'Use arrow keys to navigate'}
             </div>
         </div>
     )
@@ -123,7 +142,6 @@ function App() {
 function ChevronIcon() {
     return (
         <svg viewBox="0 0 36 36" fill="none">
-            {/* Chevron shape pointing up */}
             <path
                 d="M18 8 L30 22 L18 18 L6 22 Z"
                 fill="currentColor"

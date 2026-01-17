@@ -46,6 +46,62 @@ body {
     color: #fff;
 }
 
+/* Entrance dot - pulsating indicator on store door */
+.entrance-dot {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+}
+
+.dot-core {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+}
+
+.dot-ring {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    animation: pulse-ring 1.5s ease-out infinite;
+}
+
+@keyframes pulse-ring {
+    0% {
+        transform: scale(0.5);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1.3);
+        opacity: 0;
+    }
+}
+
+.entrance-dot:hover .dot-core {
+    transform: scale(1.2);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
+}
+
+.entrance-dot:hover .dot-ring {
+    animation-duration: 1s;
+}
+
 /* Ground-level navigation */
 .ground-nav {
     position: absolute;
@@ -82,7 +138,7 @@ body {
 
 /* Forward arrow - bottom center, pointing up */
 .ground-arrow.forward {
-    bottom: 12%;
+    bottom: 15%;
     left: 50%;
     transform: translateX(-50%);
 }
@@ -93,7 +149,7 @@ body {
 
 /* Back arrow - higher up, pointing down (rotated 180) */
 .ground-arrow.back {
-    bottom: 28%;
+    bottom: 5%;
     left: 50%;
     transform: translateX(-50%) rotate(180deg);
 }
@@ -104,7 +160,7 @@ body {
 
 /* Left arrow - bottom left, pointing left (rotated -90) */
 .ground-arrow.left {
-    bottom: 15%;
+    bottom: 8%;
     left: 30%;
     transform: rotate(-90deg);
 }
@@ -115,7 +171,7 @@ body {
 
 /* Right arrow - bottom right, pointing right (rotated 90) */
 .ground-arrow.right {
-    bottom: 15%;
+    bottom: 8%;
     right: 30%;
     transform: rotate(90deg);
 }
