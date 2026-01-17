@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { navigationConfig, initialViewpoint } from './config/navigation'
+import { PLYViewer } from './components/PLYViewer'
 import './App.css'
 
 /**
  * Shopiverse - Google Street View Style Store Navigation
  * 
- * Navigation arrows appear on the ground like Google Street View
+ * Supports both 2D images and 3D PLY models.
+ * When a viewpoint has a `ply` path, the 3D viewer is shown.
+ * Otherwise, falls back to the 2D image.
  */
 function App() {
     const [currentId, setCurrentId] = useState(initialViewpoint)
@@ -15,6 +18,7 @@ function App() {
     const currentViewpoint = navigationConfig[currentId]
     const connections = currentViewpoint?.connections || {}
     const isStoreFront = currentId === 'storeFront'
+    const hasPLY = !!currentViewpoint?.ply
 
     // Navigate to a new viewpoint
     const navigateTo = useCallback((targetId) => {
@@ -58,10 +62,16 @@ function App() {
 
     return (
         <div className="app">
-            {/* Background image */}
+            {/* 3D PLY Viewer (shown when PLY model is available) */}
+            <PLYViewer plyPath={currentViewpoint.ply} isActive={hasPLY} />
+
+            {/* Background image (shown when no PLY, or as fallback) */}
             <div
                 className={`viewpoint-image ${isTransitioning ? 'fading' : ''}`}
-                style={{ backgroundImage: `url(${currentViewpoint.image})` }}
+                style={{
+                    backgroundImage: `url(${currentViewpoint.image})`,
+                    opacity: hasPLY ? 0 : 1
+                }}
             />
 
             {/* Location indicator */}

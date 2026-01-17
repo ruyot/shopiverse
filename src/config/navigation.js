@@ -9,10 +9,12 @@
  */
 export const navigationConfig = {
     // Store entrance (outside)
+    // Set `ply` to a path like '/models/store_front.ply' when 3D model is ready
     storeFront: {
         id: 'storeFront',
         name: 'Store Entrance',
         image: '/store_front.png',
+        ply: null, // PLY 3D model path (null = use image fallback)
         connections: {
             forward: 'storeP1'
         }
