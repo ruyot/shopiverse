@@ -13,6 +13,7 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
     const viewerRef = useRef(null)
     const [progress, setProgress] = useState(0)
     const [isLoaded, setIsLoaded] = useState(false)
+    const [showContent, setShowContent] = useState(false) // Delayed visibility for arrows/hotspots
     const keysPressed = useRef(new Set())
 
     useEffect(() => {
@@ -20,6 +21,7 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
 
         setIsLoaded(false)
         setProgress(0)
+        setShowContent(false) // Hide content when loading new scene
 
         // Dispose previous viewer if exists
         if (viewerRef.current) {
@@ -72,6 +74,11 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
                 console.log('Splat loaded successfully')
                 setIsLoaded(true)
                 viewer.start()
+                
+                // Delay showing arrows/hotspots to match splat loading feel
+                setTimeout(() => {
+                    setShowContent(true)
+                }, 800) // 800ms delay after splat loads
 
                 // WASD keyboard controls (SHARP-ML pattern)
                 const animate = () => {

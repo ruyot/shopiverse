@@ -20,6 +20,7 @@ function App() {
     const [isTransitioning, setIsTransitioning] = useState(false)
     const [showCommands, setShowCommands] = useState(false)
     const [showHotspots, setShowHotspots] = useState(() => getSettings().showHotspots)
+    const [contentVisible, setContentVisible] = useState(() => !navigationConfig[initialViewpoint].ply) // Controls delayed visibility of arrows/hotspots
     const [currentHotspots, setCurrentHotspots] = useState([])
     const [selectedHotspot, setSelectedHotspot] = useState(null)
 
@@ -53,11 +54,17 @@ function App() {
         if (!targetId || isTransitioning) return
 
         setIsTransitioning(true)
+        setContentVisible(false) // Hide arrows/hotspots during transition
 
         setTimeout(() => {
             setCurrentId(targetId)
             setHistory(prev => [...prev, targetId])
             setIsTransitioning(false)
+            
+            // Delay showing content to match splat loading
+            setTimeout(() => {
+                setContentVisible(true)
+            }, 800)
         }, 200)
     }, [isTransitioning])
 
@@ -136,7 +143,10 @@ function App() {
 
             {/* Ground-level navigation arrows (not shown on store front) */}
             {!isStoreFront && (
-                <nav className="ground-nav">
+                <nav className="ground-nav" style={{
+                    opacity: contentVisible ? 1 : 0,
+                    transition: 'opacity 0.6s ease-in'
+                }}>
                     {/* Forward arrow */}
                     {connections.forward && (
                         <button
@@ -194,7 +204,12 @@ function App() {
                     <button
                         key={hotspot.id}
                         className="product-hotspot"
-                        style={{ left: `${hotspot.x}%`, top: `${hotspot.y}%` }}
+                        style={{ 
+                            left: `${hotspot.x}%`, 
+                            top: `${hotspot.y}%`,
+                            opacity: contentVisible ? 1 : 0,
+                            transition: 'opacity 0.6s ease-in'
+                        }}
                         onClick={() => setSelectedHotspot(hotspot)}
                         aria-label={hotspot.label}
                     >
