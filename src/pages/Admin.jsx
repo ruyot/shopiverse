@@ -5,6 +5,7 @@ import { navigationConfig } from '../config/navigation'
 import { getSceneHotspots, getSceneHotspotsAsync, saveSceneHotspots, exportHotspots, importHotspots } from '../config/hotspots'
 import { HotspotEditor } from '../components/HotspotEditor'
 import { generateImage, uploadFileToServer, uploadImageToServer } from '../utils/geminiImageGen'
+import { generatePlyFromImageBase64, uploadPlyToServer } from '../utils/sceneGeneration'
 import { generateInsights, isGeminiInsightsConfigured } from '../utils/geminiInsights'
 import './Admin.css'
 
@@ -405,6 +406,7 @@ function ScenesTab() {
     const [customScenes, setCustomScenes] = useState({}) // Store custom scenes created in admin
     const [customConnections, setCustomConnections] = useState([]) // Store custom connections
     const [sceneOverridesVersion, setSceneOverridesVersion] = useState(0)
+    const [addSceneWizard, setAddSceneWizard] = useState(null)
 
     const scenes = Object.values(navigationConfig).filter(scene => scene.id)
 
@@ -416,6 +418,15 @@ function ScenesTab() {
             return `(${hotspot.x}%, ${hotspot.y}%)`
         }
         return '(unplaced)'
+    }
+
+    const toSceneId = (name) => {
+        const base = name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_+|_+$/g, '')
+        const safeBase = base || 'scene'
+        return `customScene_${safeBase}_${Date.now()}`
     }
 
     useEffect(() => {
@@ -582,43 +593,144 @@ function ScenesTab() {
     }
 
     const handleAddNode = () => {
-        const newId = `customScene_${Date.now()}`
-        const sceneName = prompt('Enter scene name:') || 'New Scene'
-        
-        // Create new scene object
+        setAddSceneWizard({
+            step: 1,
+            name: '',
+            prompt: '',
+            imageDataUrl: '',
+            imagePath: '',
+            plyPath: '',
+            isGeneratingImage: false,
+            isGeneratingPly: false,
+            error: ''
+        })
+    }
+
+    const updateSceneWizard = (updates) => {
+        setAddSceneWizard(prev => (prev ? { ...prev, ...updates } : prev))
+    }
+
+    const handleWizardGenerateImage = async () => {
+        if (!addSceneWizard?.prompt?.trim()) {
+            updateSceneWizard({ error: 'Please enter a prompt for the scene image.' })
+            return
+        }
+
+        const apiKey = import.meta.env.VITE_GEMINI_IMAGE_API_KEY
+        if (!apiKey) {
+            updateSceneWizard({
+                error: 'Gemini Image API key not configured. Add VITE_GEMINI_IMAGE_API_KEY to your .env file.'
+            })
+            return
+        }
+
+        updateSceneWizard({ isGeneratingImage: true, error: '' })
+        try {
+            const imageDataUrl = await generateImage(addSceneWizard.prompt)
+            const filename = `scene_${Date.now()}`
+            const imagePath = await uploadImageToServer(imageDataUrl, filename)
+            updateSceneWizard({ imageDataUrl, imagePath })
+        } catch (error) {
+            updateSceneWizard({ error: error.message || 'Failed to generate scene image.' })
+        } finally {
+            updateSceneWizard({ isGeneratingImage: false })
+        }
+    }
+
+    const handleWizardGeneratePly = async () => {
+        if (!addSceneWizard?.imageDataUrl) {
+            updateSceneWizard({ error: 'Generate the scene image before creating the 3D model.' })
+            return
+        }
+
+        const imageBase64 = addSceneWizard.imageDataUrl.split(',')[1]
+        if (!imageBase64) {
+            updateSceneWizard({ error: 'Scene image payload is invalid.' })
+            return
+        }
+
+        updateSceneWizard({ isGeneratingPly: true, error: '' })
+        try {
+            const plyBase64 = await generatePlyFromImageBase64(imageBase64)
+            const filename = `${addSceneWizard.name || 'scene'}_${Date.now()}`
+            const plyPath = await uploadPlyToServer(plyBase64, filename)
+            updateSceneWizard({ plyPath })
+        } catch (error) {
+            updateSceneWizard({ error: error.message || 'Failed to generate the PLY model.' })
+        } finally {
+            updateSceneWizard({ isGeneratingPly: false })
+        }
+    }
+
+    const handleWizardCreateScene = async () => {
+        if (!addSceneWizard?.name?.trim()) {
+            updateSceneWizard({ error: 'Scene name is required.' })
+            return
+        }
+        if (!addSceneWizard.imagePath || !addSceneWizard.plyPath) {
+            updateSceneWizard({ error: 'Generate the image and PLY before creating the scene.' })
+            return
+        }
+
+        const newId = toSceneId(addSceneWizard.name)
         const newScene = {
             id: newId,
-            name: sceneName,
-            image: `/scenes/${newId}.png`,
-            ply: `/scenes/${newId}.ply`,
+            name: addSceneWizard.name.trim(),
+            image: addSceneWizard.imagePath,
+            ply: addSceneWizard.plyPath,
             connections: {}
         }
-        
-        // Add to custom scenes state
+
         setCustomScenes(prev => ({
             ...prev,
             [newId]: newScene
         }))
-        
-        // Add to graph at center position
+
         setNodePositions(prev => ({
             ...prev,
             [newId]: { x: 400, y: 300 }
         }))
-        
-        // Initialize empty hotspots
+
         setSceneHotspots(prev => ({
             ...prev,
             [newId]: []
         }))
-        
+
+        try {
+            await saveSceneOverride(newId, {
+                name: newScene.name,
+                image: newScene.image,
+                ply: newScene.ply
+            })
+        } catch (error) {
+            console.warn('Failed to persist new scene override:', error)
+        }
+
         console.log('✅ Created new scene:', newId)
-        
-        // TODO: Persist to files
-        // - Add to src/config/navigation.js navigationConfig object
-        // - Add to src/config/hotspots.js defaultHotspots object
-        // - Create/upload PLY file to /public/scenes/
-        // - Requires backend API or manual file update
+        setAddSceneWizard(null)
+    }
+
+    const handleWizardNext = () => {
+        if (!addSceneWizard) return
+        const { step, name, imagePath, plyPath } = addSceneWizard
+        if (step === 1 && !name.trim()) {
+            updateSceneWizard({ error: 'Scene name is required.' })
+            return
+        }
+        if (step === 2 && !imagePath) {
+            updateSceneWizard({ error: 'Generate the scene image before continuing.' })
+            return
+        }
+        if (step === 3 && !plyPath) {
+            updateSceneWizard({ error: 'Generate the 3D model before continuing.' })
+            return
+        }
+        updateSceneWizard({ step: step + 1, error: '' })
+    }
+
+    const handleWizardBack = () => {
+        if (!addSceneWizard) return
+        updateSceneWizard({ step: Math.max(1, addSceneWizard.step - 1), error: '' })
     }
 
     const handleDeleteNode = (nodeId) => {
@@ -844,7 +956,7 @@ function ScenesTab() {
                             <button 
                                 className="graph-tool-btn"
                                 onClick={handleAddNode}
-                                title="Add New Scene (TODO)"
+                                title="Add New Scene"
                             >
                                 <Plus size={14} strokeWidth={2} />
                                 Add Scene
@@ -1225,6 +1337,153 @@ function ScenesTab() {
                             >
                                 Disable Room
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add Scene Wizard Modal */}
+            {addSceneWizard && (
+                <div className="modal-overlay" onClick={() => setAddSceneWizard(null)}>
+                    <div className="modal-scene-creator" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>Add Scene Wizard</h3>
+                            <button className="modal-close" onClick={() => setAddSceneWizard(null)}>
+                                <X size={18} strokeWidth={2} />
+                            </button>
+                        </div>
+                        <div className="modal-content">
+                            <div className="wizard-steps">
+                                <span className={addSceneWizard.step >= 1 ? 'active' : ''}>1. Name</span>
+                                <span className={addSceneWizard.step >= 2 ? 'active' : ''}>2. Image</span>
+                                <span className={addSceneWizard.step >= 3 ? 'active' : ''}>3. PLY</span>
+                                <span className={addSceneWizard.step >= 4 ? 'active' : ''}>4. Create</span>
+                            </div>
+
+                            {addSceneWizard.error && (
+                                <div className="wizard-error">{addSceneWizard.error}</div>
+                            )}
+
+                            {addSceneWizard.step === 1 && (
+                                <div className="wizard-step">
+                                    <label>Scene Name</label>
+                                    <input
+                                        type="text"
+                                        className="modal-input"
+                                        value={addSceneWizard.name}
+                                        placeholder="e.g. Brand Lounge"
+                                        onChange={(e) => updateSceneWizard({ name: e.target.value })}
+                                    />
+                                    <p className="modal-help-text">
+                                        This name will show up in the room list and graph.
+                                    </p>
+                                </div>
+                            )}
+
+                            {addSceneWizard.step === 2 && (
+                                <div className="wizard-step">
+                                    <label>Generate Scene Image</label>
+                                    <textarea
+                                        className="ai-prompt-input"
+                                        rows="3"
+                                        value={addSceneWizard.prompt}
+                                        placeholder="Describe the scene to generate..."
+                                        onChange={(e) => updateSceneWizard({ prompt: e.target.value })}
+                                    />
+                                    <button
+                                        className="ai-generate-btn"
+                                        onClick={handleWizardGenerateImage}
+                                        disabled={addSceneWizard.isGeneratingImage}
+                                    >
+                                        {addSceneWizard.isGeneratingImage ? (
+                                            <>
+                                                <RefreshCw size={16} strokeWidth={2} className="spinning" />
+                                                Generating...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Zap size={16} strokeWidth={2} />
+                                                Generate Image
+                                            </>
+                                        )}
+                                    </button>
+                                    {addSceneWizard.imagePath && (
+                                        <div className="wizard-preview">
+                                            <img src={addSceneWizard.imagePath} alt="Generated scene" />
+                                            <div className="wizard-path">{addSceneWizard.imagePath}</div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {addSceneWizard.step === 3 && (
+                                <div className="wizard-step">
+                                    <label>Create 3D PLY Model (Sharp)</label>
+                                    <button
+                                        className="ai-generate-btn"
+                                        onClick={handleWizardGeneratePly}
+                                        disabled={addSceneWizard.isGeneratingPly}
+                                    >
+                                        {addSceneWizard.isGeneratingPly ? (
+                                            <>
+                                                <RefreshCw size={16} strokeWidth={2} className="spinning" />
+                                                Building PLY...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Zap size={16} strokeWidth={2} />
+                                                Generate PLY
+                                            </>
+                                        )}
+                                    </button>
+                                    {addSceneWizard.plyPath && (
+                                        <div className="wizard-path">{addSceneWizard.plyPath}</div>
+                                    )}
+                                    <p className="modal-help-text">
+                                        Requires the Modal-hosted Sharp API. Set `VITE_SHARP_API_URL` in your .env.
+                                    </p>
+                                </div>
+                            )}
+
+                            {addSceneWizard.step === 4 && (
+                                <div className="wizard-step">
+                                    <div className="modal-scene-info">
+                                        <strong>{addSceneWizard.name || 'New Scene'}</strong>
+                                        <span className="modal-scene-id">{addSceneWizard.imagePath}</span>
+                                        <span className="modal-scene-id">{addSceneWizard.plyPath}</span>
+                                    </div>
+                                    <p className="modal-help-text">
+                                        The scene will be added to the layout graph as a new room.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                        <div className="modal-footer">
+                            <button className="modal-btn cancel" onClick={() => setAddSceneWizard(null)}>
+                                Cancel
+                            </button>
+                            {addSceneWizard.step > 1 && (
+                                <button className="modal-btn" onClick={handleWizardBack}>
+                                    Back
+                                </button>
+                            )}
+                            {addSceneWizard.step < 4 && (
+                                <button
+                                    className="modal-btn confirm"
+                                    onClick={handleWizardNext}
+                                    disabled={
+                                        (addSceneWizard.step === 2 && addSceneWizard.isGeneratingImage) ||
+                                        (addSceneWizard.step === 3 && addSceneWizard.isGeneratingPly)
+                                    }
+                                >
+                                    Next
+                                </button>
+                            )}
+                            {addSceneWizard.step === 4 && (
+                                <button className="modal-btn confirm" onClick={handleWizardCreateScene}>
+                                    Create Room
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
