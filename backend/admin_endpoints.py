@@ -44,6 +44,7 @@ SCENES_FILE = os.path.join(DATA_DIR, 'scenes.json')
 
 # Path to public folder (for serving images via Vite)
 PUBLIC_DIR = os.path.join(os.path.dirname(__file__), '..', 'public')
+PLY_DIR = os.path.join(PUBLIC_DIR, 'scenes')
 
 # Default hotspots (fallback if no saved data)
 DEFAULT_HOTSPOTS = {
@@ -376,6 +377,32 @@ async def upload_file(file: UploadFile = File(...)):
             "success": True,
             "filename": file.filename,
             "path": f"/{file.filename}"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
+
+
+@app.post("/api/upload-ply")
+async def upload_ply(file: UploadFile = File(...)):
+    """
+    Upload a PLY file to public/scenes
+    Returns the path to use in navigation config
+    """
+    filename = file.filename or ''
+    if not filename.lower().endswith('.ply'):
+        raise HTTPException(status_code=400, detail="File must be a .ply")
+
+    os.makedirs(PLY_DIR, exist_ok=True)
+    file_path = os.path.join(PLY_DIR, filename)
+
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        return {
+            "success": True,
+            "filename": filename,
+            "path": f"/scenes/{filename}"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
