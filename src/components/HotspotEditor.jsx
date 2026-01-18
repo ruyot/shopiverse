@@ -208,6 +208,7 @@ export function HotspotEditor({ scene, onSave, onClose }) {
  */
 function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage }) {
     const [title, setTitle] = useState(hotspot.title || '')
+    const [price, setPrice] = useState(hotspot.price || '')
     const [uploading, setUploading] = useState(false)
     const [imageMode, setImageMode] = useState('upload') // 'upload' or 'generate'
     const [aiPrompt, setAiPrompt] = useState('')
@@ -215,7 +216,7 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
     const fileInputRef = useRef(null)
 
     const handleSave = () => {
-        onSave({ title })
+        onSave({ title, price })
     }
 
     const handleGenerateImage = async () => {
@@ -366,6 +367,17 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="Enter product title..."
+                            className="metadata-input"
+                        />
+                    </div>
+
+                    <div className="metadata-field">
+                        <label>Price</label>
+                        <input
+                            type="text"
+                            value={price}
+                            onChange={(e) => setPrice(e.target.value)}
+                            placeholder="$0.00"
                             className="metadata-input"
                         />
                     </div>

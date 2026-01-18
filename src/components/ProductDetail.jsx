@@ -63,6 +63,10 @@ export function ProductDetail({ hotspot, onClose }) {
                             {hotspot.title || hotspot.label || 'Untitled Product'}
                         </h2>
                         
+                        {hotspot.price && (
+                            <div className="product-price">{hotspot.price}</div>
+                        )}
+                        
                         {hotspot.label && hotspot.title !== hotspot.label && (
                             <p className="product-label">{hotspot.label}</p>
                         )}
