@@ -47,32 +47,33 @@ PUBLIC_DIR = os.path.join(os.path.dirname(__file__), '..', 'public')
 PLY_DIR = os.path.join(PUBLIC_DIR, 'scenes')
 
 # Default hotspots (fallback if no saved data)
+# Default hotspots (fallback if no saved data)
 DEFAULT_HOTSPOTS = {
-    "storeP1": [
-        {"id": "p1-1", "x": 65, "y": 50, "label": "Product 1", "title": "Product 1", "images": []},
-        {"id": "p1-2", "x": 35, "y": 50, "label": "Product 2", "title": "Product 2", "images": []},
-        {"id": "p1-3", "x": 50, "y": 50, "label": "Product 3", "title": "Product 3", "images": []}
-    ],
+    "storeP1": [],
     "storeP1Left": [
-        {"id": "p1l-1", "x": 38, "y": 42, "label": "Product 1", "title": "Product 1", "images": []},
-        {"id": "p1l-2", "x": 28, "y": 42, "label": "Product 2", "title": "Product 2", "images": []},
-        {"id": "p1l-3", "x": 28, "y": 65, "label": "Product 3", "title": "Product 3", "images": []},
-        {"id": "p1l-4", "x": 39, "y": 64, "label": "Product 4", "title": "Product 4", "images": []}
+        # Denim jeans collection
+        {"id": "item-l1-1", "position": [-1.26739, 0.32712, -4.65165], "label": "Denim Black", "title": "Denim Black", "images": ["/Jean1.png"]},
+        {"id": "item-l1-2", "position": [-0.83359, 0.30862, -5.07713], "label": "Denim Sky", "title": "Denim Sky", "images": ["/Jean2.png"]},
+        {"id": "item-l1-3", "position": [-1.20999, -0.46658, -4.60951], "label": "Denim Pink", "title": "Denim Pink", "images": ["/Jean3.png"]},
+        {"id": "item-l1-4", "position": [-0.75232, -0.41847, -5.02241], "label": "Denim Navy", "title": "Denim Navy", "images": ["/Jean4.png"]}
     ],
     "storeP1Right": [
-        {"id": "p1r-1", "x": 30, "y": 35, "label": "Product 1", "title": "Product 1", "images": []},
-        {"id": "p1r-2", "x": 50, "y": 45, "label": "Product 2", "title": "Product 2", "images": []},
-        {"id": "p1r-3", "x": 70, "y": 40, "label": "Product 3", "title": "Product 3", "images": []}
+        # User-verified coordinates from P key
+        {"id": "item-r1-1", "position": [3.78809, 0.51201, -10.14587], "label": "Wallet", "title": "Wallet", "images": ["/wallet-light-brown.jpg"]},
+        {"id": "item-r1-2", "position": [-1.79493, 0.18883, -9.57033], "label": "Product 2", "title": "Product 2", "images": []},
+        {"id": "item-r1-3", "position": [1.96905, 0.00492, -12.68238], "label": "Product 3", "title": "Product 3", "images": []}
     ],
     "storeP2Left": [
-        {"id": "p2l-1", "x": 21, "y": 45, "label": "Product 1", "title": "Product 1", "images": []},
-        {"id": "p2l-2", "x": 30, "y": 35, "label": "Product 2", "title": "Product 2", "images": []},
-        {"id": "p2l-3", "x": 80, "y": 55, "label": "Product 3", "title": "Product 3", "images": []}
+        # User-verified coordinates from P key
+        {"id": "item-l2-1", "position": [-1.67787, 0.24783, -4.99441], "label": "Wallet", "title": "Wallet", "images": ["/wallet-light-brown.jpg"]},
+        {"id": "item-l2-2", "position": [-1.37476, 0.17952, -6.40852], "label": "White Shirt", "title": "White Shirt", "images": ["/Shirt_p2l.png"]},
+        {"id": "item-l2-3", "position": [1.38637, -0.20432, -3.86578], "label": "White Sweater", "title": "White Sweater", "images": ["/Sweater_p2l.png"]}
     ],
     "storeP2Right": [
-        {"id": "p2r-1", "x": 39, "y": 50, "label": "Product 1", "title": "Product 1", "images": []},
-        {"id": "p2r-2", "x": 57, "y": 46, "label": "Product 2", "title": "Product 2", "images": []},
-        {"id": "p2r-3", "x": 68, "y": 42, "label": "Product 3", "title": "Product 3", "images": []}
+        # User-verified coordinates from P key
+        {"id": "item-r2-1", "position": [-1.12, -0.0, -8.96], "label": "Product 1", "title": "Product 1", "images": []},
+        {"id": "item-r2-2", "position": [1.1706, 0.23128, -19.74972], "label": "Product 2", "title": "Product 2", "images": []},
+        {"id": "item-r2-3", "position": [2.40998, 0.0527, -8.3369], "label": "Product 3", "title": "Product 3", "images": []}
     ]
 }
 

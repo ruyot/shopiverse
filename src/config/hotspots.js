@@ -3,7 +3,7 @@
  * Fetches hotspot data from backend API
  */
 
-const HOTSPOTS_KEY = 'shopiverse_hotspots_v7'
+const HOTSPOTS_KEY = 'shopiverse_hotspots_v10'
 const API_BASE = 'http://localhost:5001/api'
 
 // Default hotspots - all using 3D positions for orb rendering
@@ -11,11 +11,11 @@ const API_BASE = 'http://localhost:5001/api'
 const defaultHotspots = {
     storeP1: [], // No hotspots on main view
     storeP1Left: [
-        // User-verified coordinates from P key
-        { id: 'item-l1-1', position: [-1.26739, 0.32712, -4.65165], label: 'Product 1', title: 'Product 1', images: [] },
-        { id: 'item-l1-2', position: [-0.83359, 0.30862, -5.07713], label: 'Product 2', title: 'Product 2', images: [] },
-        { id: 'item-l1-3', position: [-1.20999, -0.46658, -4.60951], label: 'Product 3', title: 'Product 3', images: [] },
-        { id: 'item-l1-4', position: [-0.75232, -0.41847, -5.02241], label: 'Product 4', title: 'Product 4', images: [] }
+        // Denim jeans collection
+        { id: 'item-l1-1', position: [-1.26739, 0.32712, -4.65165], label: 'Denim Black', title: 'Denim Black', images: ['/Jean1.png'] },
+        { id: 'item-l1-2', position: [-0.83359, 0.30862, -5.07713], label: 'Denim Sky', title: 'Denim Sky', images: ['/Jean2.png'] },
+        { id: 'item-l1-3', position: [-1.20999, -0.46658, -4.60951], label: 'Denim Pink', title: 'Denim Pink', images: ['/Jean3.png'] },
+        { id: 'item-l1-4', position: [-0.75232, -0.41847, -5.02241], label: 'Denim Navy', title: 'Denim Navy', images: ['/Jean4.png'] }
     ],
     storeP1Right: [
         // User-verified coordinates from P key
@@ -25,15 +25,15 @@ const defaultHotspots = {
     ],
     storeP2Left: [
         // User-verified coordinates from P key
-        { id: 'item-l2-1', position: [-1.67787, 0.24783, -4.99441], label: 'Product 1', title: 'Product 1', images: [] },
-        { id: 'item-l2-2', position: [-1.37476, 0.17952, -6.40852], label: 'Product 2', title: 'Product 2', images: [] },
-        { id: 'item-l2-3', position: [1.38637, -0.20432, -3.86578], label: 'Product 3', title: 'Product 3', images: [] }
+        { id: 'item-l2-1', position: [-1.67787, 0.24783, -4.99441], label: 'Wallet', title: 'Wallet', images: ['/wallet-light-brown.jpg'] },
+        { id: 'item-l2-2', position: [-1.37476, 0.17952, -6.40852], label: 'White Shirt', title: 'White Shirt', images: ['/Shirt_p2l.png'] },
+        { id: 'item-l2-3', position: [1.38637, -0.20432, -3.86578], label: 'White Sweater', title: 'White Sweater', images: ['/Sweater_p2l.png'] }
     ],
     storeP2Right: [
         // User-verified coordinates from P key
-        { id: 'item-r2-1', position: [-1.12000, -0.00000, -8.96000], label: 'Product 1', title: 'Product 1', images: [] },
-        { id: 'item-r2-2', position: [1.17060, 0.23128, -19.74972], label: 'Product 2', title: 'Product 2', images: [] },
-        { id: 'item-r2-3', position: [2.40998, 0.05270, -8.33690], label: 'Product 3', title: 'Product 3', images: [] }
+        { id: 'item-r2-1', position: [-1.12, -0.0, -8.96], label: 'Product 1', title: 'Product 1', images: [] },
+        { id: 'item-r2-2', position: [1.1706, 0.23128, -19.74972], label: 'Product 2', title: 'Product 2', images: [] },
+        { id: 'item-r2-3', position: [2.40998, 0.0527, -8.3369], label: 'Product 3', title: 'Product 3', images: [] }
     ]
 }
 
