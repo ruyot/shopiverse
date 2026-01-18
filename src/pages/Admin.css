@@ -1539,3 +1539,161 @@ body {
 .command-list::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
+
+/* Insights Tab */
+.insights-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.time-range-select {
+    background: #d0d0d0;
+    border: 2px solid #999;
+    color: #333;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+.time-range-select:hover {
+    background: #c0c0c0;
+}
+
+.insights-section {
+    margin-bottom: 2.5rem;
+}
+
+.insights-section h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #999;
+}
+
+.metrics-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.metric-change {
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+.metric-change.positive {
+    color: #2ecc71;
+}
+
+.metric-change.negative {
+    color: #e74c3c;
+}
+
+.insights-table {
+    background: #d0d0d0;
+    border: 2px solid #999;
+    overflow: hidden;
+}
+
+.insights-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.insights-table thead {
+    background: #999;
+}
+
+.insights-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid #666;
+}
+
+.insights-table td {
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    color: #333;
+    border-bottom: 1px solid #b0b0b0;
+}
+
+.insights-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.insights-table tbody tr:hover {
+    background: #c0c0c0;
+}
+
+.product-name,
+.scene-name {
+    font-weight: 700;
+}
+
+.conversion-rate {
+    font-weight: 700;
+    color: #ff6b35;
+}
+
+.engagement-bar {
+    position: relative;
+    width: 100%;
+    height: 24px;
+    background: #b0b0b0;
+    border: 1px solid #999;
+    overflow: hidden;
+}
+
+.engagement-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b35 0%, #ffa500 100%);
+    transition: width 0.3s ease;
+}
+
+.engagement-text {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #333;
+    z-index: 1;
+}
+
+@media (max-width: 1200px) {
+    .metrics-grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .metrics-grid-4 {
+        grid-template-columns: 1fr;
+    }
+    
+    .insights-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
