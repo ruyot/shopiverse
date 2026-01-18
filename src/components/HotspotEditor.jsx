@@ -213,6 +213,7 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
     const [imageMode, setImageMode] = useState('upload') // 'upload' or 'generate'
     const [aiPrompt, setAiPrompt] = useState('')
     const [generating, setGenerating] = useState(false)
+    const [localImages, setLocalImages] = useState(hotspot.images || []) // Local state for immediate preview
     const fileInputRef = useRef(null)
 
     const handleSave = () => {
@@ -238,6 +239,9 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
             
             // Generate image using Gemini API
             const imageDataUrl = await generateImage(aiPrompt)
+            
+            // Add to local state for immediate preview
+            setLocalImages(prev => [...prev, imageDataUrl])
             
             // Add the generated image to the hotspot
             onAddImage(imageDataUrl)
@@ -277,6 +281,10 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
                     
                     // Store the file path (not base64)
                     console.log(`✅ Image ready: ${filename} - Save to public/uploads/`)
+                    
+                    // Add to local state for immediate preview
+                    setLocalImages(prev => [...prev, filepath])
+                    
                     onAddImage(filepath)
                 } catch (error) {
                     console.error('❌ Error processing image:', error)
@@ -385,12 +393,17 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
                     <div className="metadata-field">
                         <label>Product Images</label>
                         <div className="metadata-images-list">
-                            {(hotspot.images || []).map((img, index) => (
+                            {localImages.map((img, index) => (
                                 <div key={index} className="metadata-image-item">
                                     <img src={img} alt={`Product ${index + 1}`} className="metadata-image-preview" />
                                     <button
                                         className="metadata-image-remove"
-                                        onClick={() => onRemoveImage(index)}
+                                        onClick={() => {
+                                            // Remove from local state
+                                            setLocalImages(prev => prev.filter((_, i) => i !== index))
+                                            // Remove from parent state
+                                            onRemoveImage(index)
+                                        }}
                                     >
                                         <Trash2 size={14} strokeWidth={2} />
                                     </button>
@@ -434,33 +447,36 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
                             </div>
                         ) : (
                             <div className="ai-generate-section">
-                                <textarea
-                                    value={aiPrompt}
-                                    onChange={(e) => setAiPrompt(e.target.value)}
-                                    placeholder="Describe the image you want to generate... (e.g., 'Professional product photo of blue denim jeans on white background')"
-                                    className="ai-prompt-input"
-                                    rows="3"
-                                />
-                                <button 
-                                    className="ai-generate-btn"
-                                    onClick={handleGenerateImage}
-                                    disabled={generating || !aiPrompt.trim()}
-                                >
-                                    {generating ? (
-                                        <>
-                                            <RefreshCw size={16} strokeWidth={2} className="spinning" />
-                                            Generating...
-                                        </>
-                                    ) : (
-                                        <>
+                                {generating ? (
+                                    <div className="ai-loading-state">
+                                        <div className="ai-loading-spinner">
+                                            <RefreshCw size={32} strokeWidth={2} className="spinning" />
+                                        </div>
+                                        <p className="ai-loading-text">Generating your image...</p>
+                                        <p className="ai-loading-hint">This may take a few seconds</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <textarea
+                                            value={aiPrompt}
+                                            onChange={(e) => setAiPrompt(e.target.value)}
+                                            placeholder="Describe the image you want to generate... (e.g., 'Professional product photo of blue denim jeans on white background')"
+                                            className="ai-prompt-input"
+                                            rows="3"
+                                        />
+                                        <button 
+                                            className="ai-generate-btn"
+                                            onClick={handleGenerateImage}
+                                            disabled={!aiPrompt.trim()}
+                                        >
                                             <Zap size={16} strokeWidth={2} />
                                             Generate Image
-                                        </>
-                                    )}
-                                </button>
-                                <p className="ai-hint">
-                                    💡 Tip: Be specific about style, lighting, and background for best results
-                                </p>
+                                        </button>
+                                        <p className="ai-hint">
+                                            💡 Tip: Be specific about style, lighting, and background for best results
+                                        </p>
+                                    </>
+                                )}
                             </div>
                         )}
                     </div>
