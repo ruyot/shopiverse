@@ -7,6 +7,19 @@ dotenv.config()
 
 const app = express()
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+const MAX_UNIT_AMOUNT = 99999999 // Stripe max unit_amount in minor units
+
+const parsePriceToCents = (value) => {
+    const cleaned = String(value ?? '').replace(/[^0-9.-]/g, '')
+    const amount = Number.parseFloat(cleaned)
+    if (!Number.isFinite(amount)) return { error: 'Invalid price value.' }
+    const cents = Math.round(amount * 100)
+    if (!Number.isFinite(cents) || cents < 1) return { error: 'Price must be at least $0.01.' }
+    if (cents > MAX_UNIT_AMOUNT) {
+        return { error: 'Price exceeds Stripe limits. Please use a lower amount.' }
+    }
+    return { cents }
+}
 
 // Gemini configuration
 const GEMINI_API_KEY = process.env.VITE_GEMINI_IMAGE_API_KEY
@@ -19,19 +32,33 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }))
 app.post('/create-checkout-session', async (req, res) => {
     try {
         const { cartItems } = req.body
+        if (!Array.isArray(cartItems) || cartItems.length === 0) {
+            res.status(400).json({ error: 'Cart is empty.' })
+            return
+        }
 
         // Convert cart items to Stripe line items
-        const lineItems = cartItems.map(item => ({
-            price_data: {
-                currency: 'usd',
-                product_data: {
-                    name: item.title,
-                    images: item.image ? [item.image.startsWith('http') ? item.image : `http://localhost:5173${item.image}`] : [],
+        const lineItems = cartItems.map(item => {
+            const { cents, error } = parsePriceToCents(item.price)
+            if (error) {
+                throw new Error(`Invalid item price for "${item.title || 'Item'}": ${error}`)
+            }
+            const quantity = Number.parseInt(item.quantity, 10)
+            if (!Number.isFinite(quantity) || quantity < 1) {
+                throw new Error(`Invalid quantity for "${item.title || 'Item'}".`)
+            }
+            return {
+                price_data: {
+                    currency: 'usd',
+                    product_data: {
+                        name: item.title,
+                        images: item.image ? [item.image.startsWith('http') ? item.image : `http://localhost:5173${item.image}`] : [],
+                    },
+                    unit_amount: cents, // Convert to cents
                 },
-                unit_amount: Math.round(item.price * 100), // Convert to cents
-            },
-            quantity: item.quantity,
-        }))
+                quantity,
+            }
+        })
 
         // Create Checkout Session
         const session = await stripe.checkout.sessions.create({

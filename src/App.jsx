@@ -11,6 +11,8 @@ import { sendChatMessage, loadInventory } from './utils/backboardChat'
 import analytics from './utils/analytics'
 import './App.css'
 
+const SCENES_API_URL = 'http://localhost:5000/api/scenes'
+
 /**
  * Shopiverse - Google Street View Style Store Navigation
  * 
@@ -42,6 +44,7 @@ function App() {
     const [chatInput, setChatInput] = useState('')
     const [isChatLoading, setIsChatLoading] = useState(false)
     const [inventory, setInventory] = useState({})
+    const [sceneConfigVersion, setSceneConfigVersion] = useState(0)
     const chatMessagesEndRef = useRef(null)
 
     const currentViewpoint = navigationConfig[currentId]
@@ -49,10 +52,49 @@ function App() {
     const isStoreFront = currentId === 'storeFront'
     const hasPLY = !!currentViewpoint?.ply
 
+    const parsePrice = (value, fallback = 49.99) => {
+        const cleaned = String(value ?? '').replace(/[^0-9.-]/g, '')
+        const parsed = Number.parseFloat(cleaned)
+        return Number.isFinite(parsed) ? parsed : fallback
+    }
+
     // Save cart to localStorage whenever it changes
     useEffect(() => {
         localStorage.setItem('shopiverse_cart', JSON.stringify(cartItems))
     }, [cartItems])
+
+    // Load scene overrides from the Python server
+    useEffect(() => {
+        const loadSceneOverrides = async () => {
+            try {
+                const response = await fetch(SCENES_API_URL)
+                if (!response.ok) return
+                const overrides = await response.json()
+                let updated = false
+                Object.entries(overrides).forEach(([sceneId, override]) => {
+                    const scene = navigationConfig[sceneId]
+                    if (!scene || !override) return
+                    if (override.image && override.image !== scene.image) {
+                        scene.image = override.image
+                        updated = true
+                    }
+                    if (override.ply && override.ply !== scene.ply) {
+                        scene.ply = override.ply
+                        updated = true
+                    }
+                    if (override.name && override.name !== scene.name) {
+                        scene.name = override.name
+                        updated = true
+                    }
+                })
+                if (updated) setSceneConfigVersion(prev => prev + 1)
+            } catch (error) {
+                console.warn('Failed to load scene overrides:', error)
+            }
+        }
+
+        loadSceneOverrides()
+    }, [])
 
     // Track initial scene entry on mount (guard against StrictMode double-mount)
     const hasTrackedInitialScene = useRef(false)
@@ -81,7 +123,7 @@ function App() {
                     id: `cart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                     hotspotId: hotspot.id,
                     title: hotspot.title || hotspot.label || 'Product',
-                    price: hotspot.price ? parseFloat(hotspot.price.replace('$', '')) : 49.99,
+                    price: parsePrice(hotspot.price, 49.99),
                     quantity: 1,
                     image: hotspot.images && hotspot.images.length > 0 ? hotspot.images[0] : null
                 }
@@ -141,13 +183,20 @@ function App() {
                 body: JSON.stringify({ cartItems }),
             })
 
-            const { url } = await response.json()
+            const data = await response.json().catch(() => ({}))
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to create checkout session.')
+            }
+            const { url } = data
+            if (!url) {
+                throw new Error('Stripe session URL missing.')
+            }
 
             // Redirect to Stripe Checkout
             window.location.href = url
         } catch (error) {
             console.error('Checkout error:', error)
-            alert('Failed to start checkout. Please make sure the server is running.')
+            alert(error.message || 'Failed to start checkout. Please make sure the server is running.')
         }
     }, [cartItems])
 
@@ -394,7 +443,7 @@ function App() {
     }, [connections, navigateTo, hasPLY])
 
     return (
-        <div className="app">
+        <div className="app" data-scenes-version={sceneConfigVersion}>
             {/* 3D PLY Viewer (shown when PLY model is available) */}
             <PLYViewer
                 plyPath={currentViewpoint.ply}
