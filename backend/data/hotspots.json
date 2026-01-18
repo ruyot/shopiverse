@@ -67,7 +67,9 @@
       ],
       "label": "Cheeta Blouse",
       "title": "Cheeta Blouse",
-      "images": ["/cheeta.jpg"]
+      "images": [
+        "/cheeta.jpg"
+      ]
     },
     {
       "id": "item-r1-3",
@@ -161,7 +163,10 @@
       ],
       "label": "Shirts",
       "title": "Shirts",
-      "images": [],
+      "images": [
+        "/p2Right-Shirt-1.jpg",
+        "/p2Right-Shirt-2.jpg"
+      ],
       "price": "$54.99"
     },
     {
@@ -173,7 +178,9 @@
       ],
       "label": "Purses",
       "title": "Purses",
-      "images": [],
+      "images": [
+        "/p2Right-Purse-3.jpg"
+      ],
       "price": "$249.99"
     }
   ]
