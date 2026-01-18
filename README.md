@@ -283,36 +283,162 @@ const storeGraph = {
 
 ### Prerequisites
 
-- Node.js 18+ 
-- npm or yarn
-- Python 3.13+ (for ML-SHARP processing)
-- CUDA-capable GPU (for ML-SHARP inference)
+- **Node.js 18+** and npm/yarn
+- **Python 3.11+** (for ML-SHARP processing)
+- **CUDA-capable GPU** (optional, for local ML-SHARP inference)
+- **Modal account** (for serverless ML-SHARP deployment)
 - Regular photos of your store at key pivot points
 
-### Installation
+### Installation & Setup
+
+#### 1. Clone the Repository
 
 ```bash
-# Clone the repository
 git clone https://github.com/yourusername/shopiverse.git
 cd shopiverse
-
-# Install dependencies
-npm install
-
-# Set up environment variables
-cp .env.example .env
-
-# Start development server
-npm run dev
 ```
+
+#### 2. Install Frontend Dependencies
+
+```bash
+# Install Node.js dependencies
+npm install
+```
+
+#### 3. Install Python Backend Dependencies
+
+```bash
+# Navigate to backend directory
+cd backend
+
+# Create a virtual environment (recommended)
+python -m venv venv
+
+# Activate virtual environment
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Return to root directory
+cd ..
+```
+
+#### 4. Set Up Environment Variables
+
+Create a `.env` file in the root directory:
+
+```bash
+# Stripe Payment Integration
+STRIPE_SECRET_KEY=your_stripe_secret_key_here
+VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key_here
+
+# Gemini AI (for image generation and insights)
+VITE_GEMINI_IMAGE_API_KEY=your_gemini_api_key_here
+
+# Sharp API (for 3D scene generation)
+VITE_SHARP_API_URL=your_modal_sharp_api_url_here
+```
+
+**Getting API Keys:**
+- **Stripe**: Sign up at [stripe.com](https://stripe.com) and get your API keys from the dashboard
+- **Gemini**: Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+- **Sharp API**: Deploy the Modal API (see step 5) and use the generated URL
+
+#### 5. Deploy ML-SHARP API to Modal (Optional but Recommended)
+
+```bash
+# Install Modal CLI
+pip install modal
+
+# Authenticate with Modal
+modal token new
+
+# Deploy the Sharp API
+cd backend
+modal deploy sharp_api.py
+
+# Copy the generated API URL and add it to your .env file as VITE_SHARP_API_URL
+```
+
+**Note**: The Sharp API runs on Modal's serverless infrastructure with GPU support. This is the recommended approach as it doesn't require a local GPU.
+
+#### 6. Start the Development Servers
+
+You'll need to run three servers simultaneously:
+
+**Terminal 1 - Frontend (Vite + React):**
+```bash
+npm run dev
+# Runs on http://localhost:5173
+```
+
+**Terminal 2 - Node.js Backend (Express):**
+```bash
+node server.js
+# Runs on http://localhost:3001
+```
+
+**Terminal 3 - Python Analytics Backend (Flask):**
+```bash
+cd backend
+python app.py
+# Runs on http://localhost:5000
+```
+
+#### 7. Access the Application
+
+- **Store Frontend**: http://localhost:5173
+- **Admin Dashboard**: http://localhost:5173/admin
+- **Analytics API**: http://localhost:5000/api/analytics
 
 ### Creating Your Virtual Store
 
 1. **Capture Photos** — Take photos at strategic pivot points in your store
-2. **Upload Images** — Use the admin panel to upload panoramic images
-3. **Define Layout** — Connect pivot points and set navigation arrows
-4. **Add Products** — Create product hotspots on relevant images
-5. **Publish** — Make your virtual store live!
+2. **Generate 3D Scenes** — Use the admin panel to generate 3D Gaussian splats from your photos
+3. **Define Layout** — Connect pivot points and set navigation arrows in the scene graph
+4. **Add Products** — Create product hotspots on relevant scenes using the hotspot editor
+5. **Test Navigation** — Walk through your virtual store to ensure smooth transitions
+6. **Publish** — Make your virtual store live!
+
+### Quick Start Commands
+
+```bash
+# Install everything
+npm install
+cd backend && pip install -r requirements.txt && cd ..
+
+# Run all servers (use separate terminals)
+npm run dev                    # Frontend
+node server.js                 # Node backend
+cd backend && python app.py    # Python backend
+
+# Deploy Sharp API to Modal
+cd backend && modal deploy sharp_api.py
+```
+
+### Troubleshooting
+
+**Issue: "PayloadTooLargeError" when uploading images**
+- The body size limit has been set to 50mb in server.js
+- If you still encounter issues, check your reverse proxy settings
+
+**Issue: "Gemini API error: 404"**
+- Verify your `VITE_GEMINI_IMAGE_API_KEY` is correct in `.env`
+- Check that you're using the correct API endpoint
+
+**Issue: Sharp API not responding**
+- Ensure Modal deployment was successful
+- Check the Modal dashboard for logs
+- Verify `VITE_SHARP_API_URL` is set correctly
+
+**Issue: Analytics not tracking**
+- Ensure the Python backend is running on port 5000
+- Check browser console for CORS errors
+- Verify the analytics CSV file has write permissions
 
 ---
 
