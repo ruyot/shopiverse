@@ -8,6 +8,8 @@ import { generateImage, uploadFileToServer, uploadImageToServer } from '../utils
 import { generateInsights, isGeminiInsightsConfigured } from '../utils/geminiInsights'
 import './Admin.css'
 
+const SCENES_API_URL = 'http://localhost:5000/api/scenes'
+
 /**
  * Admin Page
  * Control panel for managing the 3D store experience
@@ -402,6 +404,7 @@ function ScenesTab() {
     const [connectingFrom, setConnectingFrom] = useState(null)
     const [customScenes, setCustomScenes] = useState({}) // Store custom scenes created in admin
     const [customConnections, setCustomConnections] = useState([]) // Store custom connections
+    const [sceneOverridesVersion, setSceneOverridesVersion] = useState(0)
 
     const scenes = Object.values(navigationConfig).filter(scene => scene.id)
 
@@ -430,6 +433,51 @@ function ScenesTab() {
         window.addEventListener('hotspotsChanged', handleHotspotsChanged)
         return () => window.removeEventListener('hotspotsChanged', handleHotspotsChanged)
     }, [scenes.length])
+
+    useEffect(() => {
+        const loadSceneOverrides = async () => {
+            try {
+                const response = await fetch(SCENES_API_URL)
+                if (!response.ok) return
+                const overrides = await response.json()
+                let updated = false
+                Object.entries(overrides).forEach(([sceneId, override]) => {
+                    const scene = navigationConfig[sceneId]
+                    if (!scene || !override) return
+                    if (override.image && override.image !== scene.image) {
+                        scene.image = override.image
+                        updated = true
+                    }
+                    if (override.ply && override.ply !== scene.ply) {
+                        scene.ply = override.ply
+                        updated = true
+                    }
+                    if (override.name && override.name !== scene.name) {
+                        scene.name = override.name
+                        updated = true
+                    }
+                })
+                if (updated) setSceneOverridesVersion(prev => prev + 1)
+            } catch (error) {
+                console.warn('Failed to load scene overrides:', error)
+            }
+        }
+
+        loadSceneOverrides()
+    }, [])
+
+    const saveSceneOverride = async (sceneId, override) => {
+        const response = await fetch(`${SCENES_API_URL}/${sceneId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(override)
+        })
+        if (!response.ok) {
+            const errorText = await response.text()
+            throw new Error(`Failed to save scene override: ${response.status} - ${errorText}`)
+        }
+        setSceneOverridesVersion(prev => prev + 1)
+    }
 
     const toggleScene = (sceneId) => {
         setExpandedScenes(prev => ({
@@ -768,7 +816,7 @@ function ScenesTab() {
     }
 
     return (
-        <div className="admin-tab-content">
+        <div className="admin-tab-content" data-scenes-version={sceneOverridesVersion}>
             <div className="scenes-header">
                 <h2>3D Scene Management</h2>
                 <div className="scenes-actions">
@@ -1188,12 +1236,13 @@ function ScenesTab() {
                 const [bgPrompt, setBgPrompt] = useState('')
                 const [bgGenerating, setBgGenerating] = useState(false)
                 
-                const applyBackgroundPath = (path) => {
+                const applyBackgroundPath = async (path) => {
                     if (!path) return
                     if (navigationConfig[backgroundChanger.id]) {
                         navigationConfig[backgroundChanger.id].image = path
                     }
                     setBackgroundChanger(prev => prev ? { ...prev, image: path } : prev)
+                    await saveSceneOverride(backgroundChanger.id, { image: path })
                 }
 
                 const handleGenerateBg = async () => {
@@ -1218,7 +1267,7 @@ function ScenesTab() {
 
                         const filename = `${backgroundChanger.id}_bg_${Date.now()}`
                         const uploadedPath = await uploadImageToServer(imageDataUrl, filename)
-                        applyBackgroundPath(uploadedPath)
+                        await applyBackgroundPath(uploadedPath)
                         
                         console.log('✅ Background generated and uploaded:', uploadedPath)
                         alert(`Background generated and uploaded.\n\nPath: ${uploadedPath}\n\nNote: This updates the in-memory config only. Commit navigation config if you want this persisted.`)
@@ -1342,7 +1391,7 @@ function ScenesTab() {
                                                     const file = fileInput.files[0]
                                                     const filename = `${backgroundChanger.id}_bg_${Date.now()}`
                                                     const uploadedPath = await uploadFileToServer(file, filename)
-                                                    applyBackgroundPath(uploadedPath)
+                                                    await applyBackgroundPath(uploadedPath)
                                                     console.log('✅ Background uploaded:', uploadedPath)
                                                 } catch (error) {
                                                     console.error('❌ Error uploading background:', error)

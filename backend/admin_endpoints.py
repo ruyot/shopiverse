@@ -40,6 +40,7 @@ app.add_middleware(
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 HOTSPOTS_FILE = os.path.join(DATA_DIR, 'hotspots.json')
 ANALYTICS_FILE = os.path.join(DATA_DIR, 'analytics.csv')
+SCENES_FILE = os.path.join(DATA_DIR, 'scenes.json')
 
 # Path to public folder (for serving images via Vite)
 PUBLIC_DIR = os.path.join(os.path.dirname(__file__), '..', 'public')
@@ -111,6 +112,12 @@ class AnalyticsEvent(BaseModel):
     messageText: Optional[str] = None
 
 
+class SceneUpdate(BaseModel):
+    image: Optional[str] = None
+    ply: Optional[str] = None
+    name: Optional[str] = None
+
+
 def ensure_data_dir():
     """Create data directory if it doesn't exist"""
     if not os.path.exists(DATA_DIR):
@@ -134,6 +141,25 @@ def save_hotspots(hotspots):
     ensure_data_dir()
     with open(HOTSPOTS_FILE, 'w') as f:
         json.dump(hotspots, f, indent=2)
+
+
+def load_scene_overrides():
+    """Load scene overrides from file"""
+    ensure_data_dir()
+    if os.path.exists(SCENES_FILE):
+        try:
+            with open(SCENES_FILE, 'r') as f:
+                return json.load(f)
+        except (json.JSONDecodeError, IOError):
+            return {}
+    return {}
+
+
+def save_scene_overrides(overrides):
+    """Save scene overrides to file"""
+    ensure_data_dir()
+    with open(SCENES_FILE, 'w') as f:
+        json.dump(overrides, f, indent=2)
 
 
 # ============== API ENDPOINTS ==============
@@ -284,6 +310,46 @@ def reset_hotspots():
     """Reset all hotspots to defaults"""
     save_hotspots(DEFAULT_HOTSPOTS)
     return {"success": True, "message": "Hotspots reset to defaults"}
+
+
+# ============== SCENE OVERRIDES ==============
+
+@app.get("/api/scenes")
+def get_scene_overrides():
+    """Get all scene overrides"""
+    return load_scene_overrides()
+
+
+@app.get("/api/scenes/{scene_id}")
+def get_scene_override(scene_id: str):
+    """Get a specific scene override"""
+    overrides = load_scene_overrides()
+    return overrides.get(scene_id, {})
+
+
+@app.put("/api/scenes/{scene_id}")
+def update_scene_override(scene_id: str, data: SceneUpdate):
+    """Update a scene override (image/ply/name)"""
+    overrides = load_scene_overrides()
+    current = overrides.get(scene_id, {})
+    payload = data.dict(exclude_unset=True)
+    for key, value in payload.items():
+        if value is None:
+            continue
+        current[key] = value
+    overrides[scene_id] = current
+    save_scene_overrides(overrides)
+    return {"success": True, "scene_id": scene_id, "override": current}
+
+
+@app.delete("/api/scenes/{scene_id}")
+def delete_scene_override(scene_id: str):
+    """Delete a scene override"""
+    overrides = load_scene_overrides()
+    if scene_id in overrides:
+        del overrides[scene_id]
+        save_scene_overrides(overrides)
+    return {"success": True, "scene_id": scene_id}
 
 
 # ============== FILE UPLOAD ENDPOINTS ==============
