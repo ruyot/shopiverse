@@ -31,12 +31,29 @@ export function PLYViewer({ plyPath, isActive }) {
         const viewer = new GaussianSplats3D.Viewer({
             'rootElement': containerRef.current,
             'cameraUp': [0, 1, 0],
-            'initialCameraPosition': [0, 0, 0.1], // Extremely close frame
-            'initialCameraLookAt': [0, 0, 0],
+            'initialCameraPosition': [0, 0, -0.8], // Start deeper inside (past pillars)
+            'initialCameraLookAt': [0, 0, -1], // Look further ahead
             'halfPrecisionCovariancesOnGPU': true,
             'antialiased': true,
             'alphaRemovalThreshold': 2,
         })
+
+        // Restrict rotation to keep user focused on the scene and avoid black voids
+        if (viewer.controls) {
+            // Horizontal rotation (Azimuth): Limit to +/- 20 degrees
+            viewer.controls.minAzimuthAngle = -Math.PI / 9
+            viewer.controls.maxAzimuthAngle = Math.PI / 9
+
+            // Vertical rotation (Polar): Limit to middle band (80 to 100 degrees - roughly +/- 10 degrees from horizontal)
+            // 90 deg = Math.PI / 2
+            // 20 deg = Math.PI / 9
+            viewer.controls.minPolarAngle = (Math.PI / 2) - (Math.PI / 9)
+            viewer.controls.maxPolarAngle = (Math.PI / 2) + (Math.PI / 9)
+
+            // Smooth out the controls
+            viewer.controls.enableDamping = true
+            viewer.controls.dampingFactor = 0.05
+        }
 
         viewerRef.current = viewer
 
