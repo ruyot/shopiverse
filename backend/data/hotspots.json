@@ -54,9 +54,9 @@
         0.51201,
         -10.14587
       ],
-      "label": "Product 1",
-      "title": "Product 1",
-      "images": []
+      "label": "brown cardigan",
+      "title": "brown cardigan",
+      "images": ["/card.png"]
     },
     {
       "id": "item-r1-2",
@@ -65,7 +65,7 @@
         0.18883,
         -9.57033
       ],
-      "label": "Cheeta Blouse ",
+      "label": "Cheeta Blouse",
       "title": "Cheeta Blouse",
       "images": ["/cheeta.jpg"]
     },
@@ -76,9 +76,9 @@
         0.00492,
         -12.68238
       ],
-      "label": "Product 3",
-      "title": "Product 3",
-      "images": []
+      "label": "Green Army Jacke",
+      "title": "Green Army Jacke",
+      "images": ["/jacket.jpg"]
     },
     {
       "id": "hotspot-1768733095769",
