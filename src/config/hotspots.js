@@ -1,6 +1,6 @@
 /**
  * Hotspot Storage Manager
- * Manages hotspot data separately from navigation config for persistence
+ * Manages hotspot data with localStorage persistence
  */
 
 const HOTSPOTS_KEY = 'shopiverse_hotspots'
@@ -39,7 +39,6 @@ export const getAllHotspots = () => {
         if (stored) {
             return JSON.parse(stored)
         }
-        // Initialize with defaults if not found
         localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(defaultHotspots))
         return defaultHotspots
     } catch (error) {
@@ -65,11 +64,9 @@ export const saveSceneHotspots = (sceneId, hotspots) => {
         allHotspots[sceneId] = hotspots
         localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(allHotspots))
         
-        // Dispatch event to notify other components
         window.dispatchEvent(new CustomEvent('hotspotsChanged', { 
             detail: { sceneId, hotspots } 
         }))
-        
         return true
     } catch (error) {
         console.error('Error saving hotspots:', error)
@@ -109,12 +106,9 @@ export const importHotspots = (jsonData) => {
     try {
         const hotspots = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData
         localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(hotspots))
-        
-        // Notify all components
         window.dispatchEvent(new CustomEvent('hotspotsChanged', { 
             detail: { imported: true } 
         }))
-        
         return true
     } catch (error) {
         console.error('Error importing hotspots:', error)
