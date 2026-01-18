@@ -191,12 +191,12 @@ function App() {
                 </nav>
             )}
 
-            {/* Product hotspots (2D - Rendering even in 3D mode as requested) */}
-            {showHotspots && currentHotspots.map((hotspot) => {
+            {/* Product hotspots - Only for 2D image scenes (3D scenes use mesh hotspots in PLYViewer) */}
+            {showHotspots && !hasPLY && currentHotspots.map((hotspot) => {
                 const settings = getSettings()
                 const isDisabled = settings.disabledHotspots[hotspot.id]
 
-                if (isDisabled) return null
+                if (isDisabled || !hotspot.x || !hotspot.y) return null
 
                 return (
                     <button

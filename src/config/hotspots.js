@@ -3,7 +3,7 @@
  * Manages hotspot data with localStorage persistence
  */
 
-const HOTSPOTS_KEY = 'shopiverse_hotspots_v2'
+const HOTSPOTS_KEY = 'shopiverse_hotspots_v5'
 
 // Default hotspots from original navigation config
 const defaultHotspots = {
@@ -49,9 +49,8 @@ const defaultHotspots = {
         { id: 'item-r1-3', x: 70, y: 40, label: 'Product 3', title: 'Product 3', images: [] }
     ],
     storeP2Left: [
-        { id: 'item-l2-1', x: 21, y: 45, label: 'Wallet', title: 'Wallet', images: ['/wallet-black.png', '/wallet-dark-brown.jpg', '/wallet-grey.jpg', '/wallet-light-brown.jpg'] },
-        { id: 'item-l2-2', x: 30, y: 35, label: 'Product 2', title: 'Product 2', images: [] },
-        { id: 'item-l2-3', x: 80, y: 55, label: 'Product 3', title: 'Product 3', images: [] }
+        // User-verified coordinate from P key
+        { id: 'item-l2-1', position: [-1.59639, 0.25532, -4.51801], label: 'Wallet', title: 'Wallet', images: ['/wallet-black.png', '/wallet-dark-brown.jpg', '/wallet-grey.jpg', '/wallet-light-brown.jpg'] }
     ],
     storeP2Right: [
         { id: 'item-r2-1', x: 39, y: 50, label: 'Wallet', title: 'Wallet', images: ['/wallet-black.png', '/wallet-dark-brown.jpg', '/wallet-grey.jpg', '/wallet-light-brown.jpg'] },
@@ -72,7 +71,6 @@ export const getAllHotspots = () => {
         localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(defaultHotspots))
         return defaultHotspots
     } catch (error) {
-        console.error('Error loading hotspots:', error)
         return defaultHotspots
     }
 }
@@ -93,9 +91,9 @@ export const saveSceneHotspots = (sceneId, hotspots) => {
         const allHotspots = getAllHotspots()
         allHotspots[sceneId] = hotspots
         localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(allHotspots))
-        
-        window.dispatchEvent(new CustomEvent('hotspotsChanged', { 
-            detail: { sceneId, hotspots } 
+
+        window.dispatchEvent(new CustomEvent('hotspotsChanged', {
+            detail: { sceneId, hotspots }
         }))
         return true
     } catch (error) {

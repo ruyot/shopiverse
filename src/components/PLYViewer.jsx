@@ -13,7 +13,7 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
     const viewerRef = useRef(null)
     const [progress, setProgress] = useState(0)
     const [isLoaded, setIsLoaded] = useState(false)
-    const [showContent, setShowContent] = useState(false) // Delayed visibility for arrows/hotspots
+    const [showContent, setShowContent] = useState(false)
     const keysPressed = useRef(new Set())
 
     useEffect(() => {
@@ -71,9 +71,61 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
             'splatAlphaRemovalThreshold': 5 // Hide very transparent splats
         })
             .then(() => {
-                console.log('Splat loaded successfully')
                 setIsLoaded(true)
                 viewer.start()
+
+                // Create 3D hotspot spheres
+                const hotspotMeshes = []
+
+                // Find the Three.js scene - try different property names
+                const scene = viewer.threeScene || viewer.scene || viewer.splatMesh?.parent
+
+                if (hotspots && hotspots.length > 0 && scene) {
+                    const sphereGeometry = new THREE.SphereGeometry(0.25, 16, 16)
+                    const sphereMaterial = new THREE.MeshBasicMaterial({
+                        color: 0xff0000,
+                        transparent: true,
+                        opacity: 0.9,
+                        depthTest: false, // Always render on top
+                        depthWrite: false
+                    })
+
+                    hotspots.forEach(hotspot => {
+                        if (!hotspot.position) return
+
+                        const mesh = new THREE.Mesh(sphereGeometry, sphereMaterial.clone())
+                        mesh.position.set(...hotspot.position)
+                        mesh.userData = { hotspot }
+                        mesh.renderOrder = 999 // Render after everything else
+
+                        scene.add(mesh)
+                        hotspotMeshes.push(mesh)
+                    })
+                }
+
+                // Raycaster for click detection
+                const raycaster = new THREE.Raycaster()
+                const mouse = new THREE.Vector2()
+
+                const handleClick = (event) => {
+                    if (!viewer.camera || hotspotMeshes.length === 0) return
+
+                    const rect = containerRef.current.getBoundingClientRect()
+                    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+                    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
+
+                    raycaster.setFromCamera(mouse, viewer.camera)
+                    const intersects = raycaster.intersectObjects(hotspotMeshes)
+
+                    if (intersects.length > 0) {
+                        const clickedHotspot = intersects[0].object.userData.hotspot
+                        if (onHotspotClick) {
+                            onHotspotClick(clickedHotspot)
+                        }
+                    }
+                }
+
+                containerRef.current.addEventListener('click', handleClick)
 
                 // Delay showing arrows/hotspots to match splat loading feel
                 setTimeout(() => {
@@ -215,30 +267,7 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
                 overflow: 'hidden' // Ensure hotspots don't spill out
             }}
         >
-            {/* 3D Hotspots */}
-            {isActive && hotspots.map(hotspot => {
-                if (!hotspot.position) return null
-                return (
-                    <button
-                        key={hotspot.id}
-                        ref={el => hotspotRefs.current[hotspot.id] = el}
-                        className="product-hotspot"
-                        onClick={() => onHotspotClick && onHotspotClick(hotspot)}
-                        aria-label={hotspot.label}
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            // transform set by animation loop
-                            willChange: 'transform',
-                            zIndex: 10 // Above viewer canvas
-                        }}
-                    >
-                        <span className="hotspot-ring" />
-                        <span className="hotspot-core" />
-                    </button>
-                )
-            })}
+            {/* 3D Hotspots are now rendered as Three.js meshes in the scene */}
 
             {/* Admin Icon - Top Left */}
             {isActive && (
