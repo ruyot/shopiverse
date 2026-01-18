@@ -78,7 +78,7 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
         // Add hotspot spheres - small white orbs
         const hotspotMeshes = []
         if (hotspots && hotspots.length > 0) {
-            const sphereGeometry = new THREE.SphereGeometry(0.08, 16, 16) // Smaller orbs
+            const sphereGeometry = new THREE.SphereGeometry(0.03, 12, 12) // Small orbs
             const sphereMaterial = new THREE.MeshBasicMaterial({
                 color: 0xffffff, // White
                 transparent: true,
@@ -240,10 +240,12 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
                 keysPressed.current.add(key)
             }
 
-            // Debug: Log camera position on 'P'
-            if (key === 'p' && cameraRef.current) {
+            // Debug: Log camera position and target on 'P'
+            if (key === 'p' && cameraRef.current && controlsRef.current) {
                 const cam = cameraRef.current
+                const target = controlsRef.current.target
                 console.log(`📸 Camera Position: [${cam.position.x.toFixed(5)}, ${cam.position.y.toFixed(5)}, ${cam.position.z.toFixed(5)}]`)
+                console.log(`🎯 Looking At: [${target.x.toFixed(5)}, ${target.y.toFixed(5)}, ${target.z.toFixed(5)}]`)
             }
         }
 
