@@ -996,7 +996,7 @@ def health_check():
 
 if __name__ == '__main__':
     import uvicorn
-    print("🚀 Starting Shopiverse Admin API on http://localhost:5000")
+    print("🚀 Starting Shopiverse Admin API on http://localhost:5001")
     print("📁 Data directory:", DATA_DIR)
-    print("📚 API docs available at http://localhost:5000/docs")
-    uvicorn.run(app, host='0.0.0.0', port=5000)
+    print("📚 API docs available at http://localhost:5001/docs")
+    uvicorn.run(app, host='0.0.0.0', port=5001)

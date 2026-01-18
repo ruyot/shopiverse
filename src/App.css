@@ -315,23 +315,43 @@ body {
     border: 1.5px solid rgba(255, 255, 255, 0.3);
 }
 
-/* Lobo Chatbot Character Button */
-.lobo-character {
+/* Lobo Chatbot Character Button - Collapsible on hover */
+.lobo-character-container {
     position: fixed;
-    bottom: 1.5rem;
-    right: 1.5rem;
+    bottom: 0;
+    right: 0;
+    width: 150px;
+    height: 280px;
+    z-index: 1000;
+    pointer-events: auto;
+    /* Enable hover detection */
+}
+
+.lobo-character {
+    position: absolute;
+    bottom: 0;
+    right: 0;
     width: 100px;
     height: 250px;
     border: none;
     background: transparent;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
     filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.3));
+    opacity: 0;
+    transform: translateX(80%) translateY(20%);
+    pointer-events: none;
+}
+
+.lobo-character-container:hover .lobo-character {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+    pointer-events: auto;
 }
 
 .lobo-character img {
@@ -556,6 +576,7 @@ body {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -591,10 +612,12 @@ body {
         opacity: 0;
         transform: scale(0.3) rotate(-180deg);
     }
+
     60% {
         opacity: 1;
         transform: scale(1.1) rotate(10deg);
     }
+
     100% {
         opacity: 1;
         transform: scale(1) rotate(0deg);
@@ -712,10 +735,14 @@ body {
 }
 
 @keyframes typing {
-    0%, 60%, 100% {
+
+    0%,
+    60%,
+    100% {
         transform: translateY(0);
         opacity: 0.6;
     }
+
     30% {
         transform: translateY(-10px);
         opacity: 1;
