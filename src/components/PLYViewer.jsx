@@ -88,12 +88,12 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
         controls.maxPolarAngle = (Math.PI / 2) + (Math.PI / 9)
         controlsRef.current = controls
 
-        // Add hotspot spheres - small white orbs
+        // Add hotspot spheres - start black to blend in, transition to white
         const hotspotMeshes = []
         if (hotspots && hotspots.length > 0) {
             const sphereGeometry = new THREE.SphereGeometry(0.06, 12, 12) // Larger orbs
             const sphereMaterial = new THREE.MeshBasicMaterial({
-                color: 0xffffff, // White
+                color: 0x000000, // Start black to blend in
                 transparent: true,
                 opacity: 0.9
             })
@@ -120,6 +120,29 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
         splat.scale.set(2.5, 2.5, 2.5)
         scene.add(splat)
         splatRef.current = splat
+
+        // Track when hotspots should start pulsing
+        let hotspotsVisible = false
+
+        // Transition hotspots from black to white after 1.5 seconds
+        setTimeout(() => {
+            let colorProgress = 0
+            const colorTransition = () => {
+                colorProgress += 0.03
+                const c = Math.min(colorProgress, 1)
+                hotspotMeshes.forEach(mesh => {
+                    if (mesh.material) {
+                        mesh.material.color.setRGB(c, c, c)
+                    }
+                })
+                if (colorProgress < 1) {
+                    requestAnimationFrame(colorTransition)
+                } else {
+                    hotspotsVisible = true // Enable pulsating after color transition
+                }
+            }
+            colorTransition()
+        }, 1500)
 
         // Fade-in animation on load
         splat.addEventListener('load', () => {
@@ -235,17 +258,19 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
                 }
             }
 
-            // Pulsating effect for hotspot orbs
-            const time = Date.now() * 0.003
-            hotspotMeshes.forEach((mesh, index) => {
-                // Offset each orb's pulse slightly for variety
-                const pulse = Math.sin(time + index * 0.5) * 0.3 + 1 // Oscillates between 0.7 and 1.3
-                mesh.scale.setScalar(pulse)
-                // Also pulse opacity slightly
-                if (mesh.material) {
-                    mesh.material.opacity = 0.7 + Math.sin(time + index * 0.5) * 0.3 // 0.4 to 1.0
-                }
-            })
+            // Pulsating effect for hotspot orbs (only after fade-in completes)
+            if (hotspotsVisible) {
+                const time = Date.now() * 0.003
+                hotspotMeshes.forEach((mesh, index) => {
+                    // Offset each orb's pulse slightly for variety
+                    const pulse = Math.sin(time + index * 0.5) * 0.3 + 1 // Oscillates between 0.7 and 1.3
+                    mesh.scale.setScalar(pulse)
+                    // Also pulse opacity slightly
+                    if (mesh.material) {
+                        mesh.material.opacity = 0.7 + Math.sin(time + index * 0.5) * 0.3 // 0.4 to 1.0
+                    }
+                })
+            }
 
             controls.update()
             renderer.render(scene, camera)
