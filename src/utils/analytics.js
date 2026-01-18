@@ -1,5 +1,8 @@
 const ANALYTICS_API_URL = 'http://localhost:5000/api/analytics'
 
+// Guard against duplicate initialization (React StrictMode, HMR, etc.)
+const INIT_KEY = 'shopiverse_analytics_initialized'
+
 // Generate a unique session ID (persists for browser session)
 const getSessionId = () => {
   let sessionId = sessionStorage.getItem('shopiverse_session_id')
@@ -20,8 +23,9 @@ const getUserId = () => {
   return userId
 }
 
-// Track session start time
-const sessionStartTime = Date.now()
+// Track session start time (use existing if already set to handle re-imports)
+const sessionStartTime = parseInt(sessionStorage.getItem('shopiverse_session_start')) || Date.now()
+sessionStorage.setItem('shopiverse_session_start', sessionStartTime.toString())
 
 // Track current scene and entry time for duration calculation
 let currentScene = null
@@ -185,25 +189,28 @@ export const analytics = {
   })
 }
 
-// Auto-track session start
-analytics.startSession()
+// Auto-track session start (only once per session)
+if (!sessionStorage.getItem(INIT_KEY)) {
+  sessionStorage.setItem(INIT_KEY, 'true')
+  analytics.startSession()
 
-// Track session end when user leaves
-window.addEventListener('beforeunload', () => {
-  // Use sendBeacon for reliable delivery on page unload
-  const data = JSON.stringify({
-    action: 'session_end',
-    timestamp: new Date().toISOString(),
-    sessionId: getSessionId(),
-    userId: getUserId(),
-    sessionDuration: Math.round((Date.now() - sessionStartTime) / 1000),
-    data: {
-      totalDuration: Math.round((Date.now() - sessionStartTime) / 1000),
-      lastScene: currentScene,
-      lastSceneDuration: sceneEntryTime ? Math.round((Date.now() - sceneEntryTime) / 1000) : 0
-    }
+  // Track session end when user leaves (only register once)
+  window.addEventListener('beforeunload', () => {
+    // Use sendBeacon for reliable delivery on page unload
+    const data = JSON.stringify({
+      action: 'session_end',
+      timestamp: new Date().toISOString(),
+      sessionId: getSessionId(),
+      userId: getUserId(),
+      sessionDuration: Math.round((Date.now() - sessionStartTime) / 1000),
+      data: {
+        totalDuration: Math.round((Date.now() - sessionStartTime) / 1000),
+        lastScene: currentScene,
+        lastSceneDuration: sceneEntryTime ? Math.round((Date.now() - sceneEntryTime) / 1000) : 0
+      }
+    })
+    navigator.sendBeacon(ANALYTICS_API_URL, data)
   })
-  navigator.sendBeacon(ANALYTICS_API_URL, data)
-})
+}
 
 export default analytics

@@ -61,17 +61,79 @@ export default function Admin() {
 function OverviewTab() {
     const [timeRange, setTimeRange] = useState('7d')
     const [isRefreshing, setIsRefreshing] = useState(false)
-    
-    // Sample data for daily users graph
-    const dailyUsers = [45, 52, 48, 61, 58, 72, 68]
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-    const maxUsers = Math.max(...dailyUsers)
-    const totalVisitors = dailyUsers.reduce((a, b) => a + b, 0)
-    const avgDaily = Math.round(totalVisitors / dailyUsers.length)
-    
+    const [analytics, setAnalytics] = useState({ events: [], count: 0 })
+    const [summary, setSummary] = useState({ sessions: {}, users: {}, totalSessions: 0, totalUsers: 0 })
+
+    const fetchAnalytics = async () => {
+        try {
+            const [eventsRes, summaryRes] = await Promise.all([
+                fetch('http://localhost:5000/api/analytics'),
+                fetch('http://localhost:5000/api/analytics/summary')
+            ])
+            const eventsData = await eventsRes.json()
+            const summaryData = await summaryRes.json()
+            setAnalytics(eventsData)
+            setSummary(summaryData)
+        } catch (error) {
+            console.error('Failed to fetch analytics:', error)
+        } finally {
+            setIsRefreshing(false)
+        }
+    }
+
+    useEffect(() => {
+        fetchAnalytics()
+    }, [])
+
+    // Calculate real metrics
+    const sessions = Object.values(summary.sessions || {})
+    const sessionDurations = sessions.map(s => s.totalDuration || 0).filter(d => d > 0)
+    const avgSessionSeconds = sessionDurations.length > 0
+        ? Math.round(sessionDurations.reduce((a, b) => a + b, 0) / sessionDurations.length)
+        : 0
+    const avgSessionMinutes = (avgSessionSeconds / 60).toFixed(1)
+
+    // Get top product from view_product events
+    const productViews = {}
+    ;(analytics.events || []).forEach(e => {
+        if (e.action === 'view_product' && e.data?.title) {
+            productViews[e.data.title] = (productViews[e.data.title] || 0) + 1
+        }
+    })
+    const topProduct = Object.entries(productViews).sort((a, b) => b[1] - a[1])[0]
+
+    // Build daily sessions data from real data
+    const dailySessionsMap = {}
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    ;(analytics.events || []).forEach(e => {
+        if (e.action === 'session_start') {
+            const day = new Date(e.timestamp).getDay()
+            dailySessionsMap[day] = (dailySessionsMap[day] || 0) + 1
+        }
+    })
+    const dailyUsers = days.map((_, i) => dailySessionsMap[i] || 0)
+    const maxUsers = Math.max(...dailyUsers, 1)
+    const totalVisitors = summary.totalSessions || dailyUsers.reduce((a, b) => a + b, 0)
+
     const handleRefresh = () => {
         setIsRefreshing(true)
-        setTimeout(() => setIsRefreshing(false), 1000)
+        fetchAnalytics()
+    }
+
+    const handleExportData = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/api/analytics')
+            const data = await response.json()
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `analytics_${new Date().toISOString().split('T')[0]}.json`
+            a.click()
+            URL.revokeObjectURL(url)
+        } catch (error) {
+            console.error('Export failed:', error)
+        }
     }
 
     return (
@@ -87,7 +149,7 @@ function OverviewTab() {
                         <RefreshCw size={16} className={isRefreshing ? 'spinning' : ''} />
                         Refresh
                     </button>
-                    <button className="btn-primary">
+                    <button className="btn-primary" onClick={handleExportData}>
                         <Download size={16} />
                         Export Data
                     </button>
@@ -101,55 +163,49 @@ function OverviewTab() {
                         <BarChart3 size={24} strokeWidth={2.5} />
                     </div>
                     <div className="stat-content">
-                        <div className="stat-label">Total Visitors</div>
+                        <div className="stat-label">Total Sessions</div>
                         <div className="stat-value">{totalVisitors}</div>
-                        <div className="stat-trend positive">
-                            <span className="trend-arrow">↑</span>
-                            <span className="trend-value">12.5%</span>
-                            <span className="trend-label">vs last week</span>
+                        <div className="stat-trend neutral">
+                            <span className="trend-label">{summary.totalUsers} unique users</span>
                         </div>
                     </div>
                 </div>
-                
+
                 <div className="stat-card modern">
                     <div className="stat-icon-wrapper blue">
                         <Palette size={24} strokeWidth={2.5} />
                     </div>
                     <div className="stat-content">
-                        <div className="stat-label">Active Scenes</div>
-                        <div className="stat-value">7</div>
+                        <div className="stat-label">Total Events</div>
+                        <div className="stat-value">{analytics.count}</div>
                         <div className="stat-trend neutral">
-                            <span className="trend-label">All systems operational</span>
+                            <span className="trend-label">All actions tracked</span>
                         </div>
                     </div>
                 </div>
-                
+
                 <div className="stat-card modern">
                     <div className="stat-icon-wrapper purple">
                         <Zap size={24} strokeWidth={2.5} />
                     </div>
                     <div className="stat-content">
                         <div className="stat-label">Top Product</div>
-                        <div className="stat-value-text">Classic Denim</div>
-                        <div className="stat-trend positive">
-                            <span className="trend-arrow">↑</span>
-                            <span className="trend-value">8.2%</span>
-                            <span className="trend-label">engagement</span>
+                        <div className="stat-value-text">{topProduct ? topProduct[0] : 'N/A'}</div>
+                        <div className="stat-trend neutral">
+                            <span className="trend-label">{topProduct ? `${topProduct[1]} views` : 'No data yet'}</span>
                         </div>
                     </div>
                 </div>
-                
+
                 <div className="stat-card modern">
                     <div className="stat-icon-wrapper gray">
                         <Gamepad2 size={24} strokeWidth={2.5} />
                     </div>
                     <div className="stat-content">
                         <div className="stat-label">Avg Session</div>
-                        <div className="stat-value">4.2<span className="stat-unit">min</span></div>
-                        <div className="stat-trend positive">
-                            <span className="trend-arrow">↑</span>
-                            <span className="trend-value">15%</span>
-                            <span className="trend-label">vs last week</span>
+                        <div className="stat-value">{avgSessionMinutes}<span className="stat-unit">min</span></div>
+                        <div className="stat-trend neutral">
+                            <span className="trend-label">{avgSessionSeconds}s average</span>
                         </div>
                     </div>
                 </div>
@@ -1241,137 +1297,366 @@ function ScenesTab() {
 
 function InsightsTab() {
     const [timeRange, setTimeRange] = useState('7d')
-    
-    // Sample insights data
-    const topProducts = [
-        { name: 'Denim Jeans', views: 342, clicks: 89, conversions: 23 },
-        { name: 'Leather Wallet', views: 298, clicks: 76, conversions: 19 },
-        { name: 'Canvas Sneakers', views: 267, clicks: 65, conversions: 15 },
-        { name: 'Cotton T-Shirt', views: 234, clicks: 54, conversions: 12 },
-        { name: 'Wool Sweater', views: 189, clicks: 42, conversions: 8 }
-    ]
+    const [analytics, setAnalytics] = useState({ events: [], count: 0 })
+    const [summary, setSummary] = useState({ sessions: {}, users: {}, totalSessions: 0, totalUsers: 0 })
+    const [isLoading, setIsLoading] = useState(true)
+    const [isRefreshing, setIsRefreshing] = useState(false)
 
-    const sceneMetrics = [
-        { scene: 'Living Room', avgTime: '2m 34s', bounceRate: '23%', engagement: 87 },
-        { scene: 'Bedroom', avgTime: '1m 58s', bounceRate: '31%', engagement: 76 },
-        { scene: 'Kitchen', avgTime: '1m 42s', bounceRate: '28%', engagement: 72 },
-        { scene: 'Bathroom', avgTime: '1m 15s', bounceRate: '42%', engagement: 58 }
-    ]
+    const fetchAnalytics = async () => {
+        try {
+            const [eventsRes, summaryRes] = await Promise.all([
+                fetch('http://localhost:5000/api/analytics'),
+                fetch('http://localhost:5000/api/analytics/summary')
+            ])
+            const eventsData = await eventsRes.json()
+            const summaryData = await summaryRes.json()
+            setAnalytics(eventsData)
+            setSummary(summaryData)
+        } catch (error) {
+            console.error('Failed to fetch analytics:', error)
+        } finally {
+            setIsLoading(false)
+            setIsRefreshing(false)
+        }
+    }
 
-    const userBehavior = {
-        avgSessionTime: '5m 23s',
-        pagesPerSession: 3.4,
-        returnRate: '34%',
-        mobileUsers: '62%'
+    useEffect(() => {
+        fetchAnalytics()
+        // Auto-refresh every 30 seconds
+        const interval = setInterval(fetchAnalytics, 30000)
+        return () => clearInterval(interval)
+    }, [])
+
+    const handleRefresh = () => {
+        setIsRefreshing(true)
+        fetchAnalytics()
+    }
+
+    const handleClearData = async () => {
+        if (!confirm('Are you sure you want to clear all analytics data?')) return
+        try {
+            await fetch('http://localhost:5000/api/analytics', { method: 'DELETE' })
+            fetchAnalytics()
+        } catch (error) {
+            console.error('Failed to clear analytics:', error)
+        }
+    }
+
+    const handleExportCSV = () => {
+        window.open('http://localhost:5000/api/analytics', '_blank')
+    }
+
+    // Calculate metrics from real data
+    const calculateMetrics = () => {
+        const sessions = Object.values(summary.sessions || {})
+        const events = analytics.events || []
+
+        // Average session time
+        const sessionDurations = sessions.map(s => s.totalDuration || 0).filter(d => d > 0)
+        const avgSessionSeconds = sessionDurations.length > 0
+            ? Math.round(sessionDurations.reduce((a, b) => a + b, 0) / sessionDurations.length)
+            : 0
+        const avgSessionTime = avgSessionSeconds > 0
+            ? `${Math.floor(avgSessionSeconds / 60)}m ${avgSessionSeconds % 60}s`
+            : '0m 0s'
+
+        // Scenes visited per session
+        const scenesPerSession = sessions.map(s => Object.keys(s.scenes || {}).length)
+        const avgScenesPerSession = scenesPerSession.length > 0
+            ? (scenesPerSession.reduce((a, b) => a + b, 0) / scenesPerSession.length).toFixed(1)
+            : '0'
+
+        // Unique users vs sessions (return rate proxy)
+        const returnRate = summary.totalUsers > 0 && summary.totalSessions > summary.totalUsers
+            ? Math.round(((summary.totalSessions - summary.totalUsers) / summary.totalSessions) * 100)
+            : 0
+
+        // Mobile users (from user agent)
+        const mobileEvents = events.filter(e =>
+            e.data?.userAgent?.toLowerCase().includes('mobile')
+        )
+        const sessionStartEvents = events.filter(e => e.action === 'session_start')
+        const mobilePercent = sessionStartEvents.length > 0
+            ? Math.round((mobileEvents.length / sessionStartEvents.length) * 100)
+            : 0
+
+        return { avgSessionTime, avgScenesPerSession, returnRate, mobilePercent }
+    }
+
+    // Calculate scene performance from real data
+    const calculateSceneMetrics = () => {
+        const sceneTimeMap = {}
+        const sceneVisitMap = {}
+
+        Object.values(summary.sessions || {}).forEach(session => {
+            Object.entries(session.scenes || {}).forEach(([scene, time]) => {
+                if (!sceneTimeMap[scene]) {
+                    sceneTimeMap[scene] = []
+                    sceneVisitMap[scene] = 0
+                }
+                sceneTimeMap[scene].push(time)
+                sceneVisitMap[scene]++
+            })
+        })
+
+        return Object.keys(sceneTimeMap).map(scene => {
+            const times = sceneTimeMap[scene]
+            const avgSeconds = Math.round(times.reduce((a, b) => a + b, 0) / times.length)
+            const avgTime = `${Math.floor(avgSeconds / 60)}m ${avgSeconds % 60}s`
+            const visits = sceneVisitMap[scene]
+
+            // Calculate engagement as relative to max visits
+            const maxVisits = Math.max(...Object.values(sceneVisitMap))
+            const engagement = maxVisits > 0 ? Math.round((visits / maxVisits) * 100) : 0
+
+            return { scene, avgTime, visits, engagement, avgSeconds }
+        }).sort((a, b) => b.avgSeconds - a.avgSeconds)
+    }
+
+    // Calculate product metrics from real data
+    const calculateProductMetrics = () => {
+        const productMap = {}
+        const events = analytics.events || []
+
+        events.forEach(event => {
+            if (['view_product', 'add_to_cart', 'complete_checkout'].includes(event.action)) {
+                const productId = event.data?.productId
+                const title = event.data?.title || productId
+                if (!productId) return
+
+                if (!productMap[productId]) {
+                    productMap[productId] = { name: title, views: 0, addToCart: 0, purchased: 0 }
+                }
+
+                if (event.action === 'view_product') productMap[productId].views++
+                if (event.action === 'add_to_cart') productMap[productId].addToCart++
+                if (event.action === 'complete_checkout') productMap[productId].purchased++
+            }
+        })
+
+        return Object.values(productMap)
+            .sort((a, b) => b.views - a.views)
+            .slice(0, 10)
+    }
+
+    // Get recent activity feed
+    const getRecentActivity = () => {
+        return (analytics.events || [])
+            .slice(-20)
+            .reverse()
+            .map(event => ({
+                ...event,
+                timeAgo: getTimeAgo(event.timestamp)
+            }))
+    }
+
+    const getTimeAgo = (timestamp) => {
+        const seconds = Math.floor((Date.now() - new Date(timestamp)) / 1000)
+        if (seconds < 60) return `${seconds}s ago`
+        if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
+        if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
+        return `${Math.floor(seconds / 86400)}d ago`
+    }
+
+    const getActionIcon = (action) => {
+        const icons = {
+            'session_start': '🚀',
+            'session_end': '👋',
+            'navigate': '🚶',
+            'view_product': '👀',
+            'add_to_cart': '🛒',
+            'remove_from_cart': '❌',
+            'start_checkout': '💳',
+            'complete_checkout': '✅',
+            'open_chatbot': '💬',
+            'send_chat_message': '📝',
+            'enter_scene': '🏠'
+        }
+        return icons[action] || '📌'
+    }
+
+    const metrics = calculateMetrics()
+    const sceneMetrics = calculateSceneMetrics()
+    const productMetrics = calculateProductMetrics()
+    const recentActivity = getRecentActivity()
+
+    if (isLoading) {
+        return (
+            <div className="admin-tab-content">
+                <div className="loading-state">Loading analytics data...</div>
+            </div>
+        )
     }
 
     return (
         <div className="admin-tab-content">
             <div className="insights-header">
                 <h2>Insights & Analytics</h2>
-                <select 
-                    value={timeRange} 
-                    onChange={(e) => setTimeRange(e.target.value)}
-                    className="time-range-select"
-                >
-                    <option value="24h">Last 24 Hours</option>
-                    <option value="7d">Last 7 Days</option>
-                    <option value="30d">Last 30 Days</option>
-                    <option value="90d">Last 90 Days</option>
-                </select>
+                <div className="insights-actions">
+                    <button className="btn-secondary" onClick={handleRefresh} disabled={isRefreshing}>
+                        <RefreshCw size={16} className={isRefreshing ? 'spinning' : ''} />
+                        Refresh
+                    </button>
+                    <button className="btn-secondary" onClick={handleExportCSV}>
+                        <Download size={16} />
+                        Export CSV
+                    </button>
+                    <button className="btn-danger" onClick={handleClearData}>
+                        <X size={16} />
+                        Clear Data
+                    </button>
+                </div>
             </div>
 
-            {/* User Behavior Overview */}
+            {/* Summary Stats */}
+            <div className="insights-section">
+                <h3>Overview</h3>
+                <div className="metrics-grid-4">
+                    <div className="metric-card">
+                        <div className="metric-label">Total Sessions</div>
+                        <div className="metric-value">{summary.totalSessions}</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Unique Users</div>
+                        <div className="metric-value">{summary.totalUsers}</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Total Events</div>
+                        <div className="metric-value">{analytics.count}</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Avg Session Time</div>
+                        <div className="metric-value">{metrics.avgSessionTime}</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* User Behavior */}
             <div className="insights-section">
                 <h3>User Behavior</h3>
                 <div className="metrics-grid-4">
                     <div className="metric-card">
-                        <div className="metric-label">Avg Session Time</div>
-                        <div className="metric-value">{userBehavior.avgSessionTime}</div>
-                        <div className="metric-change positive">+12% vs last period</div>
+                        <div className="metric-label">Avg Session Duration</div>
+                        <div className="metric-value">{metrics.avgSessionTime}</div>
                     </div>
                     <div className="metric-card">
-                        <div className="metric-label">Pages/Session</div>
-                        <div className="metric-value">{userBehavior.pagesPerSession}</div>
-                        <div className="metric-change positive">+8% vs last period</div>
+                        <div className="metric-label">Scenes/Session</div>
+                        <div className="metric-value">{metrics.avgScenesPerSession}</div>
                     </div>
                     <div className="metric-card">
-                        <div className="metric-label">Return Rate</div>
-                        <div className="metric-value">{userBehavior.returnRate}</div>
-                        <div className="metric-change negative">-3% vs last period</div>
+                        <div className="metric-label">Return Sessions</div>
+                        <div className="metric-value">{metrics.returnRate}%</div>
                     </div>
                     <div className="metric-card">
                         <div className="metric-label">Mobile Users</div>
-                        <div className="metric-value">{userBehavior.mobileUsers}</div>
-                        <div className="metric-change positive">+5% vs last period</div>
+                        <div className="metric-value">{metrics.mobilePercent}%</div>
                     </div>
                 </div>
+            </div>
+
+            {/* Scene Performance - Time Spent in Each Room */}
+            <div className="insights-section">
+                <h3>Time Spent in Each Room</h3>
+                {sceneMetrics.length > 0 ? (
+                    <div className="insights-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Scene</th>
+                                    <th>Avg Time</th>
+                                    <th>Total Visits</th>
+                                    <th>Engagement</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {sceneMetrics.map((scene, idx) => (
+                                    <tr key={idx}>
+                                        <td className="scene-name">{scene.scene}</td>
+                                        <td>{scene.avgTime}</td>
+                                        <td>{scene.visits}</td>
+                                        <td>
+                                            <div className="engagement-bar">
+                                                <div
+                                                    className="engagement-fill"
+                                                    style={{ width: `${scene.engagement}%` }}
+                                                />
+                                                <span className="engagement-text">{scene.engagement}%</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="empty-state">No scene data yet. Navigate around the store to generate data.</div>
+                )}
             </div>
 
             {/* Top Products */}
             <div className="insights-section">
-                <h3>Top Performing Products</h3>
-                <div className="insights-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Views</th>
-                                <th>Clicks</th>
-                                <th>Conversions</th>
-                                <th>Conv. Rate</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {topProducts.map((product, idx) => (
-                                <tr key={idx}>
-                                    <td className="product-name">{product.name}</td>
-                                    <td>{product.views}</td>
-                                    <td>{product.clicks}</td>
-                                    <td>{product.conversions}</td>
-                                    <td className="conversion-rate">
-                                        {((product.conversions / product.clicks) * 100).toFixed(1)}%
-                                    </td>
+                <h3>Product Interactions</h3>
+                {productMetrics.length > 0 ? (
+                    <div className="insights-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Views</th>
+                                    <th>Add to Cart</th>
+                                    <th>Purchased</th>
+                                    <th>Conversion</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {productMetrics.map((product, idx) => (
+                                    <tr key={idx}>
+                                        <td className="product-name">{product.name}</td>
+                                        <td>{product.views}</td>
+                                        <td>{product.addToCart}</td>
+                                        <td>{product.purchased}</td>
+                                        <td className="conversion-rate">
+                                            {product.views > 0
+                                                ? ((product.addToCart / product.views) * 100).toFixed(1)
+                                                : 0}%
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="empty-state">No product interactions yet.</div>
+                )}
             </div>
 
-            {/* Scene Performance */}
+            {/* Recent Activity Feed */}
             <div className="insights-section">
-                <h3>Scene Performance</h3>
-                <div className="insights-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Scene</th>
-                                <th>Avg Time</th>
-                                <th>Bounce Rate</th>
-                                <th>Engagement</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {sceneMetrics.map((scene, idx) => (
-                                <tr key={idx}>
-                                    <td className="scene-name">{scene.scene}</td>
-                                    <td>{scene.avgTime}</td>
-                                    <td>{scene.bounceRate}</td>
-                                    <td>
-                                        <div className="engagement-bar">
-                                            <div 
-                                                className="engagement-fill" 
-                                                style={{ width: `${scene.engagement}%` }}
-                                            />
-                                            <span className="engagement-text">{scene.engagement}%</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <h3>Recent Activity</h3>
+                {recentActivity.length > 0 ? (
+                    <div className="activity-feed">
+                        {recentActivity.map((event, idx) => (
+                            <div key={idx} className="activity-item">
+                                <span className="activity-icon">{getActionIcon(event.action)}</span>
+                                <span className="activity-action">{event.action.replace(/_/g, ' ')}</span>
+                                {event.data?.title && (
+                                    <span className="activity-detail">{event.data.title}</span>
+                                )}
+                                {event.data?.fromScene && event.data?.toScene && (
+                                    <span className="activity-detail">
+                                        {event.data.fromScene} → {event.data.toScene}
+                                    </span>
+                                )}
+                                {event.data?.timeInPreviousScene > 0 && (
+                                    <span className="activity-duration">({event.data.timeInPreviousScene}s)</span>
+                                )}
+                                <span className="activity-time">{event.timeAgo}</span>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="empty-state">No activity yet. Use the store to generate events.</div>
+                )}
             </div>
         </div>
     )

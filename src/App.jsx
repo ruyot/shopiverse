@@ -54,9 +54,13 @@ function App() {
         localStorage.setItem('shopiverse_cart', JSON.stringify(cartItems))
     }, [cartItems])
 
-    // Track initial scene entry on mount
+    // Track initial scene entry on mount (guard against StrictMode double-mount)
+    const hasTrackedInitialScene = useRef(false)
     useEffect(() => {
-        analytics.enterScene(initialViewpoint)
+        if (!hasTrackedInitialScene.current) {
+            hasTrackedInitialScene.current = true
+            analytics.enterScene(initialViewpoint)
+        }
     }, [])
 
     // Add item to cart
@@ -255,17 +259,21 @@ function App() {
         setChatMessages(newMessages)
         setIsChatLoading(true)
 
-        // Add placeholder for assistant response
-        const assistantMessageIndex = newMessages.length
-        setChatMessages([...newMessages, { role: 'assistant', content: '' }])
-
         try {
             let streamedContent = ''
+            let assistantMessageAdded = false
+            const assistantMessageIndex = newMessages.length
             
             // Get AI response with streaming and inventory
             const result = await sendChatMessage(
                 userMessage,
                 (chunk) => {
+                    // Add assistant message on first chunk
+                    if (!assistantMessageAdded) {
+                        assistantMessageAdded = true
+                        setChatMessages([...newMessages, { role: 'assistant', content: '' }])
+                    }
+                    
                     // Update the assistant message with streamed content
                     streamedContent += chunk
                     setChatMessages(msgs => {

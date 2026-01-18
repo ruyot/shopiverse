@@ -1690,10 +1690,105 @@ body {
     .metrics-grid-4 {
         grid-template-columns: 1fr;
     }
-    
+
     .insights-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
     }
+}
+
+/* Analytics Insights Styles */
+.insights-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-danger {
+    background: #e74c3c;
+    border: 2px solid #c0392b;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+.loading-state,
+.empty-state {
+    padding: 2rem;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    background: #e0e0e0;
+    border: 2px solid #999;
+}
+
+/* Activity Feed */
+.activity-feed {
+    background: #d0d0d0;
+    border: 2px solid #999;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #b0b0b0;
+    font-size: 0.8rem;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-item:hover {
+    background: #c0c0c0;
+}
+
+.activity-icon {
+    font-size: 1rem;
+    width: 24px;
+    text-align: center;
+}
+
+.activity-action {
+    font-weight: 700;
+    color: #333;
+    text-transform: capitalize;
+    min-width: 120px;
+}
+
+.activity-detail {
+    color: #666;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.activity-duration {
+    color: #ff6b35;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.activity-time {
+    color: #999;
+    font-size: 0.7rem;
+    min-width: 60px;
+    text-align: right;
 }
