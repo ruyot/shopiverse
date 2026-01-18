@@ -1,0 +1,33 @@
+# Core ML packages
+torch>=2.0.0
+torchvision
+numpy<2
+Pillow>=9.0
+
+# Sharp dependencies
+scipy>=1.11.0
+imageio>=2.31.0
+plyfile
+tqdm
+einops
+timm
+huggingface_hub
+pillow_heif
+matplotlib
+opencv-python-headless
+trimesh
+open3d
+safetensors
+moviepy==1.0.3
+e3nn
+omegaconf
+gsplat
+click
+
+# API dependencies
+fastapi
+requests>=2.31.0
+uvicorn
+
+# Modal deployment
+modal
