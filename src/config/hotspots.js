@@ -4,7 +4,7 @@
  */
 
 const HOTSPOTS_KEY = 'shopiverse_hotspots_v7'
-const API_BASE = 'http://localhost:5000/api'
+const API_BASE = 'http://localhost:5001/api'
 
 // Default hotspots - all using 3D positions for orb rendering
 // Default hotspots (fallback if API unavailable)

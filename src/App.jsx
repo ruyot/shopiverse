@@ -341,7 +341,7 @@ function App() {
             let streamedContent = ''
             let assistantMessageAdded = false
             const assistantMessageIndex = newMessages.length
-            
+
             // Get AI response with streaming and inventory
             const result = await sendChatMessage(
                 userMessage,
@@ -351,7 +351,7 @@ function App() {
                         assistantMessageAdded = true
                         setChatMessages([...newMessages, { role: 'assistant', content: '' }])
                     }
-                    
+
                     // Update the assistant message with streamed content
                     streamedContent += chunk
                     setChatMessages(msgs => {
@@ -365,7 +365,7 @@ function App() {
                 },
                 inventory
             )
-            
+
             // Add LLM-selected products to final message
             if (result.products && result.products.length > 0) {
                 setChatMessages(msgs => {
@@ -578,8 +578,8 @@ function App() {
 
 
 
-            {/* Lobo Chatbot Character - Only on Storefront */}
-            {isStoreFront && (
+            {/* Lobo Chatbot Character - Available on all screens, hidden until hover */}
+            <div className="lobo-character-container">
                 <button
                     className="lobo-character"
                     onClick={() => {
@@ -591,7 +591,7 @@ function App() {
                 >
                     <img src="/lobo.png" alt="Lobo Assistant" />
                 </button>
-            )}
+            </div>
 
             {/* Shopping Cart Icon */}
             <button
@@ -755,7 +755,7 @@ function App() {
                                     {message.products && message.products.length > 0 && (
                                         <div className="product-buttons">
                                             {message.products.map((product, idx) => (
-                                                <button 
+                                                <button
                                                     key={idx}
                                                     className="product-teleport-btn"
                                                     onClick={() => {
@@ -784,15 +784,15 @@ function App() {
                         <div ref={chatMessagesEndRef} />
                     </div>
                     <div className="chatbot-input">
-                        <input 
-                            type="text" 
-                            placeholder="Type your message..." 
+                        <input
+                            type="text"
+                            placeholder="Type your message..."
                             value={chatInput}
                             onChange={(e) => setChatInput(e.target.value)}
                             onKeyPress={handleChatKeyPress}
                             disabled={isChatLoading}
                         />
-                        <button 
+                        <button
                             onClick={handleSendMessage}
                             disabled={isChatLoading || !chatInput.trim()}
                         >
