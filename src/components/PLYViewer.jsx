@@ -21,6 +21,12 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
     const [isLoaded, setIsLoaded] = useState(false)
     const [showContent, setShowContent] = useState(false)
     const keysPressed = useRef(new Set())
+    const onHotspotClickRef = useRef(onHotspotClick)
+
+    // Keep callback ref updated without triggering re-renders
+    useEffect(() => {
+        onHotspotClickRef.current = onHotspotClick
+    }, [onHotspotClick])
 
     // Initialize Three.js scene
     useEffect(() => {
@@ -165,9 +171,9 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
                 const x = ((screenPos.x + 1) / 2) * rect.width
                 const y = ((-screenPos.y + 1) / 2) * rect.height
                 
-                if (onHotspotClick) {
+                if (onHotspotClickRef.current) {
                     // Add screen position to hotspot data
-                    onHotspotClick({ ...clickedHotspot, x, y })
+                    onHotspotClickRef.current({ ...clickedHotspot, x, y })
                 }
             }
         }
@@ -260,7 +266,7 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
             renderer.dispose()
         }
 
-    }, [plyPath, hotspots, onHotspotClick])
+    }, [plyPath, hotspots])
 
     // WASD keyboard controls
     useEffect(() => {
