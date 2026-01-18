@@ -279,18 +279,6 @@ function OverviewTab() {
                             7D
                         </button>
                         <button 
-                            className={`range-btn ${timeRange === '30d' ? 'active' : ''}`}
-                            onClick={() => setTimeRange('30d')}
-                        >
-                            30D
-                        </button>
-                        <button 
-                            className={`range-btn ${timeRange === '90d' ? 'active' : ''}`}
-                            onClick={() => setTimeRange('90d')}
-                        >
-                            90D
-                        </button>
-                        <button 
                             className={`range-btn ${timeRange === 'all' ? 'active' : ''}`}
                             onClick={() => setTimeRange('all')}
                         >
