@@ -43,7 +43,7 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
         }
 
         // Create renderer with Spark-optimized settings
-        const renderer = new THREE.WebGLRenderer({ 
+        const renderer = new THREE.WebGLRenderer({
             antialias: false, // Splats don't benefit from MSAA, adds overhead
             powerPreference: 'high-performance',
             stencil: false,
@@ -84,7 +84,7 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
         // Add hotspot spheres - small white orbs
         const hotspotMeshes = []
         if (hotspots && hotspots.length > 0) {
-            const sphereGeometry = new THREE.SphereGeometry(0.03, 12, 12) // Small orbs
+            const sphereGeometry = new THREE.SphereGeometry(0.06, 12, 12) // Larger orbs
             const sphereMaterial = new THREE.MeshBasicMaterial({
                 color: 0xffffff, // White
                 transparent: true,
@@ -105,7 +105,7 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
         hotspotMeshesRef.current = hotspotMeshes
 
         // Load splat using Spark with performance optimizations
-        const splat = new SplatMesh({ 
+        const splat = new SplatMesh({
             url: plyPath,
             maxStdDev: Math.sqrt(5) // Reduce Gaussian extent for better perf (default: sqrt(8))
         })
@@ -216,6 +216,18 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
                     controls.target.y -= moveSpeed
                 }
             }
+
+            // Pulsating effect for hotspot orbs
+            const time = Date.now() * 0.003
+            hotspotMeshes.forEach((mesh, index) => {
+                // Offset each orb's pulse slightly for variety
+                const pulse = Math.sin(time + index * 0.5) * 0.3 + 1 // Oscillates between 0.7 and 1.3
+                mesh.scale.setScalar(pulse)
+                // Also pulse opacity slightly
+                if (mesh.material) {
+                    mesh.material.opacity = 0.7 + Math.sin(time + index * 0.5) * 0.3 // 0.4 to 1.0
+                }
+            })
 
             controls.update()
             renderer.render(scene, camera)

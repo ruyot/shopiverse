@@ -11,26 +11,29 @@ const API_BASE = 'http://localhost:5000/api'
 const defaultHotspots = {
     storeP1: [], // No hotspots on main view
     storeP1Left: [
-        { id: 'jeans-1', position: [-0.5, 0.3, -3.5], label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] },
-        { id: 'jeans-2', position: [-1.0, 0.3, -3.0], label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] },
-        { id: 'jeans-3', position: [-1.0, -0.2, -3.0], label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] },
-        { id: 'jeans-4', position: [-0.5, -0.2, -3.5], label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] }
+        // User-verified coordinates from P key
+        { id: 'item-l1-1', position: [-1.26739, 0.32712, -4.65165], label: 'Product 1', title: 'Product 1', images: [] },
+        { id: 'item-l1-2', position: [-0.83359, 0.30862, -5.07713], label: 'Product 2', title: 'Product 2', images: [] },
+        { id: 'item-l1-3', position: [-1.20999, -0.46658, -4.60951], label: 'Product 3', title: 'Product 3', images: [] },
+        { id: 'item-l1-4', position: [-0.75232, -0.41847, -5.02241], label: 'Product 4', title: 'Product 4', images: [] }
     ],
     storeP1Right: [
-        { id: 'item-r1-1', position: [-0.8, 0.4, -3.0], label: 'Wallet', title: 'Wallet', images: ['/wallet-black.png', '/wallet-dark-brown.jpg', '/wallet-grey.jpg', '/wallet-light-brown.jpg'] },
-        { id: 'item-r1-2', position: [0, 0.2, -3.5], label: 'Product 2', title: 'Product 2', images: [] },
-        { id: 'item-r1-3', position: [0.8, 0.3, -3.0], label: 'Product 3', title: 'Product 3', images: [] }
+        // User-verified coordinates from P key
+        { id: 'item-r1-1', position: [3.78809, 0.51201, -10.14587], label: 'Product 1', title: 'Product 1', images: [] },
+        { id: 'item-r1-2', position: [-1.79493, 0.18883, -9.57033], label: 'Product 2', title: 'Product 2', images: [] },
+        { id: 'item-r1-3', position: [1.96905, 0.00492, -12.68238], label: 'Product 3', title: 'Product 3', images: [] }
     ],
     storeP2Left: [
         // User-verified coordinates from P key
-        { id: 'item-l2-1', position: [-0.85463, -0.03372, -2.93187], label: 'Product 1', title: 'Product 1', images: [] },
-        { id: 'item-l2-2', position: [-2.09195, 0.00990, -8.17967], label: 'Product 2', title: 'Product 2', images: [] },
-        { id: 'item-l2-3', position: [2.68586, 0.27952, -7.55009], label: 'Product 3', title: 'Product 3', images: [] }
+        { id: 'item-l2-1', position: [-1.67787, 0.24783, -4.99441], label: 'Product 1', title: 'Product 1', images: [] },
+        { id: 'item-l2-2', position: [-1.37476, 0.17952, -6.40852], label: 'Product 2', title: 'Product 2', images: [] },
+        { id: 'item-l2-3', position: [1.38637, -0.20432, -3.86578], label: 'Product 3', title: 'Product 3', images: [] }
     ],
     storeP2Right: [
-        { id: 'item-r2-1', position: [-0.5, 0.2, -3.5], label: 'Wallet', title: 'Wallet', images: ['/wallet-black.png', '/wallet-dark-brown.jpg', '/wallet-grey.jpg', '/wallet-light-brown.jpg'] },
-        { id: 'item-r2-2', position: [0.3, 0.1, -4.0], label: 'Product 2', title: 'Product 2', images: [] },
-        { id: 'item-r2-3', position: [0.8, 0.2, -4.5], label: 'Product 3', title: 'Product 3', images: [] }
+        // User-verified coordinates from P key
+        { id: 'item-r2-1', position: [-1.12000, -0.00000, -8.96000], label: 'Product 1', title: 'Product 1', images: [] },
+        { id: 'item-r2-2', position: [1.17060, 0.23128, -19.74972], label: 'Product 2', title: 'Product 2', images: [] },
+        { id: 'item-r2-3', position: [2.40998, 0.05270, -8.33690], label: 'Product 3', title: 'Product 3', images: [] }
     ]
 }
 
