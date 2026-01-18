@@ -1580,6 +1580,12 @@ body {
     border-bottom: 2px solid #999;
 }
 
+.insights-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
 .metrics-grid-4 {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -1751,6 +1757,10 @@ body {
 
 @media (max-width: 768px) {
     .metrics-grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .insights-grid-2 {
         grid-template-columns: 1fr;
     }
 

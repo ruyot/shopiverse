@@ -1407,6 +1407,74 @@ function InsightsTab() {
             </tr>
         `).join('')
 
+        const insightsPayload = summary.insights || {}
+        const funnelData = insightsPayload.funnel || {}
+        const engagementData = insightsPayload.engagement || {}
+        const cartData = insightsPayload.cartAbandonment || {}
+        const timeData = insightsPayload.timeToFirstAction || {}
+        const checkoutData = insightsPayload.timeToCheckout || {}
+        const dropOffRows = (insightsPayload.dropOffs || []).map(item => `
+            <tr>
+                <td>${escapeHtml(item.action)}</td>
+                <td>${escapeHtml(item.count)}</td>
+            </tr>
+        `).join('')
+        const transitionRows = (insightsPayload.sceneTransitions || []).map(item => `
+            <tr>
+                <td>${escapeHtml(item.path)}</td>
+                <td>${escapeHtml(item.count)}</td>
+            </tr>
+        `).join('')
+        const chatRows = (insightsPayload.topChatIntents || []).map(item => `
+            <tr>
+                <td>${escapeHtml(item.intent)}</td>
+                <td>${escapeHtml(item.count)}</td>
+            </tr>
+        `).join('')
+        const referrerRows = (insightsPayload.topReferrers || []).map(item => `
+            <tr>
+                <td>${escapeHtml(item.referrer)}</td>
+                <td>${escapeHtml(item.count)}</td>
+            </tr>
+        `).join('')
+        const deviceRows = Object.entries(insightsPayload.deviceBreakdown || {}).map(([device, count]) => `
+            <tr>
+                <td>${escapeHtml(device)}</td>
+                <td>${escapeHtml(count)}</td>
+            </tr>
+        `).join('')
+        const productFunnelRows = (insightsPayload.productFunnel || []).map(item => `
+            <tr>
+                <td>${escapeHtml(item.productId)}</td>
+                <td>${escapeHtml(item.views)}</td>
+                <td>${escapeHtml(item.addToCart)}</td>
+                <td>${escapeHtml(item.startCheckout)}</td>
+                <td>${escapeHtml(item.purchased)}</td>
+                <td>${escapeHtml(item.views > 0 ? Math.round((item.addToCart / item.views) * 100) : 0)}%</td>
+                <td>${escapeHtml(item.addToCart > 0 ? Math.round((item.purchased / item.addToCart) * 100) : 0)}%</td>
+            </tr>
+        `).join('')
+        const peakHourRows = Object.entries(insightsPayload.peakHours || {})
+            .map(([hour, count]) => ({ hour: Number(hour), count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 8)
+            .map(item => `
+                <tr>
+                    <td>${escapeHtml(item.hour)}:00</td>
+                    <td>${escapeHtml(item.count)}</td>
+                </tr>
+            `).join('')
+        const peakDayRows = Object.entries(insightsPayload.peakDays || {})
+            .map(([day, count]) => ({ day: Number(day), count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 7)
+            .map(item => `
+                <tr>
+                    <td>${escapeHtml(dayNames[item.day] || item.day)}</td>
+                    <td>${escapeHtml(item.count)}</td>
+                </tr>
+            `).join('')
+
         const insights = aiInsights.data || {}
         const aiBlock = aiInsights.status === 'ready'
             ? `
@@ -1475,12 +1543,54 @@ function InsightsTab() {
             </section>
 
             <section>
+                <h2>Funnel Performance</h2>
+                <div class="cards">
+                    <div class="card"><div class="label">View Product</div><div class="value">${escapeHtml(funnelData.viewProductSessions || 0)}</div></div>
+                    <div class="card"><div class="label">Add to Cart</div><div class="value">${escapeHtml(funnelData.addToCartSessions || 0)}</div></div>
+                    <div class="card"><div class="label">Start Checkout</div><div class="value">${escapeHtml(funnelData.startCheckoutSessions || 0)}</div></div>
+                    <div class="card"><div class="label">Complete Checkout</div><div class="value">${escapeHtml(funnelData.completeCheckoutSessions || 0)}</div></div>
+                </div>
+                <div class="cards">
+                    <div class="card"><div class="label">View → Cart</div><div class="value">${escapeHtml(funnelData.viewProductSessions ? Math.round((funnelData.addToCartSessions / funnelData.viewProductSessions) * 100) : 0)}%</div></div>
+                    <div class="card"><div class="label">Cart → Checkout</div><div class="value">${escapeHtml(funnelData.addToCartSessions ? Math.round((funnelData.startCheckoutSessions / funnelData.addToCartSessions) * 100) : 0)}%</div></div>
+                    <div class="card"><div class="label">Checkout → Purchase</div><div class="value">${escapeHtml(funnelData.startCheckoutSessions ? Math.round((funnelData.completeCheckoutSessions / funnelData.startCheckoutSessions) * 100) : 0)}%</div></div>
+                    <div class="card"><div class="label">Abandonment</div><div class="value">${escapeHtml(cartData.abandonmentRate || 0)}%</div></div>
+                </div>
+            </section>
+
+            <section>
                 <h2>User Behavior</h2>
                 <div class="cards">
                     <div class="card"><div class="label">Avg Session Duration</div><div class="value">${escapeHtml(metrics.avgSessionTime)}</div></div>
                     <div class="card"><div class="label">Scenes/Session</div><div class="value">${escapeHtml(metrics.avgScenesPerSession)}</div></div>
                     <div class="card"><div class="label">Return Sessions</div><div class="value">${escapeHtml(metrics.returnRate)}%</div></div>
                     <div class="card"><div class="label">Mobile Users</div><div class="value">${escapeHtml(metrics.mobilePercent)}%</div></div>
+                </div>
+            </section>
+
+            <section>
+                <h2>Engagement Depth</h2>
+                <div class="cards">
+                    <div class="card"><div class="label">Actions/Session Avg</div><div class="value">${escapeHtml(engagementData.actionsPerSessionAvg || 0)}</div></div>
+                    <div class="card"><div class="label">Actions/Session Median</div><div class="value">${escapeHtml(engagementData.actionsPerSessionMedian || 0)}</div></div>
+                    <div class="card"><div class="label">Actions/Session P90</div><div class="value">${escapeHtml(engagementData.actionsPerSessionP90 || 0)}</div></div>
+                    <div class="card"><div class="label">Scenes/Session Avg</div><div class="value">${escapeHtml(engagementData.scenesPerSessionAvg || 0)}</div></div>
+                </div>
+            </section>
+
+            <section>
+                <h2>Time to Action</h2>
+                <div class="cards">
+                    <div class="card"><div class="label">First Action Avg (s)</div><div class="value">${escapeHtml(timeData.averageSeconds || 0)}</div></div>
+                    <div class="card"><div class="label">First Action Median (s)</div><div class="value">${escapeHtml(timeData.medianSeconds || 0)}</div></div>
+                    <div class="card"><div class="label">First Action P90 (s)</div><div class="value">${escapeHtml(timeData.p90Seconds || 0)}</div></div>
+                    <div class="card"><div class="label">Add → Checkout Avg (s)</div><div class="value">${escapeHtml(checkoutData.addToCheckoutAvgSeconds || 0)}</div></div>
+                </div>
+                <div class="cards">
+                    <div class="card"><div class="label">Checkout → Purchase Avg (s)</div><div class="value">${escapeHtml(checkoutData.checkoutToPurchaseAvgSeconds || 0)}</div></div>
+                    <div class="card"><div class="label">Start Checkout Sessions</div><div class="value">${escapeHtml(cartData.startCheckoutSessions || 0)}</div></div>
+                    <div class="card"><div class="label">Complete Checkouts</div><div class="value">${escapeHtml(cartData.completeCheckoutSessions || 0)}</div></div>
+                    <div class="card"><div class="label">Abandonment</div><div class="value">${escapeHtml(cartData.abandonmentRate || 0)}%</div></div>
                 </div>
             </section>
 
@@ -1492,10 +1602,74 @@ function InsightsTab() {
             </section>
 
             <section>
+                <h2>Top Scene Transitions</h2>
+                ${transitionRows
+                    ? `<table><thead><tr><th>Path</th><th>Count</th></tr></thead><tbody>${transitionRows}</tbody></table>`
+                    : '<p>No transition data yet.</p>'}
+            </section>
+
+            <section>
                 <h2>Product Interactions</h2>
                 ${productRows
                     ? `<table><thead><tr><th>Product</th><th>Views</th><th>Add to Cart</th><th>Purchased</th><th>Conversion</th></tr></thead><tbody>${productRows}</tbody></table>`
                     : '<p>No product interactions yet.</p>'}
+            </section>
+
+            <section>
+                <h2>Product Funnel</h2>
+                ${productFunnelRows
+                    ? `<table><thead><tr><th>Product</th><th>Views</th><th>Add</th><th>Checkout</th><th>Purchased</th><th>View → Cart</th><th>Cart → Purchase</th></tr></thead><tbody>${productFunnelRows}</tbody></table>`
+                    : '<p>No product funnel data yet.</p>'}
+            </section>
+
+            <section>
+                <h2>Top Drop-offs</h2>
+                ${dropOffRows
+                    ? `<table><thead><tr><th>Last Action</th><th>Sessions</th></tr></thead><tbody>${dropOffRows}</tbody></table>`
+                    : '<p>No drop-off data yet.</p>'}
+            </section>
+
+            <section>
+                <h2>Peak Activity</h2>
+                <div class="grid">
+                    <div>
+                        <h3>Hours</h3>
+                        ${peakHourRows
+                            ? `<table><thead><tr><th>Hour</th><th>Sessions</th></tr></thead><tbody>${peakHourRows}</tbody></table>`
+                            : '<p>No peak hour data yet.</p>'}
+                    </div>
+                    <div>
+                        <h3>Days</h3>
+                        ${peakDayRows
+                            ? `<table><thead><tr><th>Day</th><th>Sessions</th></tr></thead><tbody>${peakDayRows}</tbody></table>`
+                            : '<p>No peak day data yet.</p>'}
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2>Chat Intents</h2>
+                ${chatRows
+                    ? `<table><thead><tr><th>Intent</th><th>Count</th></tr></thead><tbody>${chatRows}</tbody></table>`
+                    : '<p>No chat intent data yet.</p>'}
+            </section>
+
+            <section>
+                <h2>Entry Sources & Devices</h2>
+                <div class="grid">
+                    <div>
+                        <h3>Referrers</h3>
+                        ${referrerRows
+                            ? `<table><thead><tr><th>Referrer</th><th>Sessions</th></tr></thead><tbody>${referrerRows}</tbody></table>`
+                            : '<p>No referrer data yet.</p>'}
+                    </div>
+                    <div>
+                        <h3>Devices</h3>
+                        ${deviceRows
+                            ? `<table><thead><tr><th>Device</th><th>Sessions</th></tr></thead><tbody>${deviceRows}</tbody></table>`
+                            : '<p>No device data yet.</p>'}
+                    </div>
+                </div>
             </section>
 
             <section>
@@ -1549,6 +1723,7 @@ function InsightsTab() {
             topScenes: sceneMetrics.slice(0, 5),
             topProducts: productMetrics.slice(0, 5),
             topActions,
+            insights: summary.insights || {},
             timeRange
         }
     }
@@ -1710,6 +1885,46 @@ function InsightsTab() {
     const sceneMetrics = calculateSceneMetrics()
     const productMetrics = calculateProductMetrics()
     const recentActivity = getRecentActivity()
+    const insights = summary.insights || {}
+    const funnel = insights.funnel || {}
+    const dropOffs = insights.dropOffs || []
+    const transitions = insights.sceneTransitions || []
+    const timeToFirst = insights.timeToFirstAction || {}
+    const timeToCheckout = insights.timeToCheckout || {}
+    const cartAbandonment = insights.cartAbandonment || {}
+    const engagement = insights.engagement || {}
+    const peakHours = insights.peakHours || {}
+    const peakDays = insights.peakDays || {}
+    const repeatUsers = insights.repeatUsers || {}
+    const chatIntents = insights.topChatIntents || []
+    const referrers = insights.topReferrers || []
+    const deviceBreakdown = insights.deviceBreakdown || {}
+    const productFunnel = insights.productFunnel || []
+
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    const topHours = Object.entries(peakHours)
+        .map(([hour, count]) => ({ hour: Number(hour), count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5)
+    const topDays = Object.entries(peakDays)
+        .map(([day, count]) => ({ day: Number(day), count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5)
+
+    const deviceRows = Object.entries(deviceBreakdown)
+        .map(([device, count]) => ({ device, count }))
+        .sort((a, b) => b.count - a.count)
+
+    const funnelSteps = [
+        { label: 'View Product', count: funnel.viewProductSessions || 0 },
+        { label: 'Add to Cart', count: funnel.addToCartSessions || 0 },
+        { label: 'Start Checkout', count: funnel.startCheckoutSessions || 0 },
+        { label: 'Complete Checkout', count: funnel.completeCheckoutSessions || 0 }
+    ]
+    const funnelConversion = (from, to) => {
+        if (!from || from === 0) return 0
+        return Math.round((to / from) * 100)
+    }
 
     if (isLoading) {
         return (
@@ -1868,6 +2083,170 @@ function InsightsTab() {
                 </div>
             </div>
 
+            {/* Funnel Performance */}
+            <div className="insights-section">
+                <h3>Funnel Performance</h3>
+                <div className="metrics-grid-4">
+                    {funnelSteps.map(step => (
+                        <div className="metric-card" key={step.label}>
+                            <div className="metric-label">{step.label}</div>
+                            <div className="metric-value">{step.count}</div>
+                        </div>
+                    ))}
+                </div>
+                <div className="metrics-grid-4">
+                    <div className="metric-card">
+                        <div className="metric-label">View → Cart</div>
+                        <div className="metric-value">{funnelConversion(funnel.viewProductSessions, funnel.addToCartSessions)}%</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Cart → Checkout</div>
+                        <div className="metric-value">{funnelConversion(funnel.addToCartSessions, funnel.startCheckoutSessions)}%</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Checkout → Purchase</div>
+                        <div className="metric-value">{funnelConversion(funnel.startCheckoutSessions, funnel.completeCheckoutSessions)}%</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Abandonment</div>
+                        <div className="metric-value">{cartAbandonment.abandonmentRate || 0}%</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Time-to-Action */}
+            <div className="insights-section">
+                <h3>Time to Action</h3>
+                <div className="metrics-grid-4">
+                    <div className="metric-card">
+                        <div className="metric-label">First Action Avg</div>
+                        <div className="metric-value">{timeToFirst.averageSeconds || 0}s</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">First Action Median</div>
+                        <div className="metric-value">{timeToFirst.medianSeconds || 0}s</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">First Action P90</div>
+                        <div className="metric-value">{timeToFirst.p90Seconds || 0}s</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Add → Checkout Avg</div>
+                        <div className="metric-value">{timeToCheckout.addToCheckoutAvgSeconds || 0}s</div>
+                    </div>
+                </div>
+                <div className="metrics-grid-4">
+                    <div className="metric-card">
+                        <div className="metric-label">Checkout → Purchase Avg</div>
+                        <div className="metric-value">{timeToCheckout.checkoutToPurchaseAvgSeconds || 0}s</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Start Checkout Sessions</div>
+                        <div className="metric-value">{cartAbandonment.startCheckoutSessions || 0}</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Completed Checkouts</div>
+                        <div className="metric-value">{cartAbandonment.completeCheckoutSessions || 0}</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Return Rate</div>
+                        <div className="metric-value">{repeatUsers.returnRate || 0}%</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Engagement Depth */}
+            <div className="insights-section">
+                <h3>Engagement Depth</h3>
+                <div className="metrics-grid-4">
+                    <div className="metric-card">
+                        <div className="metric-label">Actions/Session Avg</div>
+                        <div className="metric-value">{engagement.actionsPerSessionAvg || 0}</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Actions/Session Median</div>
+                        <div className="metric-value">{engagement.actionsPerSessionMedian || 0}</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Actions/Session P90</div>
+                        <div className="metric-value">{engagement.actionsPerSessionP90 || 0}</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Scenes/Session Avg</div>
+                        <div className="metric-value">{engagement.scenesPerSessionAvg || 0}</div>
+                    </div>
+                </div>
+                <div className="metrics-grid-4">
+                    <div className="metric-card">
+                        <div className="metric-label">Scenes/Session Median</div>
+                        <div className="metric-value">{engagement.scenesPerSessionMedian || 0}</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Scenes/Session P90</div>
+                        <div className="metric-value">{engagement.scenesPerSessionP90 || 0}</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Avg Sessions/User</div>
+                        <div className="metric-value">{repeatUsers.avgSessionsPerUser || 0}</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Returning Users</div>
+                        <div className="metric-value">{repeatUsers.returningUsers || 0}</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Peak Activity */}
+            <div className="insights-section">
+                <h3>Peak Activity</h3>
+                <div className="insights-grid-2">
+                    <div className="insights-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Hour</th>
+                                    <th>Sessions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {topHours.length > 0 ? topHours.map(({ hour, count }) => (
+                                    <tr key={`hour-${hour}`}>
+                                        <td>{hour}:00</td>
+                                        <td>{count}</td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan="2">No data yet</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="insights-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Sessions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {topDays.length > 0 ? topDays.map(({ day, count }) => (
+                                    <tr key={`day-${day}`}>
+                                        <td>{dayNames[day] || day}</td>
+                                        <td>{count}</td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan="2">No data yet</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             {/* Scene Performance - Time Spent in Each Room */}
             <div className="insights-section">
                 <h3>Time Spent in Each Room</h3>
@@ -1907,6 +2286,33 @@ function InsightsTab() {
                 )}
             </div>
 
+            {/* Scene Transitions */}
+            <div className="insights-section">
+                <h3>Top Scene Transitions</h3>
+                {transitions.length > 0 ? (
+                    <div className="insights-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Path</th>
+                                    <th>Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {transitions.map((item, idx) => (
+                                    <tr key={`transition-${idx}`}>
+                                        <td>{item.path}</td>
+                                        <td>{item.count}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="empty-state">No transitions yet.</div>
+                )}
+            </div>
+
             {/* Top Products */}
             <div className="insights-section">
                 <h3>Product Interactions</h3>
@@ -1941,6 +2347,148 @@ function InsightsTab() {
                     </div>
                 ) : (
                     <div className="empty-state">No product interactions yet.</div>
+                )}
+            </div>
+
+            {/* Product Funnel */}
+            <div className="insights-section">
+                <h3>Product Funnel</h3>
+                {productFunnel.length > 0 ? (
+                    <div className="insights-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Product ID</th>
+                                    <th>Views</th>
+                                    <th>Add to Cart</th>
+                                    <th>Start Checkout</th>
+                                    <th>Purchased</th>
+                                    <th>View → Cart</th>
+                                    <th>Cart → Purchase</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {productFunnel.map((product, idx) => (
+                                    <tr key={`pf-${idx}`}>
+                                        <td>{product.productId}</td>
+                                        <td>{product.views}</td>
+                                        <td>{product.addToCart}</td>
+                                        <td>{product.startCheckout}</td>
+                                        <td>{product.purchased}</td>
+                                        <td>{product.views > 0 ? Math.round((product.addToCart / product.views) * 100) : 0}%</td>
+                                        <td>{product.addToCart > 0 ? Math.round((product.purchased / product.addToCart) * 100) : 0}%</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="empty-state">No product funnel data yet.</div>
+                )}
+            </div>
+
+            {/* Drop-off Actions */}
+            <div className="insights-section">
+                <h3>Top Drop-off Actions</h3>
+                {dropOffs.length > 0 ? (
+                    <div className="insights-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Last Action</th>
+                                    <th>Sessions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {dropOffs.map((item, idx) => (
+                                    <tr key={`dropoff-${idx}`}>
+                                        <td>{item.action.replace(/_/g, ' ')}</td>
+                                        <td>{item.count}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="empty-state">No drop-off data yet.</div>
+                )}
+            </div>
+
+            {/* Chat Intents & Referrers */}
+            <div className="insights-section">
+                <h3>Chat Intents & Entry Sources</h3>
+                <div className="insights-grid-2">
+                    <div className="insights-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Intent</th>
+                                    <th>Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {chatIntents.length > 0 ? chatIntents.map((item, idx) => (
+                                    <tr key={`intent-${idx}`}>
+                                        <td>{item.intent.replace(/_/g, ' ')}</td>
+                                        <td>{item.count}</td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan="2">No chat data yet</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="insights-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Referrer</th>
+                                    <th>Sessions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {referrers.length > 0 ? referrers.map((item, idx) => (
+                                    <tr key={`ref-${idx}`}>
+                                        <td>{item.referrer}</td>
+                                        <td>{item.count}</td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan="2">No referrer data yet</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {/* Devices */}
+            <div className="insights-section">
+                <h3>Device Breakdown</h3>
+                {deviceRows.length > 0 ? (
+                    <div className="insights-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Device</th>
+                                    <th>Sessions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {deviceRows.map((item, idx) => (
+                                    <tr key={`device-${idx}`}>
+                                        <td>{item.device}</td>
+                                        <td>{item.count}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="empty-state">No device data yet.</div>
                 )}
             </div>
 

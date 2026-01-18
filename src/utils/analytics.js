@@ -30,6 +30,19 @@ sessionStorage.setItem('shopiverse_session_start', sessionStartTime.toString())
 // Track current scene and entry time for duration calculation
 let currentScene = null
 let sceneEntryTime = null
+let eventCounter = 0
+
+const getDeviceType = () => {
+  const ua = navigator.userAgent.toLowerCase()
+  if (ua.includes('mobile') || ua.includes('iphone') || ua.includes('android')) return 'mobile'
+  if (ua.includes('ipad') || ua.includes('tablet')) return 'tablet'
+  return 'desktop'
+}
+
+const getEventId = () => {
+  eventCounter += 1
+  return `evt_${Date.now()}_${eventCounter}`
+}
 
 /**
  * Track a user action and send it to the backend
@@ -42,11 +55,19 @@ export async function trackEvent(action, data = {}) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        eventId: getEventId(),
         action,
         timestamp: new Date().toISOString(),
         sessionId: getSessionId(),
         userId: getUserId(),
         sessionDuration: Math.round((Date.now() - sessionStartTime) / 1000), // seconds since session start
+        deviceType: getDeviceType(),
+        page: window.location.pathname || 'store',
+        scene: currentScene,
+        productId: data.productId || data.hotspotId,
+        orderTotal: data.total,
+        cartValue: data.total,
+        messageText: data.messageText,
         data
       })
     })
@@ -164,6 +185,7 @@ export const analytics = {
   closeChatbot: () => trackEvent('close_chatbot', { scene: currentScene }),
   sendChatMessage: (message) => trackEvent('send_chat_message', {
     messageLength: message.length,
+    messageText: message.slice(0, 200),
     scene: currentScene
   }),
 
@@ -198,11 +220,15 @@ if (!sessionStorage.getItem(INIT_KEY)) {
   window.addEventListener('beforeunload', () => {
     // Use sendBeacon for reliable delivery on page unload
     const data = JSON.stringify({
+      eventId: getEventId(),
       action: 'session_end',
       timestamp: new Date().toISOString(),
       sessionId: getSessionId(),
       userId: getUserId(),
       sessionDuration: Math.round((Date.now() - sessionStartTime) / 1000),
+      deviceType: getDeviceType(),
+      page: window.location.pathname || 'store',
+      scene: currentScene,
       data: {
         totalDuration: Math.round((Date.now() - sessionStartTime) / 1000),
         lastScene: currentScene,
