@@ -17,7 +17,7 @@ Usage:
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict
 import json
 import os
 import shutil
@@ -117,6 +117,7 @@ class SceneUpdate(BaseModel):
     image: Optional[str] = None
     ply: Optional[str] = None
     name: Optional[str] = None
+    connections: Optional[Dict[str, str]] = None
 
 
 def ensure_data_dir():
