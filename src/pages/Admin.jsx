@@ -4,7 +4,7 @@ import { getSettings, updateSettings } from '../config/settings'
 import { navigationConfig } from '../config/navigation'
 import { getSceneHotspots, getSceneHotspotsAsync, saveSceneHotspots, exportHotspots, importHotspots } from '../config/hotspots'
 import { HotspotEditor } from '../components/HotspotEditor'
-import { generateImage } from '../utils/geminiImageGen'
+import { generateImage, uploadFileToServer, uploadImageToServer } from '../utils/geminiImageGen'
 import { generateInsights, isGeminiInsightsConfigured } from '../utils/geminiInsights'
 import './Admin.css'
 
@@ -836,10 +836,39 @@ function ScenesTab() {
                         onMouseLeave={handleMouseUp}
                     >
                     <defs>
+                        <linearGradient id="canvasGradient" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="#FFF3E4" />
+                            <stop offset="100%" stopColor="#F8E4CF" />
+                        </linearGradient>
+                        <pattern id="canvasGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+                            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#E7D6C3" strokeWidth="1" />
+                        </pattern>
                         <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
                             <polygon points="0 0, 10 3, 0 6" fill="#FF6B35" />
                         </marker>
                     </defs>
+
+                    {/* Canvas-style store floorplan backdrop */}
+                    <g className="store-floorplan" aria-hidden="true">
+                        <rect x="10" y="10" width="780" height="580" rx="26" fill="url(#canvasGradient)" />
+                        <rect x="10" y="10" width="780" height="580" rx="26" fill="url(#canvasGrid)" opacity="0.35" />
+                        <rect className="floor-border" x="22" y="22" width="756" height="556" rx="22" />
+                        <rect className="floor-entrance" x="320" y="24" width="160" height="54" rx="14" />
+                        <rect className="floor-aisle" x="360" y="110" width="80" height="360" rx="18" />
+                        <rect className="floor-shelf" x="90" y="120" width="190" height="70" rx="14" />
+                        <rect className="floor-shelf" x="90" y="220" width="190" height="70" rx="14" />
+                        <rect className="floor-shelf" x="90" y="320" width="190" height="70" rx="14" />
+                        <rect className="floor-shelf" x="90" y="420" width="190" height="70" rx="14" />
+                        <rect className="floor-shelf" x="520" y="120" width="190" height="70" rx="14" />
+                        <rect className="floor-shelf" x="520" y="220" width="190" height="70" rx="14" />
+                        <rect className="floor-shelf" x="520" y="320" width="190" height="70" rx="14" />
+                        <rect className="floor-checkout" x="520" y="430" width="230" height="110" rx="18" />
+                        <path className="floor-path" d="M 400 90 L 400 510" />
+                        <path className="floor-path" d="M 140 255 L 660 255" />
+                        <path className="floor-path" d="M 140 355 L 660 355" />
+                        <text className="floor-label" x="400" y="58" textAnchor="middle">Entrance</text>
+                        <text className="floor-label" x="635" y="488" textAnchor="middle">Checkout</text>
+                    </g>
                     
                     {/* Connection lines - dynamically positioned */}
                     {/* storeFront -> storeP1 */}
@@ -1159,6 +1188,14 @@ function ScenesTab() {
                 const [bgPrompt, setBgPrompt] = useState('')
                 const [bgGenerating, setBgGenerating] = useState(false)
                 
+                const applyBackgroundPath = (path) => {
+                    if (!path) return
+                    if (navigationConfig[backgroundChanger.id]) {
+                        navigationConfig[backgroundChanger.id].image = path
+                    }
+                    setBackgroundChanger(prev => prev ? { ...prev, image: path } : prev)
+                }
+
                 const handleGenerateBg = async () => {
                     if (!bgPrompt.trim()) {
                         alert('Please enter a prompt for background generation')
@@ -1178,25 +1215,13 @@ function ScenesTab() {
                         
                         // Generate image using Gemini API
                         const imageDataUrl = await generateImage(bgPrompt)
+
+                        const filename = `${backgroundChanger.id}_bg_${Date.now()}`
+                        const uploadedPath = await uploadImageToServer(imageDataUrl, filename)
+                        applyBackgroundPath(uploadedPath)
                         
-                        // Convert data URL to blob for download
-                        const response = await fetch(imageDataUrl)
-                        const blob = await response.blob()
-                        const filename = `${backgroundChanger.id}_bg_${Date.now()}.png`
-                        
-                        // Create download link
-                        const url = URL.createObjectURL(blob)
-                        const a = document.createElement('a')
-                        a.href = url
-                        a.download = filename
-                        a.click()
-                        URL.revokeObjectURL(url)
-                        
-                        console.log('✅ Background generated and downloaded:', filename)
-                        console.log('📁 Move to: public/')
-                        console.log('🔧 Update navigation config path to:', `/${filename}`)
-                        
-                        alert(`Background generated successfully!\n\nFile: ${filename}\n\n1. Move the downloaded file to public/ folder\n2. Update navigation config with: /${filename}`)
+                        console.log('✅ Background generated and uploaded:', uploadedPath)
+                        alert(`Background generated and uploaded.\n\nPath: ${uploadedPath}\n\nNote: This updates the in-memory config only. Commit navigation config if you want this persisted.`)
                         
                         // Clear prompt
                         setBgPrompt('')
@@ -1263,7 +1288,7 @@ function ScenesTab() {
                                                 Choose Background Image
                                             </label>
                                             <p className="modal-help-text">
-                                                Image will be saved to public/ folder. Use the filename in your navigation config.
+                                                Image will be uploaded to the server and stored in public/. Update navigation config to persist.
                                             </p>
                                         </>
                                     ) : (
@@ -1310,27 +1335,25 @@ function ScenesTab() {
                                 {bgMode === 'upload' && (
                                     <button 
                                         className="modal-btn confirm"
-                                        onClick={() => {
+                                        onClick={async () => {
                                             const fileInput = document.getElementById('new-bg-file')
                                             if (fileInput.files.length > 0) {
-                                                const file = fileInput.files[0]
-                                                const filename = `${backgroundChanger.id}_bg_${Date.now()}.${file.name.split('.').pop()}`
-                                                
-                                                const url = URL.createObjectURL(file)
-                                                const a = document.createElement('a')
-                                                a.href = url
-                                                a.download = filename
-                                                a.click()
-                                                URL.revokeObjectURL(url)
-                                                
-                                                console.log('📥 Background image downloaded:', filename)
-                                                console.log('📁 Move to: public/')
-                                                console.log('🔧 Update navigation config path to:', `/${filename}`)
+                                                try {
+                                                    const file = fileInput.files[0]
+                                                    const filename = `${backgroundChanger.id}_bg_${Date.now()}`
+                                                    const uploadedPath = await uploadFileToServer(file, filename)
+                                                    applyBackgroundPath(uploadedPath)
+                                                    console.log('✅ Background uploaded:', uploadedPath)
+                                                } catch (error) {
+                                                    console.error('❌ Error uploading background:', error)
+                                                    alert('Failed to upload background: ' + error.message)
+                                                    return
+                                                }
                                             }
                                             setBackgroundChanger(null)
                                         }}
                                     >
-                                        Download & Update
+                                        Upload & Update
                                     </button>
                                 )}
                             </div>

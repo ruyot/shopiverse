@@ -3,7 +3,7 @@ import { X, Save, Edit2, Image as ImageIcon, Plus, Trash2, Zap, RefreshCw, Cross
 import * as THREE from 'three'
 import { SplatMesh } from '@sparkjsdev/spark'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-import { generateImage } from '../utils/geminiImageGen'
+import { generateImage, uploadImageToServer } from '../utils/geminiImageGen'
 import { getSceneHotspotsAsync } from '../config/hotspots.js'
 import './HotspotEditor.css'
 
@@ -627,9 +627,11 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
 
             // Generate image using Gemini API
             const imageDataUrl = await generateImage(aiPrompt)
+            const filename = `hotspot_${hotspot.id}_${Date.now()}`
+            const uploadedPath = await uploadImageToServer(imageDataUrl, filename)
 
             // Add the generated image to the hotspot
-            onAddImage(imageDataUrl)
+            onAddImage(uploadedPath)
 
             // Clear the prompt
             setAiPrompt('')

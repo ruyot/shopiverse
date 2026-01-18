@@ -6,6 +6,53 @@
 import { GoogleGenAI } from "@google/genai";
 
 const GEMINI_IMAGE_API_KEY = import.meta.env.VITE_GEMINI_IMAGE_API_KEY || '';
+const API_BASE = 'http://localhost:5000/api';
+
+function getExtensionFromMime(mimeType) {
+    if (!mimeType) return 'png';
+    if (mimeType.includes('jpeg')) return 'jpg';
+    if (mimeType.includes('png')) return 'png';
+    if (mimeType.includes('webp')) return 'webp';
+    if (mimeType.includes('gif')) return 'gif';
+    return 'png';
+}
+
+function ensureFilename(filename, mimeType) {
+    if (!filename) {
+        const ext = getExtensionFromMime(mimeType);
+        return `generated_image_${Date.now()}.${ext}`;
+    }
+    if (filename.includes('.')) return filename;
+    const ext = getExtensionFromMime(mimeType);
+    return `${filename}.${ext}`;
+}
+
+export async function uploadImageToServer(dataUrl, filename) {
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+    const resolvedName = ensureFilename(filename, blob.type);
+    const file = new File([blob], resolvedName, { type: blob.type || 'image/png' });
+    return uploadFileToServer(file, resolvedName);
+}
+
+export async function uploadFileToServer(file, filename) {
+    const resolvedName = ensureFilename(filename || file?.name, file?.type);
+    const formData = new FormData();
+    formData.append('file', file, resolvedName);
+
+    const response = await fetch(`${API_BASE}/upload`, {
+        method: 'POST',
+        body: formData
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    return result.path;
+}
 
 /**
  * Generate an image using Gemini AI
@@ -65,7 +112,7 @@ Remember: ONLY THE ITEM ITSELF. NO PEOPLE. NO HUMANS. NO MODELS.`;
                 console.log('✅ Image generated successfully');
                 
                 if (options.autoSave) {
-                    saveImageToClient(dataUrl, prompt);
+                    await saveImageToClient(dataUrl, prompt);
                 }
                 
                 return dataUrl;
@@ -77,31 +124,15 @@ Remember: ONLY THE ITEM ITSELF. NO PEOPLE. NO HUMANS. NO MODELS.`;
 }
 
 /**
- * Save image data URL to localStorage
+ * Save image data URL to the Python server (public folder)
  * @param {string} dataUrl - The image data URL
  * @param {string} prompt - The prompt used to generate the image
- * @returns {string} - The key used to store the image
+ * @returns {Promise<string>} - The public path of the uploaded image
  */
 export function saveImageToClient(dataUrl, prompt) {
-    const timestamp = Date.now();
-    const key = `generated_image_${timestamp}`;
-    
-    const imageData = {
-        dataUrl,
-        prompt,
-        timestamp,
-        createdAt: new Date().toISOString()
-    };
-    
-    localStorage.setItem(key, JSON.stringify(imageData));
-    
-    // Maintain a list of all saved images
-    const savedImagesList = getSavedImagesList();
-    savedImagesList.push(key);
-    localStorage.setItem('saved_images_list', JSON.stringify(savedImagesList));
-    
-    console.log('💾 Image saved to localStorage with key:', key);
-    return key;
+    const filename = `generated_${Date.now()}`;
+    console.log('💾 Uploading generated image to server:', prompt);
+    return uploadImageToServer(dataUrl, filename);
 }
 
 /**
@@ -110,8 +141,8 @@ export function saveImageToClient(dataUrl, prompt) {
  * @returns {Object|null} - The saved image data or null if not found
  */
 export function getSavedImage(key) {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : null;
+    console.warn('getSavedImage is deprecated; images are stored on the server.');
+    return null;
 }
 
 /**
@@ -119,8 +150,8 @@ export function getSavedImage(key) {
  * @returns {Array<string>} - Array of saved image keys
  */
 export function getSavedImagesList() {
-    const list = localStorage.getItem('saved_images_list');
-    return list ? JSON.parse(list) : [];
+    console.warn('getSavedImagesList is deprecated; images are stored on the server.');
+    return [];
 }
 
 /**
@@ -128,8 +159,8 @@ export function getSavedImagesList() {
  * @returns {Array<Object>} - Array of saved image objects
  */
 export function getAllSavedImages() {
-    const keys = getSavedImagesList();
-    return keys.map(key => getSavedImage(key)).filter(Boolean);
+    console.warn('getAllSavedImages is deprecated; images are stored on the server.');
+    return [];
 }
 
 /**
@@ -138,14 +169,8 @@ export function getAllSavedImages() {
  * @returns {boolean} - True if deleted successfully
  */
 export function deleteSavedImage(key) {
-    localStorage.removeItem(key);
-    
-    const savedImagesList = getSavedImagesList();
-    const updatedList = savedImagesList.filter(k => k !== key);
-    localStorage.setItem('saved_images_list', JSON.stringify(updatedList));
-    
-    console.log('🗑️ Image deleted:', key);
-    return true;
+    console.warn('deleteSavedImage is deprecated; images are stored on the server.');
+    return false;
 }
 
 /**
@@ -153,11 +178,8 @@ export function deleteSavedImage(key) {
  * @returns {boolean} - True if cleared successfully
  */
 export function clearAllSavedImages() {
-    const keys = getSavedImagesList();
-    keys.forEach(key => localStorage.removeItem(key));
-    localStorage.removeItem('saved_images_list');
-    console.log('🗑️ All saved images cleared');
-    return true;
+    console.warn('clearAllSavedImages is deprecated; images are stored on the server.');
+    return false;
 }
 
 /**
