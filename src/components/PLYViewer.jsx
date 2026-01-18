@@ -42,10 +42,16 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
             splatRef.current = null
         }
 
-        // Create renderer
-        const renderer = new THREE.WebGLRenderer({ antialias: true })
+        // Create renderer with Spark-optimized settings
+        const renderer = new THREE.WebGLRenderer({ 
+            antialias: false, // Splats don't benefit from MSAA, adds overhead
+            powerPreference: 'high-performance',
+            stencil: false,
+            depth: true
+        })
         renderer.setSize(canvasContainerRef.current.clientWidth, canvasContainerRef.current.clientHeight)
-        renderer.setPixelRatio(window.devicePixelRatio)
+        // Limit pixel ratio - splats are dense enough without high DPI
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
         canvasContainerRef.current.appendChild(renderer.domElement)
         rendererRef.current = renderer
 
@@ -78,7 +84,7 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
         // Add hotspot spheres - small white orbs
         const hotspotMeshes = []
         if (hotspots && hotspots.length > 0) {
-            const sphereGeometry = new THREE.SphereGeometry(0.08, 16, 16) // Smaller orbs
+            const sphereGeometry = new THREE.SphereGeometry(0.03, 12, 12) // Small orbs
             const sphereMaterial = new THREE.MeshBasicMaterial({
                 color: 0xffffff, // White
                 transparent: true,
@@ -98,8 +104,11 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
         }
         hotspotMeshesRef.current = hotspotMeshes
 
-        // Load splat using Spark
-        const splat = new SplatMesh({ url: plyPath })
+        // Load splat using Spark with performance optimizations
+        const splat = new SplatMesh({ 
+            url: plyPath,
+            maxStdDev: Math.sqrt(5) // Reduce Gaussian extent for better perf (default: sqrt(8))
+        })
         splat.quaternion.set(1, 0, 0, 0) // 180 deg X rotation
         splat.scale.set(2.5, 2.5, 2.5)
         scene.add(splat)
@@ -240,10 +249,12 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
                 keysPressed.current.add(key)
             }
 
-            // Debug: Log camera position on 'P'
-            if (key === 'p' && cameraRef.current) {
+            // Debug: Log camera position and target on 'P'
+            if (key === 'p' && cameraRef.current && controlsRef.current) {
                 const cam = cameraRef.current
+                const target = controlsRef.current.target
                 console.log(`📸 Camera Position: [${cam.position.x.toFixed(5)}, ${cam.position.y.toFixed(5)}, ${cam.position.z.toFixed(5)}]`)
+                console.log(`🎯 Looking At: [${target.x.toFixed(5)}, ${target.y.toFixed(5)}, ${target.z.toFixed(5)}]`)
             }
         }
 
