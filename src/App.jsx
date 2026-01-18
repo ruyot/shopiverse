@@ -2,7 +2,9 @@ import { useState, useEffect, useCallback } from 'react'
 import { navigationConfig, initialViewpoint } from './config/navigation'
 import { PLYViewer } from './components/PLYViewer'
 import { ProductCard } from './components/ProductCard'
-import { Terminal, X } from 'lucide-react'
+import { CartSidebar } from './components/CartSidebar'
+import { SuccessModal } from './components/SuccessModal'
+import { Terminal, X, ShoppingCart } from 'lucide-react'
 import { getSettings } from './config/settings'
 import { getSceneHotspots } from './config/hotspots'
 import './App.css'
@@ -23,11 +25,159 @@ function App() {
     const [contentVisible, setContentVisible] = useState(() => !navigationConfig[initialViewpoint].ply) // Controls delayed visibility of arrows/hotspots
     const [currentHotspots, setCurrentHotspots] = useState([])
     const [selectedHotspot, setSelectedHotspot] = useState(null)
+    const [cartItems, setCartItems] = useState(() => {
+        // Load cart from localStorage on mount
+        const savedCart = localStorage.getItem('shopiverse_cart')
+        return savedCart ? JSON.parse(savedCart) : []
+    })
+    const [showCart, setShowCart] = useState(false)
+    const [showSuccess, setShowSuccess] = useState(false)
+    const [orderDetails, setOrderDetails] = useState(null)
 
     const currentViewpoint = navigationConfig[currentId]
     const connections = currentViewpoint?.connections || {}
     const isStoreFront = currentId === 'storeFront'
     const hasPLY = !!currentViewpoint?.ply
+
+    // Save cart to localStorage whenever it changes
+    useEffect(() => {
+        localStorage.setItem('shopiverse_cart', JSON.stringify(cartItems))
+    }, [cartItems])
+
+    // Add item to cart
+    const addToCart = useCallback((hotspot) => {
+        setCartItems(prevItems => {
+            // Check if item already exists in cart
+            const existingItemIndex = prevItems.findIndex(item => item.hotspotId === hotspot.id)
+            
+            if (existingItemIndex > -1) {
+                // Item exists, increment quantity
+                const updatedItems = [...prevItems]
+                updatedItems[existingItemIndex].quantity += 1
+                return updatedItems
+            } else {
+                // New item, add to cart
+                const newItem = {
+                    id: `cart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    hotspotId: hotspot.id,
+                    title: hotspot.title || hotspot.label || 'Product',
+                    price: hotspot.price ? parseFloat(hotspot.price.replace('$', '')) : 49.99,
+                    quantity: 1,
+                    image: hotspot.images && hotspot.images.length > 0 ? hotspot.images[0] : null
+                }
+                return [...prevItems, newItem]
+            }
+        })
+    }, [])
+
+    // Remove item from cart
+    const removeFromCart = useCallback((cartItemId) => {
+        setCartItems(prevItems => prevItems.filter(item => item.id !== cartItemId))
+    }, [])
+
+    // Update item quantity
+    const updateQuantity = useCallback((cartItemId, newQuantity) => {
+        if (newQuantity < 1) {
+            removeFromCart(cartItemId)
+            return
+        }
+        setCartItems(prevItems => 
+            prevItems.map(item => 
+                item.id === cartItemId ? { ...item, quantity: newQuantity } : item
+            )
+        )
+    }, [removeFromCart])
+
+    // Clear entire cart
+    const clearCart = useCallback(() => {
+        setCartItems([])
+    }, [])
+
+    // Stripe checkout - redirect to Stripe hosted page
+    const handleCheckout = useCallback(async () => {
+        try {
+            // Close cart
+            setShowCart(false)
+
+            // Create checkout session
+            const response = await fetch('http://localhost:3001/create-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cartItems }),
+            })
+
+            const { url } = await response.json()
+            
+            // Redirect to Stripe Checkout
+            window.location.href = url
+        } catch (error) {
+            console.error('Checkout error:', error)
+            alert('Failed to start checkout. Please make sure the server is running.')
+        }
+    }, [cartItems])
+
+    // Check for Stripe success redirect
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search)
+        const success = urlParams.get('success')
+        const sessionId = urlParams.get('session_id')
+
+        if (success === 'true' && sessionId) {
+            // Fetch session details from backend
+            fetch(`http://localhost:3001/session/${sessionId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const session = data.session
+                    
+                    // Calculate total
+                    const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+                    const tax = subtotal * 0.13
+                    const total = subtotal + tax
+
+                    // Create order details
+                    const details = {
+                        orderNumber: sessionId.substring(8, 16).toUpperCase(),
+                        customerName: session.customer_details?.name || 'Customer',
+                        customerEmail: session.customer_details?.email || 'N/A',
+                        items: cartItems,
+                        total: total,
+                        timestamp: new Date().toISOString()
+                    }
+
+                    setOrderDetails(details)
+                    setShowSuccess(true)
+                    clearCart()
+
+                    // Clean up URL
+                    window.history.replaceState({}, '', '/')
+                })
+                .catch(err => {
+                    console.error('Error fetching session:', err)
+                    // Still show success with basic info
+                    const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+                    const tax = subtotal * 0.13
+                    const total = subtotal + tax
+
+                    setOrderDetails({
+                        orderNumber: sessionId.substring(8, 16).toUpperCase(),
+                        customerName: 'Customer',
+                        customerEmail: 'N/A',
+                        items: cartItems,
+                        total: total,
+                        timestamp: new Date().toISOString()
+                    })
+                    setShowSuccess(true)
+                    clearCart()
+                    window.history.replaceState({}, '', '/')
+                })
+        }
+    }, [cartItems, clearCart])
+
+    // Close success modal
+    const handleSuccessClose = useCallback(() => {
+        setShowSuccess(false)
+        setOrderDetails(null)
+    }, [])
 
     // Load hotspots for current scene
     useEffect(() => {
@@ -219,6 +369,18 @@ function App() {
 
 
 
+            {/* Shopping Cart Icon */}
+            <button
+                className="cart-icon"
+                onClick={() => setShowCart(!showCart)}
+                title="Shopping Cart"
+            >
+                <ShoppingCart size={20} strokeWidth={2} />
+                {cartItems.length > 0 && (
+                    <span className="cart-badge">{cartItems.length}</span>
+                )}
+            </button>
+
             {/* Command Palette Toggle */}
             <button
                 className="command-toggle"
@@ -316,8 +478,26 @@ function App() {
                     hotspot={selectedHotspot}
                     position={{ x: selectedHotspot.x, y: selectedHotspot.y }}
                     onClose={() => setSelectedHotspot(null)}
+                    onAddToCart={addToCart}
                 />
             )}
+
+            {/* Cart Sidebar */}
+            <CartSidebar
+                isOpen={showCart}
+                onClose={() => setShowCart(false)}
+                cartItems={cartItems}
+                onUpdateQuantity={updateQuantity}
+                onRemoveItem={removeFromCart}
+                onCheckout={handleCheckout}
+            />
+
+            {/* Success Modal */}
+            <SuccessModal
+                isOpen={showSuccess}
+                onClose={handleSuccessClose}
+                orderDetails={orderDetails}
+            />
         </div>
     )
 }

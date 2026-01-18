@@ -1,5 +1,7 @@
 # Shopiverse
 
+![alt text](image.png)
+
 **A 3D Virtual Store Experience Platform — Google Street View Meets E-Commerce**
 
 Transform any physical retail store into an immersive, navigable 3D shopping experience. Customers can explore your store virtually, browse products, and checkout seamlessly — all from their browser.
