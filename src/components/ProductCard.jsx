@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react'
 import './ProductCard.css'
 
 /**
@@ -7,7 +7,7 @@ import './ProductCard.css'
  * Floating glassmorphism card that appears next to hotspots
  * Features a connecting triangle and image carousel
  */
-export function ProductCard({ hotspot, position, onClose }) {
+export function ProductCard({ hotspot, position, onClose, onAddToCart }) {
     const images = hotspot.images || []
     const hasImage = images.length > 0
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -37,6 +37,17 @@ export function ProductCard({ hotspot, position, onClose }) {
         setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
     }
 
+    const handleAddToCart = (e) => {
+        e.stopPropagation()
+        if (onAddToCart) {
+            onAddToCart(hotspot)
+            // Close the card after adding to cart for better UX
+            setTimeout(() => {
+                onClose()
+            }, 300)
+        }
+    }
+
     return (
         <>
             {/* Invisible overlay to detect clicks outside */}
@@ -45,7 +56,7 @@ export function ProductCard({ hotspot, position, onClose }) {
             {/* Connecting triangle */}
             <div 
                 className={`card-connector-triangle ${isLeftSide ? 'point-right' : 'point-left'}`} 
-                style={triangleStyle} 
+                style={triangleStyle}
             />
             
             <div 
@@ -109,6 +120,12 @@ export function ProductCard({ hotspot, position, onClose }) {
                     {!hotspot.price && (
                         <div className="card-price">$49.99</div>
                     )}
+                    
+                    {/* Add to Cart Button */}
+                    <button className="card-add-to-cart" onClick={handleAddToCart}>
+                        <ShoppingCart size={16} strokeWidth={2.5} />
+                        <span>Add to Cart</span>
+                    </button>
                 </div>
             </div>
         </>

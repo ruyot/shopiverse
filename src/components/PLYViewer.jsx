@@ -1,160 +1,237 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import * as THREE from 'three'
-import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d'
+import { SplatMesh } from '@sparkjsdev/spark'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 /**
  * PLYViewer Component
  * 
- * Renders Gaussian Splat PLY files using @mkkellogg/gaussian-splats-3d
- * This is required because standard PLY loaders cannot render splats correctly.
+ * Renders Gaussian Splat PLY files using @sparkjsdev/spark
+ * Integrates Three.js meshes with splats for proper hotspot rendering.
  */
 export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) {
     const containerRef = useRef(null)
-    const viewerRef = useRef(null)
-    const [progress, setProgress] = useState(0)
+    const canvasContainerRef = useRef(null)
+    const cameraRef = useRef(null)
+    const controlsRef = useRef(null)
+    const splatRef = useRef(null)
+    const hotspotMeshesRef = useRef([])
+    const animationIdRef = useRef(null)
+    const rendererRef = useRef(null)
     const [isLoaded, setIsLoaded] = useState(false)
+    const [showContent, setShowContent] = useState(false)
     const keysPressed = useRef(new Set())
 
+    // Initialize Three.js scene
     useEffect(() => {
-        if (!containerRef.current || !plyPath) return
+        if (!canvasContainerRef.current || !plyPath) return
 
         setIsLoaded(false)
-        setProgress(0)
+        setShowContent(false)
 
-        // Dispose previous viewer if exists
-        if (viewerRef.current) {
-            viewerRef.current.dispose()
-            viewerRef.current = null
+        // Clean up previous scene
+        if (animationIdRef.current) {
+            cancelAnimationFrame(animationIdRef.current)
+        }
+        if (rendererRef.current) {
+            rendererRef.current.dispose()
+        }
+        canvasContainerRef.current.innerHTML = ''
+        if (splatRef.current) {
+            splatRef.current.dispose?.()
+            splatRef.current = null
         }
 
-        // Initialize Gaussian Splat Viewer
-        const viewer = new GaussianSplats3D.Viewer({
-            'rootElement': containerRef.current,
-            'cameraUp': [0, 1, 0],
-            'initialCameraPosition': [0, 0, -0.8], // Start deeper inside (past pillars)
-            'initialCameraLookAt': [0, 0, -1], // Look further ahead
-            'halfPrecisionCovariancesOnGPU': true,
-            'antialiased': true,
-            'alphaRemovalThreshold': 2,
-        })
+        // Create renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true })
+        renderer.setSize(canvasContainerRef.current.clientWidth, canvasContainerRef.current.clientHeight)
+        renderer.setPixelRatio(window.devicePixelRatio)
+        canvasContainerRef.current.appendChild(renderer.domElement)
+        rendererRef.current = renderer
 
-        // Restrict rotation to keep user focused on the scene and avoid black voids
-        if (viewer.controls) {
-            // Horizontal rotation (Azimuth): Limit to +/- 20 degrees
-            viewer.controls.minAzimuthAngle = -Math.PI / 9
-            viewer.controls.maxAzimuthAngle = Math.PI / 9
+        // Create scene
+        const scene = new THREE.Scene()
+        scene.background = new THREE.Color(0x000000)
 
-            // Vertical rotation (Polar): Limit to middle band (80 to 100 degrees - roughly +/- 10 degrees from horizontal)
-            // 90 deg = Math.PI / 2
-            // 20 deg = Math.PI / 9
-            viewer.controls.minPolarAngle = (Math.PI / 2) - (Math.PI / 9)
-            viewer.controls.maxPolarAngle = (Math.PI / 2) + (Math.PI / 9)
+        // Create camera - more zoomed in view
+        const camera = new THREE.PerspectiveCamera(
+            40, // Even narrower FOV for more zoom
+            canvasContainerRef.current.clientWidth / canvasContainerRef.current.clientHeight,
+            0.1,
+            1000
+        )
+        camera.position.set(0, 0, 0) // Even closer
+        camera.up.set(0, 1, 0)
+        cameraRef.current = camera
 
-            // Smooth out the controls
-            viewer.controls.enableDamping = true
-            viewer.controls.dampingFactor = 0.05
+        // Create orbit controls
+        const controls = new OrbitControls(camera, renderer.domElement)
+        controls.target.set(0, 0, -2) // Look further into scene
+        controls.enableDamping = true
+        controls.dampingFactor = 0.1 // Smoother damping
+        controls.minAzimuthAngle = -Math.PI / 9
+        controls.maxAzimuthAngle = Math.PI / 9
+        controls.minPolarAngle = (Math.PI / 2) - (Math.PI / 9)
+        controls.maxPolarAngle = (Math.PI / 2) + (Math.PI / 9)
+        controlsRef.current = controls
+
+        // Add hotspot spheres - small white orbs
+        const hotspotMeshes = []
+        if (hotspots && hotspots.length > 0) {
+            const sphereGeometry = new THREE.SphereGeometry(0.08, 16, 16) // Smaller orbs
+            const sphereMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffff, // White
+                transparent: true,
+                opacity: 0.9
+            })
+
+            hotspots.forEach(hotspot => {
+                if (!hotspot.position) return
+
+                const mesh = new THREE.Mesh(sphereGeometry, sphereMaterial.clone())
+                mesh.position.set(...hotspot.position)
+                mesh.userData = { hotspot }
+
+                scene.add(mesh)
+                hotspotMeshes.push(mesh)
+            })
         }
+        hotspotMeshesRef.current = hotspotMeshes
 
-        viewerRef.current = viewer
+        // Load splat using Spark
+        const splat = new SplatMesh({ url: plyPath })
+        splat.quaternion.set(1, 0, 0, 0) // 180 deg X rotation
+        splat.scale.set(2.5, 2.5, 2.5)
+        scene.add(splat)
+        splatRef.current = splat
 
-        // Load the main splat file first
-        // Rotation: quaternion [x, y, z, w]
-        // [1, 0, 0, 0] = 180 deg X rotation
-        // [0, 0, 1, 0] = 180 deg Z rotation
-        const loadMain = viewer.addSplatScene(plyPath, {
-            'showLoadingUI': false,
-            'position': [0, 0, 0],
-            'rotation': [1, 0, 0, 0], // Flip 180 around X
-            'scale': [2.5, 2.5, 2.5], // Scale up world to feel "inside" it
-            'splatAlphaRemovalThreshold': 5 // Hide very transparent splats
-        })
-            .then(() => {
-                console.log('Splat loaded successfully')
-                setIsLoaded(true)
-                viewer.start()
+        // Fade-in animation on load
+        splat.addEventListener('load', () => {
+            // Try to apply fade-in if material supports it
+            if (splat.material && typeof splat.material.opacity !== 'undefined') {
+                splat.material.transparent = true
+                splat.material.opacity = 0
 
-                // WASD keyboard controls (SHARP-ML pattern)
-                const animate = () => {
-                    if (!viewerRef.current) return
-                    requestAnimationFrame(animate)
-
-                    const keys = keysPressed.current
-                    const moveSpeed = 0.05
-
-                    if (keys.size > 0 && viewer.camera) {
-                        const camera = viewer.camera
-                        const controls = viewer.controls
-
-                        // Get camera's forward and right vectors
-                        const forward = new THREE.Vector3()
-                        camera.getWorldDirection(forward)
-                        const right = new THREE.Vector3()
-                        right.crossVectors(forward, camera.up).normalize()
-
-                        // W/S - move forward/backward
-                        if (keys.has('w')) {
-                            camera.position.addScaledVector(forward, moveSpeed)
-                            if (controls?.target) {
-                                controls.target.addScaledVector(forward, moveSpeed)
-                            }
-                        }
-                        if (keys.has('s')) {
-                            camera.position.addScaledVector(forward, -moveSpeed)
-                            if (controls?.target) {
-                                controls.target.addScaledVector(forward, -moveSpeed)
-                            }
-                        }
-
-                        // A/D - strafe left/right
-                        if (keys.has('a')) {
-                            camera.position.addScaledVector(right, -moveSpeed)
-                            if (controls?.target) {
-                                controls.target.addScaledVector(right, -moveSpeed)
-                            }
-                        }
-                        if (keys.has('d')) {
-                            camera.position.addScaledVector(right, moveSpeed)
-                            if (controls?.target) {
-                                controls.target.addScaledVector(right, moveSpeed)
-                            }
-                        }
-
-                        // Q/E - move up/down
-                        // User requested: Q = up, E = down
-                        if (keys.has('q')) {
-                            camera.position.y += moveSpeed
-                            if (controls?.target) {
-                                controls.target.y += moveSpeed
-                            }
-                        }
-                        if (keys.has('e')) {
-                            camera.position.y -= moveSpeed
-                            if (controls?.target) {
-                                controls.target.y -= moveSpeed
-                            }
-                        }
+                let opacity = 0
+                const fadeIn = () => {
+                    opacity += 0.03
+                    splat.material.opacity = Math.min(opacity, 1)
+                    if (opacity < 1) {
+                        requestAnimationFrame(fadeIn)
+                    } else {
+                        splat.material.transparent = false
                     }
                 }
-                animate()
-            })
-            .catch(err => {
-                console.error('Failed to load splat:', err)
-            })
+                fadeIn()
+            }
+
+            setIsLoaded(true)
+            setTimeout(() => setShowContent(true), 200)
+        })
+
+        // Raycaster for hotspot clicks
+        const raycaster = new THREE.Raycaster()
+        const mouse = new THREE.Vector2()
+
+        const handleClick = (event) => {
+            if (hotspotMeshes.length === 0) return
+
+            const rect = containerRef.current.getBoundingClientRect()
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
+
+            raycaster.setFromCamera(mouse, camera)
+            const intersects = raycaster.intersectObjects(hotspotMeshes)
+
+            if (intersects.length > 0) {
+                const clickedHotspot = intersects[0].object.userData.hotspot
+                if (onHotspotClick) {
+                    onHotspotClick(clickedHotspot)
+                }
+            }
+        }
+        renderer.domElement.addEventListener('click', handleClick)
+
+        // Handle window resize
+        const handleResize = () => {
+            if (!canvasContainerRef.current) return
+            const width = canvasContainerRef.current.clientWidth
+            const height = canvasContainerRef.current.clientHeight
+            camera.aspect = width / height
+            camera.updateProjectionMatrix()
+            renderer.setSize(width, height)
+        }
+        window.addEventListener('resize', handleResize)
+
+        // Animation loop with WASD controls
+        const animate = () => {
+            animationIdRef.current = requestAnimationFrame(animate)
+
+            const keys = keysPressed.current
+            const moveSpeed = 0.08 // Slightly faster for smoother feel
+
+            if (keys.size > 0) {
+                // Get camera's forward and right vectors
+                const forward = new THREE.Vector3()
+                camera.getWorldDirection(forward)
+                const right = new THREE.Vector3()
+                right.crossVectors(forward, camera.up).normalize()
+
+                // W/S - move forward/backward
+                if (keys.has('w')) {
+                    camera.position.addScaledVector(forward, moveSpeed)
+                    controls.target.addScaledVector(forward, moveSpeed)
+                }
+                if (keys.has('s')) {
+                    camera.position.addScaledVector(forward, -moveSpeed)
+                    controls.target.addScaledVector(forward, -moveSpeed)
+                }
+
+                // A/D - strafe left/right
+                if (keys.has('a')) {
+                    camera.position.addScaledVector(right, -moveSpeed)
+                    controls.target.addScaledVector(right, -moveSpeed)
+                }
+                if (keys.has('d')) {
+                    camera.position.addScaledVector(right, moveSpeed)
+                    controls.target.addScaledVector(right, moveSpeed)
+                }
+
+                // Q/E - move up/down
+                if (keys.has('q')) {
+                    camera.position.y += moveSpeed
+                    controls.target.y += moveSpeed
+                }
+                if (keys.has('e')) {
+                    camera.position.y -= moveSpeed
+                    controls.target.y -= moveSpeed
+                }
+            }
+
+            controls.update()
+            renderer.render(scene, camera)
+        }
+        animate()
 
         // Cleanup
         return () => {
-            if (viewerRef.current) {
-                viewerRef.current.dispose()
-                viewerRef.current = null
+            if (animationIdRef.current) {
+                cancelAnimationFrame(animationIdRef.current)
             }
+            renderer.domElement.removeEventListener('click', handleClick)
+            window.removeEventListener('resize', handleResize)
+            if (splatRef.current) {
+                splatRef.current.dispose?.()
+            }
+            controls.dispose()
+            renderer.dispose()
         }
 
-    }, [plyPath])
+    }, [plyPath, hotspots, onHotspotClick])
 
-    // WASD keyboard controls (SHARP-ML pattern)
+    // WASD keyboard controls
     useEffect(() => {
         const handleKeyDown = (e) => {
-            // Only handle WASD when not typing in an input
             if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
                 return
             }
@@ -164,9 +241,9 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
             }
 
             // Debug: Log camera position on 'P'
-            if (key === 'p' && viewerRef.current) {
-                const cam = viewerRef.current.camera
-                console.log(`📸 Camera Position: [${cam.position.x.toFixed(2)}, ${cam.position.y.toFixed(2)}, ${cam.position.z.toFixed(2)}]`)
+            if (key === 'p' && cameraRef.current) {
+                const cam = cameraRef.current
+                console.log(`📸 Camera Position: [${cam.position.x.toFixed(5)}, ${cam.position.y.toFixed(5)}, ${cam.position.z.toFixed(5)}]`)
             }
         }
 
@@ -175,7 +252,6 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
             keysPressed.current.delete(key)
         }
 
-        // Clear keys when window loses focus
         const handleBlur = () => {
             keysPressed.current.clear()
         }
@@ -205,34 +281,14 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
                 transition: 'opacity 0.3s ease',
                 pointerEvents: isActive ? 'auto' : 'none',
                 background: '#000',
-                overflow: 'hidden' // Ensure hotspots don't spill out
+                overflow: 'hidden'
             }}
         >
-            {/* 3D Hotspots */}
-            {isActive && hotspots.map(hotspot => {
-                if (!hotspot.position) return null
-                return (
-                    <button
-                        key={hotspot.id}
-                        ref={el => hotspotRefs.current[hotspot.id] = el}
-                        className="product-hotspot"
-                        onClick={() => onHotspotClick && onHotspotClick(hotspot)}
-                        aria-label={hotspot.label}
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            // transform set by animation loop
-                            willChange: 'transform',
-                            zIndex: 10 // Above viewer canvas
-                        }}
-                    >
-                        <span className="hotspot-ring" />
-                        <span className="hotspot-core" />
-                    </button>
-                )
-            })}
-
+            {/* Canvas container - separate so innerHTML clear doesn't affect UI */}
+            <div
+                ref={canvasContainerRef}
+                style={{ position: 'absolute', inset: 0, zIndex: 1 }}
+            />
             {/* Admin Icon - Top Left */}
             {isActive && (
                 <a
@@ -268,7 +324,6 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
                     }}
                     title="Admin Panel"
                 >
-                    {/* Admin/Settings Icon SVG */}
                     <svg
                         width="24"
                         height="24"

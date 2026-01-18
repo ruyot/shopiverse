@@ -3,35 +3,35 @@
  * Fetches hotspot data from backend API
  */
 
+const HOTSPOTS_KEY = 'shopiverse_hotspots_v7'
 const API_BASE = 'http://localhost:5000/api'
 
+// Default hotspots - all using 3D positions for orb rendering
 // Default hotspots (fallback if API unavailable)
 const defaultHotspots = {
     storeP1: [
-        { id: 'p1-1', x: 65, y: 50, label: 'Product 1', title: 'Product 1', images: [] },
-        { id: 'p1-2', x: 35, y: 50, label: 'Product 2', title: 'Product 2', images: [] },
-        { id: 'p1-3', x: 50, y: 50, label: 'Product 3', title: 'Product 3', images: [] }
+        // Single hotspot for main store view - position needs verification with P key
+        { id: 'featured-item', position: [0, 0.2, -3.0], label: 'Featured', title: 'Featured Collection', description: 'New arrivals for the season.', price: '$99.00', images: [] }
     ],
     storeP1Left: [
-        { id: 'p1l-1', x: 38, y: 42, label: 'Product 1', title: 'Product 1', images: [] },
-        { id: 'p1l-2', x: 28, y: 42, label: 'Product 2', title: 'Product 2', images: [] },
-        { id: 'p1l-3', x: 28, y: 65, label: 'Product 3', title: 'Product 3', images: [] },
-        { id: 'p1l-4', x: 39, y: 64, label: 'Product 4', title: 'Product 4', images: [] }
+        { id: 'jeans-1', position: [-0.5, 0.3, -3.5], label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] },
+        { id: 'jeans-2', position: [-1.0, 0.3, -3.0], label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] },
+        { id: 'jeans-3', position: [-1.0, -0.2, -3.0], label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] },
+        { id: 'jeans-4', position: [-0.5, -0.2, -3.5], label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] }
     ],
     storeP1Right: [
-        { id: 'p1r-1', x: 30, y: 35, label: 'Product 1', title: 'Product 1', images: [] },
-        { id: 'p1r-2', x: 50, y: 45, label: 'Product 2', title: 'Product 2', images: [] },
-        { id: 'p1r-3', x: 70, y: 40, label: 'Product 3', title: 'Product 3', images: [] }
+        { id: 'item-r1-1', position: [-0.8, 0.4, -3.0], label: 'Wallet', title: 'Wallet', images: ['/wallet-black.png', '/wallet-dark-brown.jpg', '/wallet-grey.jpg', '/wallet-light-brown.jpg'] },
+        { id: 'item-r1-2', position: [0, 0.2, -3.5], label: 'Product 2', title: 'Product 2', images: [] },
+        { id: 'item-r1-3', position: [0.8, 0.3, -3.0], label: 'Product 3', title: 'Product 3', images: [] }
     ],
     storeP2Left: [
-        { id: 'p2l-1', x: 21, y: 45, label: 'Product 1', title: 'Product 1', images: [] },
-        { id: 'p2l-2', x: 30, y: 35, label: 'Product 2', title: 'Product 2', images: [] },
-        { id: 'p2l-3', x: 80, y: 55, label: 'Product 3', title: 'Product 3', images: [] }
+        // User-verified coordinate from P key
+        { id: 'item-l2-1', position: [-1.59639, 0.25532, -4.51801], label: 'Wallet', title: 'Wallet', images: ['/wallet-black.png', '/wallet-dark-brown.jpg', '/wallet-grey.jpg', '/wallet-light-brown.jpg'] }
     ],
     storeP2Right: [
-        { id: 'p2r-1', x: 39, y: 50, label: 'Product 1', title: 'Product 1', images: [] },
-        { id: 'p2r-2', x: 57, y: 46, label: 'Product 2', title: 'Product 2', images: [] },
-        { id: 'p2r-3', x: 68, y: 42, label: 'Product 3', title: 'Product 3', images: [] }
+        { id: 'item-r2-1', position: [-0.5, 0.2, -3.5], label: 'Wallet', title: 'Wallet', images: ['/wallet-black.png', '/wallet-dark-brown.jpg', '/wallet-grey.jpg', '/wallet-light-brown.jpg'] },
+        { id: 'item-r2-2', position: [0.3, 0.1, -4.0], label: 'Product 2', title: 'Product 2', images: [] },
+        { id: 'item-r2-3', position: [0.8, 0.2, -4.5], label: 'Product 3', title: 'Product 3', images: [] }
     ]
 }
 
@@ -96,15 +96,15 @@ export const saveSceneHotspots = async (sceneId, hotspots) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(hotspots)
         })
-        
+
         if (response.ok) {
             // Update in-memory cache
             if (hotspotsCache) {
                 hotspotsCache[sceneId] = hotspots
             }
-            
-            window.dispatchEvent(new CustomEvent('hotspotsChanged', { 
-                detail: { sceneId, hotspots } 
+
+            window.dispatchEvent(new CustomEvent('hotspotsChanged', {
+                detail: { sceneId, hotspots }
             }))
             return true
         }
@@ -125,7 +125,7 @@ export const updateHotspotImages = async (sceneId, hotspotId, images) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ images })
         })
-        
+
         if (response.ok) {
             // Update in-memory cache
             if (hotspotsCache) {
@@ -135,9 +135,9 @@ export const updateHotspotImages = async (sceneId, hotspotId, images) => {
                     sceneHotspots[hotspotIndex].images = images
                 }
             }
-            
-            window.dispatchEvent(new CustomEvent('hotspotsChanged', { 
-                detail: { sceneId, hotspotId, images } 
+
+            window.dispatchEvent(new CustomEvent('hotspotsChanged', {
+                detail: { sceneId, hotspotId, images }
             }))
             return true
         }
@@ -156,7 +156,7 @@ export const deleteHotspotImage = async (sceneId, hotspotId, imageIndex) => {
         const response = await fetch(`${API_BASE}/hotspots/${sceneId}/${hotspotId}/images/${imageIndex}`, {
             method: 'DELETE'
         })
-        
+
         if (response.ok) {
             // Update in-memory cache
             if (hotspotsCache) {
@@ -166,9 +166,9 @@ export const deleteHotspotImage = async (sceneId, hotspotId, imageIndex) => {
                     sceneHotspots[hotspotIndex].images.splice(imageIndex, 1)
                 }
             }
-            
-            window.dispatchEvent(new CustomEvent('hotspotsChanged', { 
-                detail: { sceneId, hotspotId, imageIndex, deleted: true } 
+
+            window.dispatchEvent(new CustomEvent('hotspotsChanged', {
+                detail: { sceneId, hotspotId, imageIndex, deleted: true }
             }))
             return true
         }
@@ -203,7 +203,7 @@ export const exportHotspots = async () => {
 export const importHotspots = async (jsonData) => {
     try {
         const hotspots = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData
-        
+
         // Save each scene to API
         for (const [sceneId, sceneHotspots] of Object.entries(hotspots)) {
             await saveSceneHotspots(sceneId, sceneHotspots)
@@ -228,7 +228,7 @@ export const resetHotspots = async () => {
         const response = await fetch(`${API_BASE}/hotspots/reset`, {
             method: 'POST'
         })
-        
+
         if (response.ok) {
             hotspotsCache = { ...defaultHotspots }
             window.dispatchEvent(new CustomEvent('hotspotsChanged', {
