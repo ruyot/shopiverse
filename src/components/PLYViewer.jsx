@@ -8,7 +8,7 @@ import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d'
  * Renders Gaussian Splat PLY files using @mkkellogg/gaussian-splats-3d
  * This is required because standard PLY loaders cannot render splats correctly.
  */
-export function PLYViewer({ plyPath, isActive }) {
+export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) {
     const containerRef = useRef(null)
     const viewerRef = useRef(null)
     const [progress, setProgress] = useState(0)
@@ -80,10 +80,8 @@ export function PLYViewer({ plyPath, isActive }) {
 
                     const keys = keysPressed.current
                     const moveSpeed = 0.05
-                    const rotateSpeed = 0.02
 
                     if (keys.size > 0 && viewer.camera) {
-                        const camera = viewer.camera
                         const controls = viewer.controls
 
                         // Get camera's forward and right vectors
@@ -162,6 +160,12 @@ export function PLYViewer({ plyPath, isActive }) {
             if (['w', 'a', 's', 'd', 'q', 'e'].includes(key)) {
                 keysPressed.current.add(key)
             }
+
+            // Debug: Log camera position on 'P'
+            if (key === 'p' && viewerRef.current) {
+                const cam = viewerRef.current.camera
+                console.log(`📸 Camera Position: [${cam.position.x.toFixed(2)}, ${cam.position.y.toFixed(2)}, ${cam.position.z.toFixed(2)}]`)
+            }
         }
 
         const handleKeyUp = (e) => {
@@ -198,9 +202,35 @@ export function PLYViewer({ plyPath, isActive }) {
                 opacity: isActive ? 1 : 0,
                 transition: 'opacity 0.3s ease',
                 pointerEvents: isActive ? 'auto' : 'none',
-                background: '#000'
+                background: '#000',
+                overflow: 'hidden' // Ensure hotspots don't spill out
             }}
         >
+            {/* 3D Hotspots */}
+            {isActive && hotspots.map(hotspot => {
+                if (!hotspot.position) return null
+                return (
+                    <button
+                        key={hotspot.id}
+                        ref={el => hotspotRefs.current[hotspot.id] = el}
+                        className="product-hotspot"
+                        onClick={() => onHotspotClick && onHotspotClick(hotspot)}
+                        aria-label={hotspot.label}
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            // transform set by animation loop
+                            willChange: 'transform',
+                            zIndex: 10 // Above viewer canvas
+                        }}
+                    >
+                        <span className="hotspot-ring" />
+                        <span className="hotspot-core" />
+                    </button>
+                )
+            })}
+
             {/* Admin Icon - Top Left */}
             {isActive && (
                 <a
