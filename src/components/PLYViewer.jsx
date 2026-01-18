@@ -70,11 +70,12 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
         camera.up.set(0, 1, 0)
         cameraRef.current = camera
 
-        // Create orbit controls
+        // Create orbit controls with slower rotation
         const controls = new OrbitControls(camera, renderer.domElement)
-        controls.target.set(0, 0, -2) // Look further into scene
+        controls.target.set(0, 0, -2)
         controls.enableDamping = true
-        controls.dampingFactor = 0.1 // Smoother damping
+        controls.dampingFactor = 0.1
+        controls.rotateSpeed = 0.3 // Slower cursor rotation (default: 1.0)
         controls.minAzimuthAngle = -Math.PI / 9
         controls.maxAzimuthAngle = Math.PI / 9
         controls.minPolarAngle = (Math.PI / 2) - (Math.PI / 9)
@@ -177,7 +178,7 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
             animationIdRef.current = requestAnimationFrame(animate)
 
             const keys = keysPressed.current
-            const moveSpeed = 0.08 // Slightly faster for smoother feel
+            const moveSpeed = 0.03 // Slower, more controlled movement
 
             if (keys.size > 0) {
                 // Get camera's forward and right vectors
