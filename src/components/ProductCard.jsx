@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react'
 import './ProductCard.css'
 
 /**
@@ -32,6 +32,13 @@ export function ProductCard({ hotspot, position, onClose }) {
         setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
     }
 
+    const handleAddToCart = (e) => {
+        e.stopPropagation()
+        console.log('Added to cart:', hotspot.title || hotspot.label)
+        // TODO: Implement cart functionality
+        alert(`Added "${hotspot.title || hotspot.label}" to cart!`)
+    }
+
     return (
         <>
             {/* Invisible overlay to detect clicks outside */}
@@ -40,7 +47,7 @@ export function ProductCard({ hotspot, position, onClose }) {
             {/* Connecting triangle */}
             <div 
                 className={`card-connector-triangle ${isLeftSide ? 'point-right' : 'point-left'}`} 
-                style={triangleStyle} 
+                style={triangleStyle}
             />
             
             <div 
@@ -104,6 +111,12 @@ export function ProductCard({ hotspot, position, onClose }) {
                     {!hotspot.price && (
                         <div className="card-price">$49.99</div>
                     )}
+                    
+                    {/* Add to Cart Button */}
+                    <button className="card-add-to-cart" onClick={handleAddToCart}>
+                        <ShoppingCart size={16} strokeWidth={2.5} />
+                        <span>Add to Cart</span>
+                    </button>
                 </div>
             </div>
         </>

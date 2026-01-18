@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { navigationConfig, initialViewpoint } from './config/navigation'
 import { PLYViewer } from './components/PLYViewer'
 import { ProductCard } from './components/ProductCard'
-import { Terminal, X } from 'lucide-react'
+import { Terminal, X, ShoppingCart } from 'lucide-react'
 import { getSettings } from './config/settings'
 import { getSceneHotspots } from './config/hotspots'
 import './App.css'
@@ -23,6 +23,7 @@ function App() {
     const [contentVisible, setContentVisible] = useState(() => !navigationConfig[initialViewpoint].ply) // Controls delayed visibility of arrows/hotspots
     const [currentHotspots, setCurrentHotspots] = useState([])
     const [selectedHotspot, setSelectedHotspot] = useState(null)
+    const [cartItems, setCartItems] = useState([])
 
     const currentViewpoint = navigationConfig[currentId]
     const connections = currentViewpoint?.connections || {}
@@ -218,6 +219,18 @@ function App() {
             })}
 
 
+
+            {/* Shopping Cart Icon */}
+            <button
+                className="cart-icon"
+                onClick={() => console.log('Cart clicked')}
+                title="Shopping Cart"
+            >
+                <ShoppingCart size={20} strokeWidth={2} />
+                {cartItems.length > 0 && (
+                    <span className="cart-badge">{cartItems.length}</span>
+                )}
+            </button>
 
             {/* Command Palette Toggle */}
             <button
