@@ -103,18 +103,70 @@ function OverviewTab() {
     })
     const topProduct = Object.entries(productViews).sort((a, b) => b[1] - a[1])[0]
 
-    // Build daily sessions data from real data
-    const dailySessionsMap = {}
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-    ;(analytics.events || []).forEach(e => {
-        if (e.action === 'session_start') {
-            const day = new Date(e.timestamp).getDay()
-            dailySessionsMap[day] = (dailySessionsMap[day] || 0) + 1
+    const getDateKey = (date) => date.toISOString().slice(0, 10)
+    const formatLabel = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+
+    const buildDailySeries = () => {
+        const events = analytics.events || []
+        const sessionStarts = events.filter(e => e.action === 'session_start' && e.timestamp)
+        if (sessionStarts.length === 0) {
+            return { labels: ['No data'], values: [0] }
         }
-    })
-    const dailyUsers = days.map((_, i) => dailySessionsMap[i] || 0)
+
+        const timestamps = sessionStarts.map(e => new Date(e.timestamp))
+        const minDate = new Date(Math.min(...timestamps.map(d => d.getTime())))
+        const maxDate = new Date(Math.max(...timestamps.map(d => d.getTime())))
+        let rangeStart = new Date(minDate)
+        let rangeEnd = new Date(maxDate)
+
+        rangeStart.setUTCHours(0, 0, 0, 0)
+        rangeEnd.setUTCHours(0, 0, 0, 0)
+
+        const rangeDays = timeRange === '7d' ? 6 : timeRange === '30d' ? 29 : timeRange === '90d' ? 89 : null
+        if (rangeDays !== null) {
+            rangeEnd = new Date(rangeEnd.getTime())
+            rangeStart = new Date(rangeEnd.getTime())
+            rangeStart.setUTCDate(rangeStart.getUTCDate() - rangeDays)
+        }
+
+        const counts = {}
+        sessionStarts.forEach(e => {
+            const key = getDateKey(new Date(e.timestamp))
+            counts[key] = (counts[key] || 0) + 1
+        })
+
+        const labels = []
+        const values = []
+        const cursor = new Date(rangeStart.getTime())
+        while (cursor <= rangeEnd) {
+            const key = getDateKey(cursor)
+            labels.push(formatLabel(cursor))
+            values.push(counts[key] || 0)
+            cursor.setUTCDate(cursor.getUTCDate() + 1)
+        }
+
+        const labelStep = labels.length > 10 ? Math.ceil(labels.length / 7) : 1
+        const scaledLabels = labels.map((label, idx) => (idx % labelStep === 0 || idx === labels.length - 1 ? label : ''))
+
+        return { labels: scaledLabels, values }
+    }
+
+    const dailySeries = buildDailySeries()
+    const dailyUsers = dailySeries.values.length > 0 ? dailySeries.values : [0]
+    const chartLabels = dailySeries.labels.length > 0 ? dailySeries.labels : ['No data']
     const maxUsers = Math.max(...dailyUsers, 1)
     const totalVisitors = summary.totalSessions || dailyUsers.reduce((a, b) => a + b, 0)
+    const chartWidth = 700
+    const chartHeight = 250
+    const chartHeightScale = 180
+    const xForIndex = (index) => dailyUsers.length === 1 ? 0 : (index / (dailyUsers.length - 1)) * chartWidth
+    const yForValue = (value) => chartHeight - (value / maxUsers * chartHeightScale)
+    const chartPoints = dailyUsers.map((value, index) => ({
+        x: xForIndex(index),
+        y: yForValue(value)
+    }))
+    const linePath = chartPoints.map((point, idx) => `${idx === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ')
+    const areaPath = `${linePath} L ${chartWidth} ${chartHeight} L 0 ${chartHeight} Z`
 
     const handleRefresh = () => {
         setIsRefreshing(true)
@@ -271,17 +323,13 @@ function OverviewTab() {
                         
                         {/* Area fill */}
                         <path
-                            d={`M 0 ${250 - (dailyUsers[0] / maxUsers * 180)} ${dailyUsers.map((users, i) => 
-                                `L ${(i / (dailyUsers.length - 1)) * 700} ${250 - (users / maxUsers * 180)}`
-                            ).join(' ')} L 700 250 L 0 250 Z`}
+                            d={areaPath}
                             fill="url(#chartGradient)"
                         />
                         
                         {/* Line */}
                         <path
-                            d={`M 0 ${250 - (dailyUsers[0] / maxUsers * 180)} ${dailyUsers.map((users, i) => 
-                                `L ${(i / (dailyUsers.length - 1)) * 700} ${250 - (users / maxUsers * 180)}`
-                            ).join(' ')}`}
+                            d={linePath}
                             fill="none"
                             stroke="#FF6B35"
                             strokeWidth="2.5"
@@ -290,11 +338,11 @@ function OverviewTab() {
                         />
                         
                         {/* Data points */}
-                        {dailyUsers.map((users, i) => (
+                        {chartPoints.map((point, i) => (
                             <g key={i}>
                                 <circle
-                                    cx={(i / (dailyUsers.length - 1)) * 700}
-                                    cy={250 - (users / maxUsers * 180)}
+                                    cx={point.x}
+                                    cy={point.y}
                                     r="5"
                                     fill="#fff"
                                     stroke="#FF6B35"
@@ -306,8 +354,8 @@ function OverviewTab() {
                     </svg>
                     
                     <div className="chart-x-axis">
-                        {days.map((day, i) => (
-                            <span key={i} className="axis-label">{day}</span>
+                        {chartLabels.map((label, i) => (
+                            <span key={i} className="axis-label">{label}</span>
                         ))}
                     </div>
                 </div>
