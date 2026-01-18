@@ -5,6 +5,7 @@ import { navigationConfig } from '../config/navigation'
 import { getSceneHotspots, getSceneHotspotsAsync, saveSceneHotspots, exportHotspots, importHotspots } from '../config/hotspots'
 import { HotspotEditor } from '../components/HotspotEditor'
 import { generateImage } from '../utils/geminiImageGen'
+import { generateInsights, isGeminiInsightsConfigured } from '../utils/geminiInsights'
 import './Admin.css'
 
 /**
@@ -1301,6 +1302,7 @@ function InsightsTab() {
     const [summary, setSummary] = useState({ sessions: {}, users: {}, totalSessions: 0, totalUsers: 0 })
     const [isLoading, setIsLoading] = useState(true)
     const [isRefreshing, setIsRefreshing] = useState(false)
+    const [aiInsights, setAiInsights] = useState({ status: 'idle', data: null, error: '' })
 
     const fetchAnalytics = async () => {
         try {
@@ -1344,6 +1346,57 @@ function InsightsTab() {
 
     const handleExportCSV = () => {
         window.open('http://localhost:5000/api/analytics', '_blank')
+    }
+
+    const buildInsightsPayload = () => {
+        const events = analytics.events || []
+        const actionCounts = {}
+        events.forEach(event => {
+            if (!event.action) return
+            actionCounts[event.action] = (actionCounts[event.action] || 0) + 1
+        })
+
+        const topActions = Object.entries(actionCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10)
+            .map(([action, count]) => ({ action, count }))
+
+        return {
+            totals: {
+                totalSessions: summary.totalSessions || 0,
+                totalUsers: summary.totalUsers || 0,
+                totalEvents: analytics.count || 0
+            },
+            averages: metrics,
+            topScenes: sceneMetrics.slice(0, 5),
+            topProducts: productMetrics.slice(0, 5),
+            topActions,
+            timeRange
+        }
+    }
+
+    const handleGenerateInsights = async () => {
+        if (!isGeminiInsightsConfigured()) {
+            setAiInsights({
+                status: 'error',
+                data: null,
+                error: 'Gemini API key not configured. Set VITE_GEMINI_IMAGE_API_KEY in your .env.'
+            })
+            return
+        }
+
+        setAiInsights({ status: 'loading', data: null, error: '' })
+        try {
+            const payload = buildInsightsPayload()
+            const data = await generateInsights(payload)
+            setAiInsights({ status: 'ready', data, error: '' })
+        } catch (error) {
+            setAiInsights({
+                status: 'error',
+                data: null,
+                error: error?.message || 'Failed to generate insights.'
+            })
+        }
     }
 
     // Calculate metrics from real data
@@ -1493,6 +1546,10 @@ function InsightsTab() {
             <div className="insights-header">
                 <h2>Insights & Analytics</h2>
                 <div className="insights-actions">
+                    <button className="btn-primary" onClick={handleGenerateInsights} disabled={aiInsights.status === 'loading'}>
+                        <TrendingUp size={16} />
+                        AI Insights
+                    </button>
                     <button className="btn-secondary" onClick={handleRefresh} disabled={isRefreshing}>
                         <RefreshCw size={16} className={isRefreshing ? 'spinning' : ''} />
                         Refresh
@@ -1505,6 +1562,81 @@ function InsightsTab() {
                         <X size={16} />
                         Clear Data
                     </button>
+                </div>
+            </div>
+
+            {/* Gemini Insights */}
+            <div className="insights-section ai-insights">
+                <h3>Gemini Insights</h3>
+                <div className="ai-insights-card">
+                    {!isGeminiInsightsConfigured() && (
+                        <div className="ai-insights-empty">
+                            Gemini API key not configured. Add `VITE_GEMINI_IMAGE_API_KEY` to your `.env`.
+                        </div>
+                    )}
+                    {isGeminiInsightsConfigured() && aiInsights.status === 'idle' && (
+                        <div className="ai-insights-empty">
+                            Generate AI insights from your analytics to spot trends and opportunities.
+                        </div>
+                    )}
+                    {aiInsights.status === 'loading' && (
+                        <div className="ai-insights-loading">Generating insights...</div>
+                    )}
+                    {aiInsights.status === 'error' && (
+                        <div className="ai-insights-error">{aiInsights.error}</div>
+                    )}
+                    {aiInsights.status === 'ready' && aiInsights.data && (
+                        <>
+                            {aiInsights.data.summary && (
+                                <div className="ai-insights-summary">{aiInsights.data.summary}</div>
+                            )}
+                            <div className="ai-insights-grid">
+                                {Array.isArray(aiInsights.data.insights) && aiInsights.data.insights.length > 0 && (
+                                    <div className="ai-insights-block">
+                                        <div className="ai-insights-title">Key Insights</div>
+                                        <ul className="ai-insights-list">
+                                            {aiInsights.data.insights.map((item, idx) => (
+                                                <li key={`insight-${idx}`}>{item}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                                {Array.isArray(aiInsights.data.risks) && aiInsights.data.risks.length > 0 && (
+                                    <div className="ai-insights-block">
+                                        <div className="ai-insights-title">Risks</div>
+                                        <ul className="ai-insights-list">
+                                            {aiInsights.data.risks.map((item, idx) => (
+                                                <li key={`risk-${idx}`}>{item}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                                {Array.isArray(aiInsights.data.opportunities) && aiInsights.data.opportunities.length > 0 && (
+                                    <div className="ai-insights-block">
+                                        <div className="ai-insights-title">Opportunities</div>
+                                        <ul className="ai-insights-list">
+                                            {aiInsights.data.opportunities.map((item, idx) => (
+                                                <li key={`opp-${idx}`}>{item}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                                {Array.isArray(aiInsights.data.nextSteps) && aiInsights.data.nextSteps.length > 0 && (
+                                    <div className="ai-insights-block">
+                                        <div className="ai-insights-title">Next Steps</div>
+                                        <ul className="ai-insights-list">
+                                            {aiInsights.data.nextSteps.map((item, idx) => (
+                                                <li key={`next-${idx}`}>{item}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                            {aiInsights.data.raw && (
+                                <div className="ai-insights-raw">{aiInsights.data.raw}</div>
+                            )}
+                        </>
+                    )}
                 </div>
             </div>
 
