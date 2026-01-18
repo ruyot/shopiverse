@@ -12,6 +12,11 @@ export function ProductCard({ hotspot, position, onClose }) {
     const hasImage = images.length > 0
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
+    // Debug: print image src path
+    if (hasImage) {
+        console.log('[ProductCard] Image src:', images[currentImageIndex]);
+    }
+
     // Determine if card should appear on left or right of hotspot
     const isLeftSide = position.x > 50
     
@@ -62,12 +67,13 @@ export function ProductCard({ hotspot, position, onClose }) {
                 {/* Product image carousel */}
                 {hasImage && (
                     <div className="card-image-container">
+                        {/* Debug: print image src path */}
                         <img
                             src={images[currentImageIndex]}
                             alt={hotspot.title || hotspot.label}
                             className="card-image"
+                            onError={() => console.log('[ProductCard] Broken image src:', images[currentImageIndex])}
                         />
-                        
                         {images.length > 1 && (
                             <>
                                 <button className="card-carousel-btn card-carousel-prev" onClick={prevImage}>
@@ -76,7 +82,6 @@ export function ProductCard({ hotspot, position, onClose }) {
                                 <button className="card-carousel-btn card-carousel-next" onClick={nextImage}>
                                     <ChevronRight size={16} strokeWidth={2.5} />
                                 </button>
-                                
                                 <div className="card-carousel-dots">
                                     {images.map((_, index) => (
                                         <span 

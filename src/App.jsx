@@ -4,7 +4,7 @@ import { PLYViewer } from './components/PLYViewer'
 import { ProductCard } from './components/ProductCard'
 import { Terminal, X } from 'lucide-react'
 import { getSettings } from './config/settings'
-import { getSceneHotspots } from './config/hotspots'
+import { getSceneHotspotsAsync } from './config/hotspots'
 import './App.css'
 
 /**
@@ -30,16 +30,19 @@ function App() {
 
     // Load hotspots for current scene
     useEffect(() => {
-        const hotspots = getSceneHotspots(currentId)
-        setCurrentHotspots(hotspots)
+        const loadHotspots = async () => {
+            const hotspots = await getSceneHotspotsAsync(currentId)
+            setCurrentHotspots(hotspots)
+        }
+        loadHotspots()
     }, [currentId])
 
     // Listen for hotspot changes
     useEffect(() => {
-        const handleHotspotsChange = (event) => {
+        const handleHotspotsChange = async (event) => {
             // Reload hotspots if they changed for current scene
             if (!event.detail.sceneId || event.detail.sceneId === currentId) {
-                const hotspots = getSceneHotspots(currentId)
+                const hotspots = await getSceneHotspotsAsync(currentId)
                 setCurrentHotspots(hotspots)
             }
         }

@@ -4,51 +4,90 @@ Handles product/hotspot data management for the Shopiverse admin panel.
 Allows changes made in the admin panel to persist across all users.
 
 Usage:
-    # Run with Flask
-    pip install flask flask-cors
-    python admin_endpoints.py
+    # Install dependencies
+    pip install fastapi uvicorn python-multipart
 
-    # Or run with uvicorn (FastAPI)
-    pip install fastapi uvicorn
+    # Run the server
+    python admin_endpoints.py
+    
+    # Or run with uvicorn directly
     uvicorn admin_endpoints:app --reload --port 5000
 """
 
-from flask import Flask, jsonify, request
-from flask_cors import CORS
+from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List, Optional, Any
 import json
 import os
+import shutil
 
-app = Flask(__name__)
-CORS(app)  # Enable CORS for frontend requests
+app = FastAPI(title="Shopiverse Admin API")
+
+# Enable CORS for frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Path to store hotspots data
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 HOTSPOTS_FILE = os.path.join(DATA_DIR, 'hotspots.json')
 
+# Path to public folder (for serving images via Vite)
+PUBLIC_DIR = os.path.join(os.path.dirname(__file__), '..', 'public')
+
 # Default hotspots (fallback if no saved data)
 DEFAULT_HOTSPOTS = {
+    "storeP1": [
+        {"id": "p1-1", "x": 65, "y": 50, "label": "Product 1", "title": "Product 1", "images": []},
+        {"id": "p1-2", "x": 35, "y": 50, "label": "Product 2", "title": "Product 2", "images": []},
+        {"id": "p1-3", "x": 50, "y": 50, "label": "Product 3", "title": "Product 3", "images": []}
+    ],
     "storeP1Left": [
-        {"id": "jeans-1", "x": 38, "y": 42, "label": "Classic Denim", "title": "Classic Denim Jeans", "images": []},
-        {"id": "jeans-2", "x": 28, "y": 42, "label": "Classic Denim", "title": "Classic Denim Jeans", "images": []},
-        {"id": "jeans-3", "x": 28, "y": 65, "label": "Classic Denim", "title": "Classic Denim Jeans", "images": []},
-        {"id": "jeans-4", "x": 39, "y": 64, "label": "Classic Denim", "title": "Classic Denim Jeans", "images": []}
+        {"id": "p1l-1", "x": 38, "y": 42, "label": "Product 1", "title": "Product 1", "images": []},
+        {"id": "p1l-2", "x": 28, "y": 42, "label": "Product 2", "title": "Product 2", "images": []},
+        {"id": "p1l-3", "x": 28, "y": 65, "label": "Product 3", "title": "Product 3", "images": []},
+        {"id": "p1l-4", "x": 39, "y": 64, "label": "Product 4", "title": "Product 4", "images": []}
     ],
     "storeP1Right": [
-        {"id": "item-r1-1", "x": 30, "y": 35, "label": "Wallet", "title": "Wallet", "images": ["/wallet-black.png", "/wallet-dark-brown.jpg", "/wallet-grey.jpg", "/wallet-light-brown.jpg"]},
-        {"id": "item-r1-2", "x": 50, "y": 45, "label": "Product 2", "title": "Product 2", "images": []},
-        {"id": "item-r1-3", "x": 70, "y": 40, "label": "Product 3", "title": "Product 3", "images": []}
+        {"id": "p1r-1", "x": 30, "y": 35, "label": "Product 1", "title": "Product 1", "images": []},
+        {"id": "p1r-2", "x": 50, "y": 45, "label": "Product 2", "title": "Product 2", "images": []},
+        {"id": "p1r-3", "x": 70, "y": 40, "label": "Product 3", "title": "Product 3", "images": []}
     ],
     "storeP2Left": [
-        {"id": "item-l2-1", "x": 21, "y": 45, "label": "Wallet", "title": "Wallet", "images": ["/wallet-black.png", "/wallet-dark-brown.jpg", "/wallet-grey.jpg", "/wallet-light-brown.jpg"]},
-        {"id": "item-l2-2", "x": 30, "y": 35, "label": "Product 2", "title": "Product 2", "images": []},
-        {"id": "item-l2-3", "x": 80, "y": 55, "label": "Product 3", "title": "Product 3", "images": []}
+        {"id": "p2l-1", "x": 21, "y": 45, "label": "Product 1", "title": "Product 1", "images": []},
+        {"id": "p2l-2", "x": 30, "y": 35, "label": "Product 2", "title": "Product 2", "images": []},
+        {"id": "p2l-3", "x": 80, "y": 55, "label": "Product 3", "title": "Product 3", "images": []}
     ],
     "storeP2Right": [
-        {"id": "item-r2-1", "x": 39, "y": 50, "label": "Wallet", "title": "Wallet", "images": ["/wallet-black.png", "/wallet-dark-brown.jpg", "/wallet-grey.jpg", "/wallet-light-brown.jpg"]},
-        {"id": "item-r2-2", "x": 57, "y": 46, "label": "Product 2", "title": "Product 2", "images": []},
-        {"id": "item-r2-3", "x": 68, "y": 42, "label": "Product 3", "title": "Product 3", "images": []}
+        {"id": "p2r-1", "x": 39, "y": 50, "label": "Product 1", "title": "Product 1", "images": []},
+        {"id": "p2r-2", "x": 57, "y": 46, "label": "Product 2", "title": "Product 2", "images": []},
+        {"id": "p2r-3", "x": 68, "y": 42, "label": "Product 3", "title": "Product 3", "images": []}
     ]
 }
+
+
+# Pydantic models for request validation
+class ImagesUpdate(BaseModel):
+    images: List[str]
+
+class ImageAdd(BaseModel):
+    image: str
+
+class Hotspot(BaseModel):
+    id: str
+    x: float
+    y: float
+    label: str
+    title: str
+    images: List[str] = []
+    
+    class Config:
+        extra = "allow"  # Allow additional fields
 
 
 def ensure_data_dir():
@@ -78,32 +117,30 @@ def save_hotspots(hotspots):
 
 # ============== API ENDPOINTS ==============
 
-@app.route('/api/hotspots', methods=['GET'])
+@app.get("/api/hotspots")
 def get_all_hotspots():
     """Get all hotspots for all scenes"""
-    hotspots = load_hotspots()
-    return jsonify(hotspots)
+    return load_hotspots()
 
 
-@app.route('/api/hotspots/<scene_id>', methods=['GET'])
-def get_scene_hotspots(scene_id):
+@app.get("/api/hotspots/{scene_id}")
+def get_scene_hotspots(scene_id: str):
     """Get hotspots for a specific scene"""
     hotspots = load_hotspots()
-    scene_hotspots = hotspots.get(scene_id, [])
-    return jsonify(scene_hotspots)
+    return hotspots.get(scene_id, [])
 
 
-@app.route('/api/hotspots/<scene_id>', methods=['PUT'])
-def update_scene_hotspots(scene_id):
+@app.put("/api/hotspots/{scene_id}")
+def update_scene_hotspots(scene_id: str, scene_hotspots: List[dict]):
     """Update hotspots for a specific scene"""
     hotspots = load_hotspots()
-    hotspots[scene_id] = request.json
+    hotspots[scene_id] = scene_hotspots
     save_hotspots(hotspots)
-    return jsonify({"success": True, "message": f"Updated hotspots for {scene_id}"})
+    return {"success": True, "message": f"Updated hotspots for {scene_id}"}
 
 
-@app.route('/api/hotspots/<scene_id>/<hotspot_id>', methods=['PUT'])
-def update_hotspot(scene_id, hotspot_id):
+@app.put("/api/hotspots/{scene_id}/{hotspot_id}")
+def update_hotspot(scene_id: str, hotspot_id: str, hotspot_data: dict):
     """Update a single hotspot"""
     hotspots = load_hotspots()
     scene_hotspots = hotspots.get(scene_id, [])
@@ -112,20 +149,20 @@ def update_hotspot(scene_id, hotspot_id):
     updated = False
     for i, h in enumerate(scene_hotspots):
         if h.get('id') == hotspot_id:
-            scene_hotspots[i] = {**h, **request.json}
+            scene_hotspots[i] = {**h, **hotspot_data}
             updated = True
             break
     
     if not updated:
-        return jsonify({"success": False, "message": "Hotspot not found"}), 404
+        raise HTTPException(status_code=404, detail="Hotspot not found")
     
     hotspots[scene_id] = scene_hotspots
     save_hotspots(hotspots)
-    return jsonify({"success": True, "message": f"Updated hotspot {hotspot_id}"})
+    return {"success": True, "message": f"Updated hotspot {hotspot_id}"}
 
 
-@app.route('/api/hotspots/<scene_id>/<hotspot_id>/images', methods=['PUT'])
-def update_hotspot_images(scene_id, hotspot_id):
+@app.put("/api/hotspots/{scene_id}/{hotspot_id}/images")
+def update_hotspot_images(scene_id: str, hotspot_id: str, data: ImagesUpdate):
     """
     Update images for a specific hotspot.
     
@@ -138,24 +175,24 @@ def update_hotspot_images(scene_id, hotspot_id):
     updated = False
     for i, h in enumerate(scene_hotspots):
         if h.get('id') == hotspot_id:
-            scene_hotspots[i]['images'] = request.json.get('images', [])
+            scene_hotspots[i]['images'] = data.images
             updated = True
             break
     
     if not updated:
-        return jsonify({"success": False, "message": "Hotspot not found"}), 404
+        raise HTTPException(status_code=404, detail="Hotspot not found")
     
     hotspots[scene_id] = scene_hotspots
     save_hotspots(hotspots)
-    return jsonify({
+    return {
         "success": True, 
         "message": f"Updated images for hotspot {hotspot_id}",
-        "images": request.json.get('images', [])
-    })
+        "images": data.images
+    }
 
 
-@app.route('/api/hotspots/<scene_id>/<hotspot_id>/images', methods=['POST'])
-def add_hotspot_image(scene_id, hotspot_id):
+@app.post("/api/hotspots/{scene_id}/{hotspot_id}/images")
+def add_hotspot_image(scene_id: str, hotspot_id: str, data: ImageAdd):
     """
     Add a single image to a hotspot.
     
@@ -164,9 +201,8 @@ def add_hotspot_image(scene_id, hotspot_id):
     hotspots = load_hotspots()
     scene_hotspots = hotspots.get(scene_id, [])
     
-    image_url = request.json.get('image')
-    if not image_url:
-        return jsonify({"success": False, "message": "No image URL provided"}), 400
+    if not data.image:
+        raise HTTPException(status_code=400, detail="No image URL provided")
     
     # Find and update the hotspot's images
     updated = False
@@ -174,29 +210,30 @@ def add_hotspot_image(scene_id, hotspot_id):
         if h.get('id') == hotspot_id:
             if 'images' not in scene_hotspots[i]:
                 scene_hotspots[i]['images'] = []
-            scene_hotspots[i]['images'].append(image_url)
+            scene_hotspots[i]['images'].append(data.image)
             updated = True
             break
     
     if not updated:
-        return jsonify({"success": False, "message": "Hotspot not found"}), 404
+        raise HTTPException(status_code=404, detail="Hotspot not found")
     
     hotspots[scene_id] = scene_hotspots
     save_hotspots(hotspots)
-    return jsonify({
+    return {
         "success": True, 
         "message": f"Added image to hotspot {hotspot_id}",
-        "image": image_url
-    })
+        "image": data.image
+    }
 
 
-@app.route('/api/hotspots/<scene_id>/<hotspot_id>/images/<int:image_index>', methods=['DELETE'])
-def delete_hotspot_image(scene_id, hotspot_id, image_index):
+@app.delete("/api/hotspots/{scene_id}/{hotspot_id}/images/{image_index}")
+def delete_hotspot_image(scene_id: str, hotspot_id: str, image_index: int):
     """Delete an image from a hotspot by index"""
     hotspots = load_hotspots()
     scene_hotspots = hotspots.get(scene_id, [])
     
     # Find the hotspot
+    removed = None
     updated = False
     for i, h in enumerate(scene_hotspots):
         if h.get('id') == hotspot_id:
@@ -206,35 +243,86 @@ def delete_hotspot_image(scene_id, hotspot_id, image_index):
                 scene_hotspots[i]['images'] = images
                 updated = True
             else:
-                return jsonify({"success": False, "message": "Image index out of range"}), 400
+                raise HTTPException(status_code=400, detail="Image index out of range")
             break
     
     if not updated:
-        return jsonify({"success": False, "message": "Hotspot not found"}), 404
+        raise HTTPException(status_code=404, detail="Hotspot not found")
     
     hotspots[scene_id] = scene_hotspots
     save_hotspots(hotspots)
-    return jsonify({
+    return {
         "success": True, 
         "message": f"Deleted image at index {image_index}",
         "removed": removed
-    })
+    }
 
 
-@app.route('/api/hotspots/reset', methods=['POST'])
+@app.post("/api/hotspots/reset")
 def reset_hotspots():
     """Reset all hotspots to defaults"""
     save_hotspots(DEFAULT_HOTSPOTS)
-    return jsonify({"success": True, "message": "Hotspots reset to defaults"})
+    return {"success": True, "message": "Hotspots reset to defaults"}
+
+
+# ============== FILE UPLOAD ENDPOINTS ==============
+
+@app.post("/api/upload")
+async def upload_file(file: UploadFile = File(...)):
+    """
+    Upload an image file to public/
+    Returns the path to use in hotspots.json
+    """
+    # Validate file type
+    if not file.content_type.startswith('image/'):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    # Save file with original name to public folder
+    file_path = os.path.join(PUBLIC_DIR, file.filename)
+    
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # Return the web-accessible path (just /filename for public folder)
+        return {
+            "success": True,
+            "filename": file.filename,
+            "path": f"/{file.filename}"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
+
+
+@app.delete("/api/upload/{filename}")
+def delete_file(filename: str):
+    """
+    Delete an image file from public/
+    """
+    file_path = os.path.join(PUBLIC_DIR, filename)
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    try:
+        os.remove(file_path)
+        return {
+            "success": True,
+            "message": f"Deleted {filename}"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete file: {str(e)}")
 
 
 # Health check endpoint
-@app.route('/api/health', methods=['GET'])
+@app.get("/api/health")
 def health_check():
-    return jsonify({"status": "ok", "service": "shopiverse-admin"})
+    return {"status": "ok", "service": "shopiverse-admin"}
 
 
 if __name__ == '__main__':
+    import uvicorn
     print("🚀 Starting Shopiverse Admin API on http://localhost:5000")
     print("📁 Data directory:", DATA_DIR)
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    print("📚 API docs available at http://localhost:5000/docs")
+    uvicorn.run(app, host='0.0.0.0', port=5000)

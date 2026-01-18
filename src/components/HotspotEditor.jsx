@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { X, Save, Edit2, Image as ImageIcon, Plus, Trash2, Zap, RefreshCw } from 'lucide-react'
 import { generateImage } from '../utils/geminiImageGen'
+import { getSceneHotspotsAsync } from '../config/hotspots.js'
 import './HotspotEditor.css'
 
 /**
@@ -45,16 +46,61 @@ export function HotspotEditor({ scene, onSave, onClose }) {
         ))
     }
 
-    const addImageToHotspot = (id, imageUrl) => {
+    const addImageToHotspot = async (id, imageUrl) => {
+        // Update local state
         setHotspots(hotspots.map(h => 
             h.id === id ? { ...h, images: [...(h.images || []), imageUrl] } : h
         ))
+        
+        // Persist to API immediately
+        try {
+            const response = await fetch(`http://localhost:5000/api/hotspots/${scene.id}/${id}/images`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: imageUrl })
+            })
+            if (response.ok) {
+                console.log(`✅ Image saved to API: ${imageUrl}`)
+            }
+        } catch (error) {
+            console.error('Failed to save image to API:', error)
+        }
     }
 
-    const removeImageFromHotspot = (id, imageIndex) => {
+    const removeImageFromHotspot = async (id, imageIndex) => {
+        // Get the image path before removing
+        const hotspot = hotspots.find(h => h.id === id)
+        const imagePath = hotspot?.images?.[imageIndex]
+        
+        // Remove from state
         setHotspots(hotspots.map(h => 
             h.id === id ? { ...h, images: h.images.filter((_, i) => i !== imageIndex) } : h
         ))
+        
+        // Delete from API
+        try {
+            const response = await fetch(`http://localhost:5000/api/hotspots/${scene.id}/${id}/images/${imageIndex}`, {
+                method: 'DELETE'
+            })
+            if (response.ok) {
+                console.log(`✅ Image removed from API`)
+            }
+        } catch (error) {
+            console.error('Failed to remove image from API:', error)
+        }
+        
+        // Delete file from server if it's an uploaded file (starts with / and has underscore pattern)
+        if (imagePath && imagePath.startsWith('/') && imagePath.includes('_')) {
+            const filename = imagePath.substring(1) // Remove leading /
+            try {
+                await fetch(`http://localhost:5000/api/upload/${filename}`, {
+                    method: 'DELETE'
+                })
+                console.log(`🗑️ Deleted file: ${filename}`)
+            } catch (error) {
+                console.error('Failed to delete file from server:', error)
+            }
+        }
     }
 
     const deleteHotspot = (id) => {
@@ -64,8 +110,14 @@ export function HotspotEditor({ scene, onSave, onClose }) {
         }
     }
 
-    const handleSave = () => {
-        onSave(hotspots)
+    const handleSave = async () => {
+        // Debug: print full hotspots array being saved
+        console.log('[HotspotEditor] Saving hotspots:', JSON.stringify(hotspots, null, 2));
+        await onSave(hotspots)
+        // Always reload latest hotspots from backend after save
+        const updated = await getSceneHotspotsAsync(scene.id)
+        console.log('[HotspotEditor] Reloaded hotspots from backend:', JSON.stringify(updated, null, 2));
+        setHotspots(updated)
     }
 
     return (
@@ -187,7 +239,7 @@ export function HotspotEditor({ scene, onSave, onClose }) {
                 {/* Metadata Editor Modal */}
                 {editingMetadata && (
                     <MetadataEditor
-                        hotspot={editingMetadata}
+                        hotspot={hotspots.find(h => h.id === editingMetadata.id) || editingMetadata}
                         onSave={(metadata) => {
                             updateHotspotMetadata(editingMetadata.id, metadata)
                             setEditingMetadata(null)
@@ -258,35 +310,36 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
         const files = Array.from(e.target.files)
         if (files.length === 0) return
 
-        console.log(`📸 Processing ${files.length} image(s)...`)
+        console.log(`📸 Uploading ${files.length} image(s)...`)
         setUploading(true)
 
         for (const file of files) {
             if (file.type.startsWith('image/')) {
                 try {
-                    // Generate unique filename
-                    const timestamp = Date.now()
-                    const randomStr = Math.random().toString(36).substring(7)
-                    const extension = file.name.split('.').pop()
-                    const filename = `${hotspot.id}_${timestamp}_${randomStr}.${extension}`
-                    const filepath = `/uploads/${filename}`
-                    
-                    // Create a download link to save the file
+                    // Compress the image
                     const compressed = await compressImage(file)
-                    downloadImageToFolder(compressed, filename)
-                    
-                    // Store the file path (not base64)
-                    console.log(`✅ Image ready: ${filename} - Save to public/uploads/`)
-                    onAddImage(filepath)
+                    // Use the original filename
+                    const formData = new FormData()
+                    formData.append('file', compressed, file.name)
+                    // Upload to backend
+                    const response = await fetch('http://localhost:5000/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    if (!response.ok) {
+                        throw new Error('Upload failed')
+                    }
+                    const result = await response.json()
+                    console.log(`✅ Uploaded: ${result.path}`)
+                    onAddImage(result.path)
                 } catch (error) {
-                    console.error('❌ Error processing image:', error)
+                    console.error('❌ Error uploading image:', error)
+                    alert('Failed to upload image: ' + error.message)
                 }
             }
         }
 
         setUploading(false)
-        console.log(`📁 Save downloaded images to: public/uploads/`)
-        console.log(`✅ Paths stored in metadata`)
         // Reset file input
         if (fileInputRef.current) {
             fileInputRef.current.value = ''
@@ -335,18 +388,6 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
             }
             reader.onerror = reject
         })
-    }
-
-    const downloadImageToFolder = (blob, filename) => {
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = filename
-        a.style.display = 'none'
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
     }
 
     return (

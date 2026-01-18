@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { BarChart3, Palette, Zap, Gamepad2, Camera, RefreshCw, Settings, X, ChevronDown, ChevronRight, Download, Upload, Plus } from 'lucide-react'
 import { getSettings, updateSettings } from '../config/settings'
 import { navigationConfig } from '../config/navigation'
-import { getSceneHotspots, saveSceneHotspots, exportHotspots, importHotspots } from '../config/hotspots'
+import { getSceneHotspots, getSceneHotspotsAsync, saveSceneHotspots, exportHotspots, importHotspots } from '../config/hotspots'
 import { HotspotEditor } from '../components/HotspotEditor'
 import { generateImage } from '../utils/geminiImageGen'
 import './Admin.css'
@@ -313,11 +313,12 @@ function ScenesTab() {
     const scenes = Object.values(navigationConfig).filter(scene => scene.id)
 
     useEffect(() => {
-        const loadHotspots = () => {
+        const loadHotspots = async () => {
             const hotspots = {}
-            scenes.forEach(scene => {
-                hotspots[scene.id] = getSceneHotspots(scene.id)
-            })
+            // Load hotspots from API (async) to ensure we get persisted data with images
+            for (const scene of scenes) {
+                hotspots[scene.id] = await getSceneHotspotsAsync(scene.id)
+            }
             setSceneHotspots(hotspots)
         }
         loadHotspots()
@@ -349,9 +350,9 @@ function ScenesTab() {
         setEditingScene(scene)
     }
 
-    const handleSaveHotspots = (hotspots) => {
-        // Save to hotspot storage
-        const success = saveSceneHotspots(editingScene.id, hotspots)
+    const handleSaveHotspots = async (hotspots) => {
+        // Save to hotspot storage - must await since saveSceneHotspots is async
+        const success = await saveSceneHotspots(editingScene.id, hotspots)
         
         if (success) {
             console.log('💾 Hotspots saved successfully for scene:', editingScene.id)
