@@ -1348,6 +1348,184 @@ function InsightsTab() {
         window.open('http://localhost:5000/api/analytics', '_blank')
     }
 
+    const escapeHtml = (value) => {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+    }
+
+    const handleExportPDF = () => {
+        const now = new Date()
+        const dateLabel = now.toISOString().split('T')[0]
+        const events = analytics.events || []
+        const actionCounts = {}
+        events.forEach(event => {
+            if (!event.action) return
+            actionCounts[event.action] = (actionCounts[event.action] || 0) + 1
+        })
+        const topActions = Object.entries(actionCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 8)
+        const actionRows = topActions.map(([action, count]) => `
+            <tr>
+                <td>${escapeHtml(action.replace(/_/g, ' '))}</td>
+                <td>${escapeHtml(count)}</td>
+            </tr>
+        `).join('')
+        const recentRows = events.slice(-12).reverse().map(event => {
+            const detail = event.data?.title
+                || (event.data?.fromScene && event.data?.toScene ? `${event.data.fromScene} -> ${event.data.toScene}` : '')
+                || event.data?.productId
+                || ''
+            const timestamp = event.timestamp ? new Date(event.timestamp).toLocaleString() : ''
+            return `
+                <tr>
+                    <td>${escapeHtml(timestamp)}</td>
+                    <td>${escapeHtml(event.action?.replace(/_/g, ' ') || '')}</td>
+                    <td>${escapeHtml(detail)}</td>
+                </tr>
+            `
+        }).join('')
+        const sceneRows = sceneMetrics.map(scene => `
+            <tr>
+                <td>${escapeHtml(scene.scene)}</td>
+                <td>${escapeHtml(scene.avgTime)}</td>
+                <td>${escapeHtml(scene.visits)}</td>
+                <td>${escapeHtml(scene.engagement)}%</td>
+            </tr>
+        `).join('')
+        const productRows = productMetrics.map(product => `
+            <tr>
+                <td>${escapeHtml(product.name)}</td>
+                <td>${escapeHtml(product.views)}</td>
+                <td>${escapeHtml(product.addToCart)}</td>
+                <td>${escapeHtml(product.purchased)}</td>
+                <td>${escapeHtml(product.views > 0 ? ((product.addToCart / product.views) * 100).toFixed(1) : 0)}%</td>
+            </tr>
+        `).join('')
+
+        const insights = aiInsights.data || {}
+        const aiBlock = aiInsights.status === 'ready'
+            ? `
+            <section>
+                <h2>Gemini Insights</h2>
+                ${insights.summary ? `<p class="summary">${escapeHtml(insights.summary)}</p>` : ''}
+                <div class="grid">
+                    ${Array.isArray(insights.insights) && insights.insights.length
+                        ? `<div><h3>Key Insights</h3><ul>${insights.insights.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div>`
+                        : ''}
+                    ${Array.isArray(insights.risks) && insights.risks.length
+                        ? `<div><h3>Risks</h3><ul>${insights.risks.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div>`
+                        : ''}
+                    ${Array.isArray(insights.opportunities) && insights.opportunities.length
+                        ? `<div><h3>Opportunities</h3><ul>${insights.opportunities.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div>`
+                        : ''}
+                    ${Array.isArray(insights.nextSteps) && insights.nextSteps.length
+                        ? `<div><h3>Next Steps</h3><ul>${insights.nextSteps.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div>`
+                        : ''}
+                </div>
+            </section>
+            `
+            : ''
+
+        const html = `
+        <!doctype html>
+        <html>
+        <head>
+            <meta charset="utf-8" />
+            <title>Shopiverse Insights ${escapeHtml(dateLabel)}</title>
+            <style>
+                body { font-family: "Courier New", monospace; color: #111; margin: 24px; }
+                h1 { font-size: 20px; margin: 0 0 12px; }
+                h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 8px; }
+                h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin: 12px 0 6px; }
+                p { font-size: 12px; margin: 6px 0; }
+                .meta { font-size: 11px; color: #555; margin-bottom: 16px; }
+                .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+                .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+                .card { border: 1px solid #999; padding: 8px; }
+                .label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #444; }
+                .value { font-size: 14px; font-weight: 700; margin-top: 4px; }
+                table { width: 100%; border-collapse: collapse; font-size: 11px; }
+                th, td { border: 1px solid #999; padding: 6px; text-align: left; }
+                th { background: #eee; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+                ul { margin: 0; padding-left: 16px; font-size: 11px; }
+                .summary { font-weight: 700; }
+                .muted { color: #666; }
+                @media print { body { margin: 12px; } }
+            </style>
+        </head>
+        <body>
+            <h1>Shopiverse Insights Report</h1>
+            <div class="meta">Generated ${escapeHtml(now.toLocaleString())} | Range: ${escapeHtml(timeRange)}</div>
+
+            ${aiBlock}
+
+            <section>
+                <h2>Overview</h2>
+                <div class="cards">
+                    <div class="card"><div class="label">Total Sessions</div><div class="value">${escapeHtml(summary.totalSessions)}</div></div>
+                    <div class="card"><div class="label">Unique Users</div><div class="value">${escapeHtml(summary.totalUsers)}</div></div>
+                    <div class="card"><div class="label">Total Events</div><div class="value">${escapeHtml(analytics.count)}</div></div>
+                    <div class="card"><div class="label">Avg Session Time</div><div class="value">${escapeHtml(metrics.avgSessionTime)}</div></div>
+                </div>
+            </section>
+
+            <section>
+                <h2>User Behavior</h2>
+                <div class="cards">
+                    <div class="card"><div class="label">Avg Session Duration</div><div class="value">${escapeHtml(metrics.avgSessionTime)}</div></div>
+                    <div class="card"><div class="label">Scenes/Session</div><div class="value">${escapeHtml(metrics.avgScenesPerSession)}</div></div>
+                    <div class="card"><div class="label">Return Sessions</div><div class="value">${escapeHtml(metrics.returnRate)}%</div></div>
+                    <div class="card"><div class="label">Mobile Users</div><div class="value">${escapeHtml(metrics.mobilePercent)}%</div></div>
+                </div>
+            </section>
+
+            <section>
+                <h2>Time Spent in Each Room</h2>
+                ${sceneRows
+                    ? `<table><thead><tr><th>Scene</th><th>Avg Time</th><th>Total Visits</th><th>Engagement</th></tr></thead><tbody>${sceneRows}</tbody></table>`
+                    : '<p>No scene data yet.</p>'}
+            </section>
+
+            <section>
+                <h2>Product Interactions</h2>
+                ${productRows
+                    ? `<table><thead><tr><th>Product</th><th>Views</th><th>Add to Cart</th><th>Purchased</th><th>Conversion</th></tr></thead><tbody>${productRows}</tbody></table>`
+                    : '<p>No product interactions yet.</p>'}
+            </section>
+
+            <section>
+                <h2>Top Actions</h2>
+                ${actionRows
+                    ? `<table><thead><tr><th>Action</th><th>Count</th></tr></thead><tbody>${actionRows}</tbody></table>`
+                    : '<p>No action data yet.</p>'}
+            </section>
+
+            <section>
+                <h2>Recent Activity</h2>
+                ${recentRows
+                    ? `<table><thead><tr><th>Time</th><th>Action</th><th>Detail</th></tr></thead><tbody>${recentRows}</tbody></table>`
+                    : '<p class="muted">No recent activity yet.</p>'}
+            </section>
+        </body>
+        </html>
+        `
+
+        const printWindow = window.open('', '_blank')
+        if (!printWindow) {
+            alert('Popup blocked. Please allow popups to export PDF.')
+            return
+        }
+        printWindow.document.write(html)
+        printWindow.document.close()
+        printWindow.focus()
+        printWindow.print()
+    }
+
     const buildInsightsPayload = () => {
         const events = analytics.events || []
         const actionCounts = {}
@@ -1557,6 +1735,10 @@ function InsightsTab() {
                     <button className="btn-secondary" onClick={handleExportCSV}>
                         <Download size={16} />
                         Export CSV
+                    </button>
+                    <button className="btn-secondary" onClick={handleExportPDF}>
+                        <Download size={16} />
+                        Export PDF
                     </button>
                     <button className="btn-danger" onClick={handleClearData}>
                         <X size={16} />
