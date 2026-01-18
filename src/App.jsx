@@ -652,7 +652,7 @@ function App() {
             {showChatbot && (
                 <div className="chatbot-modal">
                     <div className="chatbot-header">
-                        <div className="chatbot-avatar">
+                        <div className="chatbot-avatar" key="avatar-animation">
                             <img src="/lobo.png" alt="Lobo" />
                         </div>
                         <div className="chatbot-title">

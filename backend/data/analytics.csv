@@ -141,3 +141,6 @@ timestamp,action,data
 2026-01-18T10:20:13.294Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP2"", ""timeInPreviousScene"": 0}"
 2026-01-18T10:21:34.406Z,enter_scene,"{""sceneId"": ""storeFront""}"
 2026-01-18T10:24:18.590Z,enter_scene,"{""sceneId"": ""storeFront""}"
+2026-01-18T10:25:59.812Z,open_chatbot,"{""scene"": ""storeFront""}"
+2026-01-18T10:26:44.210Z,send_chat_message,"{""messageLength"": 11, ""scene"": ""storeFront""}"
+2026-01-18T10:27:43.729Z,send_chat_message,"{""messageLength"": 6, ""scene"": ""storeFront""}"
