@@ -8,6 +8,9 @@ dotenv.config()
 const app = express()
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
+// Gemini configuration
+const GEMINI_API_KEY = process.env.VITE_GEMINI_IMAGE_API_KEY
+
 app.use(cors())
 app.use(express.json())
 
@@ -53,6 +56,66 @@ app.get('/session/:sessionId', async (req, res) => {
     } catch (error) {
         console.error('Error retrieving session:', error)
         res.status(500).json({ error: error.message })
+    }
+})
+
+// Chatbot endpoint using Gemini
+app.post('/chat', async (req, res) => {
+    try {
+        if (!GEMINI_API_KEY) {
+            res.status(500).send('Missing GEMINI API key')
+            return
+        }
+
+        const { message } = req.body
+
+        // System prompt for Lobo
+        const systemPrompt = `You are Lobo, a helpful shopping assistant for Shopiverse, a 3D virtual store. 
+You help customers find products, check availability, and answer questions about items in the store.
+
+Guidelines:
+- Be friendly, helpful, and concise
+- When customers ask about products, help them navigate the store
+- Provide product recommendations
+- Keep responses brief and conversational`
+
+        // Call Gemini API
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: `${systemPrompt}\n\nUser: ${message}\n\nAssistant:`
+                        }]
+                    }]
+                })
+            }
+        )
+
+        if (!response.ok) {
+            const errorText = await response.text()
+            throw new Error(`Gemini API error: ${response.status} - ${errorText}`)
+        }
+
+        const data = await response.json()
+        const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't generate a response."
+
+        // Stream response character by character for smooth UX
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+        
+        for (let i = 0; i < aiResponse.length; i++) {
+            res.write(aiResponse[i])
+            // Small delay for streaming effect
+            await new Promise(resolve => setTimeout(resolve, 10))
+        }
+
+        res.end()
+    } catch (e) {
+        console.error('Chat error:', e)
+        res.status(500).send(String(e?.message || e))
     }
 })
 
