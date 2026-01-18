@@ -9,6 +9,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "@google/genai": "^1.37.0",
         "@mkkellogg/gaussian-splats-3d": "^0.4.7",
         "lucide-react": "^0.562.0",
         "react": "^18.3.1",

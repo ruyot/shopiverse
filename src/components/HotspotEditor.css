@@ -511,9 +511,123 @@
 }
 
 .metadata-uploading {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.8rem;
+    margin-left: 0.5rem;
+    font-size: 0.75rem;
+    color: #ff6b35;
     font-style: italic;
+}
+
+/* Image Mode Toggle */
+.image-mode-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    background: #F3F4F6;
+    padding: 0.25rem;
+    border-radius: 0.5rem;
+}
+
+.mode-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #6B7280;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+}
+
+.mode-btn:hover {
+    color: #374151;
+}
+
+.mode-btn.active {
+    background: white;
+    color: #FF6B35;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* AI Generate Section */
+.ai-generate-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-right: 1rem;
+}
+
+.ai-prompt-input {
+    width: calc(100% - 1rem);
+    background: white;
+    border: 1px solid #D1D5DB;
+    border-radius: 0.5rem;
+    color: #111827;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    resize: vertical;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.ai-prompt-input:focus {
+    outline: none;
+    border-color: #FF6B35;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.ai-prompt-input::placeholder {
+    color: #9CA3AF;
+}
+
+.ai-generate-btn {
+    background: #FF6B35;
+    border: none;
+    color: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.ai-generate-btn:hover:not(:disabled) {
+    background: #E55A2B;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.ai-generate-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ai-hint {
+    font-size: 0.75rem;
+    color: #6B7280;
+    margin: 0;
+    font-style: italic;
+}
+
+.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .metadata-editor-footer {

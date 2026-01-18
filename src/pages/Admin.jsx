@@ -4,6 +4,7 @@ import { getSettings, updateSettings } from '../config/settings'
 import { navigationConfig } from '../config/navigation'
 import { getSceneHotspots, saveSceneHotspots, exportHotspots, importHotspots } from '../config/hotspots'
 import { HotspotEditor } from '../components/HotspotEditor'
+import { generateImage } from '../utils/geminiImageGen'
 import './Admin.css'
 
 /**
@@ -626,82 +627,190 @@ function ScenesTab() {
             )}
 
             {/* Background Changer Modal */}
-            {backgroundChanger && (
-                <div className="modal-overlay" onClick={() => setBackgroundChanger(null)}>
-                    <div className="modal-bg-changer" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3>Change Background</h3>
-                            <button className="modal-close" onClick={() => setBackgroundChanger(null)}>
-                                <X size={18} strokeWidth={2} />
-                            </button>
-                        </div>
-                        <div className="modal-content">
-                            <div className="modal-scene-info">
-                                <strong>{backgroundChanger.name}</strong>
-                                <span className="modal-scene-id">{backgroundChanger.id}</span>
+            {backgroundChanger && (() => {
+                const [bgMode, setBgMode] = useState('upload')
+                const [bgPrompt, setBgPrompt] = useState('')
+                const [bgGenerating, setBgGenerating] = useState(false)
+                
+                const handleGenerateBg = async () => {
+                    if (!bgPrompt.trim()) {
+                        alert('Please enter a prompt for background generation')
+                        return
+                    }
+                    
+                    const apiKey = import.meta.env.VITE_GEMINI_IMAGE_API_KEY
+                    
+                    if (!apiKey) {
+                        alert('AI Image Generation: Please configure Gemini Image API in your .env file.\n\nAdd VITE_GEMINI_IMAGE_API_KEY to enable this feature.')
+                        return
+                    }
+                    
+                    setBgGenerating(true)
+                    try {
+                        console.log('🎨 Generating background with Gemini AI...')
+                        
+                        // Generate image using Gemini API
+                        const imageDataUrl = await generateImage(bgPrompt)
+                        
+                        // Convert data URL to blob for download
+                        const response = await fetch(imageDataUrl)
+                        const blob = await response.blob()
+                        const filename = `${backgroundChanger.id}_bg_${Date.now()}.png`
+                        
+                        // Create download link
+                        const url = URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = url
+                        a.download = filename
+                        a.click()
+                        URL.revokeObjectURL(url)
+                        
+                        console.log('✅ Background generated and downloaded:', filename)
+                        console.log('📁 Move to: public/')
+                        console.log('🔧 Update navigation config path to:', `/${filename}`)
+                        
+                        alert(`Background generated successfully!\n\nFile: ${filename}\n\n1. Move the downloaded file to public/ folder\n2. Update navigation config with: /${filename}`)
+                        
+                        // Clear prompt
+                        setBgPrompt('')
+                    } catch (error) {
+                        console.error('❌ Error generating background:', error)
+                        alert('Failed to generate background: ' + error.message)
+                    } finally {
+                        setBgGenerating(false)
+                    }
+                }
+                
+                return (
+                    <div className="modal-overlay" onClick={() => setBackgroundChanger(null)}>
+                        <div className="modal-bg-changer" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3>Change Background</h3>
+                                <button className="modal-close" onClick={() => setBackgroundChanger(null)}>
+                                    <X size={18} strokeWidth={2} />
+                                </button>
                             </div>
-                            
-                            <div className="bg-preview-section">
-                                <label>Current Background</label>
-                                <div className="bg-preview">
-                                    <img src={backgroundChanger.image} alt={backgroundChanger.name} />
-                                    <div className="bg-path">{backgroundChanger.image}</div>
+                            <div className="modal-content">
+                                <div className="modal-scene-info">
+                                    <strong>{backgroundChanger.name}</strong>
+                                    <span className="modal-scene-id">{backgroundChanger.id}</span>
+                                </div>
+                                
+                                <div className="bg-preview-section">
+                                    <label>Current Background</label>
+                                    <div className="bg-preview">
+                                        <img src={backgroundChanger.image} alt={backgroundChanger.name} />
+                                        <div className="bg-path">{backgroundChanger.image}</div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-input-section">
+                                    <div className="image-mode-toggle">
+                                        <button 
+                                            className={`mode-btn ${bgMode === 'upload' ? 'active' : ''}`}
+                                            onClick={() => setBgMode('upload')}
+                                        >
+                                            <Camera size={14} strokeWidth={2} />
+                                            Upload
+                                        </button>
+                                        <button 
+                                            className={`mode-btn ${bgMode === 'generate' ? 'active' : ''}`}
+                                            onClick={() => setBgMode('generate')}
+                                        >
+                                            <Zap size={14} strokeWidth={2} />
+                                            AI Generate
+                                        </button>
+                                    </div>
+
+                                    {bgMode === 'upload' ? (
+                                        <>
+                                            <label>Upload New Background</label>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="modal-file-input"
+                                                id="new-bg-file"
+                                            />
+                                            <label htmlFor="new-bg-file" className="modal-upload-btn">
+                                                <Camera size={16} strokeWidth={2} />
+                                                Choose Background Image
+                                            </label>
+                                            <p className="modal-help-text">
+                                                Image will be saved to public/ folder. Use the filename in your navigation config.
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <div className="ai-generate-section">
+                                            <label>Generate Background with AI</label>
+                                            <textarea
+                                                value={bgPrompt}
+                                                onChange={(e) => setBgPrompt(e.target.value)}
+                                                placeholder="Describe the background scene... (e.g., 'Modern retail store interior with warm lighting and wooden shelves')"
+                                                className="ai-prompt-input"
+                                                rows="3"
+                                            />
+                                            <button 
+                                                className="ai-generate-btn"
+                                                onClick={handleGenerateBg}
+                                                disabled={bgGenerating || !bgPrompt.trim()}
+                                            >
+                                                {bgGenerating ? (
+                                                    <>
+                                                        <RefreshCw size={16} strokeWidth={2} className="spinning" />
+                                                        Generating...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Zap size={16} strokeWidth={2} />
+                                                        Generate Background
+                                                    </>
+                                                )}
+                                            </button>
+                                            <p className="ai-hint">
+                                                💡 Tip: Describe the style, lighting, and atmosphere for best results
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-
-                            <div className="bg-input-section">
-                                <label>Upload New Background</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="modal-file-input"
-                                    id="new-bg-file"
-                                />
-                                <label htmlFor="new-bg-file" className="modal-upload-btn">
-                                    <Camera size={16} strokeWidth={2} />
-                                    Choose Background Image
-                                </label>
-                                <p className="modal-help-text">
-                                    Image will be saved to public/ folder. Use the filename in your navigation config.
-                                </p>
+                            <div className="modal-footer">
+                                <button 
+                                    className="modal-btn cancel"
+                                    onClick={() => setBackgroundChanger(null)}
+                                >
+                                    Cancel
+                                </button>
+                                {bgMode === 'upload' && (
+                                    <button 
+                                        className="modal-btn confirm"
+                                        onClick={() => {
+                                            const fileInput = document.getElementById('new-bg-file')
+                                            if (fileInput.files.length > 0) {
+                                                const file = fileInput.files[0]
+                                                const filename = `${backgroundChanger.id}_bg_${Date.now()}.${file.name.split('.').pop()}`
+                                                
+                                                const url = URL.createObjectURL(file)
+                                                const a = document.createElement('a')
+                                                a.href = url
+                                                a.download = filename
+                                                a.click()
+                                                URL.revokeObjectURL(url)
+                                                
+                                                console.log('📥 Background image downloaded:', filename)
+                                                console.log('📁 Move to: public/')
+                                                console.log('🔧 Update navigation config path to:', `/${filename}`)
+                                            }
+                                            setBackgroundChanger(null)
+                                        }}
+                                    >
+                                        Download & Update
+                                    </button>
+                                )}
                             </div>
                         </div>
-                        <div className="modal-footer">
-                            <button 
-                                className="modal-btn cancel"
-                                onClick={() => setBackgroundChanger(null)}
-                            >
-                                Cancel
-                            </button>
-                            <button 
-                                className="modal-btn confirm"
-                                onClick={() => {
-                                    const fileInput = document.getElementById('new-bg-file')
-                                    if (fileInput.files.length > 0) {
-                                        const file = fileInput.files[0]
-                                        const filename = `${backgroundChanger.id}_bg_${Date.now()}.${file.name.split('.').pop()}`
-                                        
-                                        // Create download link
-                                        const url = URL.createObjectURL(file)
-                                        const a = document.createElement('a')
-                                        a.href = url
-                                        a.download = filename
-                                        a.click()
-                                        URL.revokeObjectURL(url)
-                                        
-                                        console.log('📥 Background image downloaded:', filename)
-                                        console.log('📁 Move to: public/')
-                                        console.log('🔧 Update navigation config path to:', `/${filename}`)
-                                    }
-                                    setBackgroundChanger(null)
-                                }}
-                            >
-                                Download & Update
-                            </button>
-                        </div>
                     </div>
-                </div>
-            )}
+                )
+            })()}
         </div>
     )
 }

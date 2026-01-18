@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
-import { X, Save, Edit2, Image as ImageIcon, Plus, Trash2 } from 'lucide-react'
+import { X, Save, Edit2, Image as ImageIcon, Plus, Trash2, Zap, RefreshCw } from 'lucide-react'
+import { generateImage } from '../utils/geminiImageGen'
 import './HotspotEditor.css'
 
 /**
@@ -208,10 +209,48 @@ export function HotspotEditor({ scene, onSave, onClose }) {
 function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage }) {
     const [title, setTitle] = useState(hotspot.title || '')
     const [uploading, setUploading] = useState(false)
+    const [imageMode, setImageMode] = useState('upload') // 'upload' or 'generate'
+    const [aiPrompt, setAiPrompt] = useState('')
+    const [generating, setGenerating] = useState(false)
     const fileInputRef = useRef(null)
 
     const handleSave = () => {
         onSave({ title })
+    }
+
+    const handleGenerateImage = async () => {
+        if (!aiPrompt.trim()) {
+            alert('Please enter a prompt for image generation')
+            return
+        }
+
+        const apiKey = import.meta.env.VITE_GEMINI_IMAGE_API_KEY
+        
+        if (!apiKey) {
+            alert('AI Image Generation: Please configure Gemini Image API in your .env file.\n\nAdd VITE_GEMINI_IMAGE_API_KEY to enable this feature.')
+            return
+        }
+
+        setGenerating(true)
+        try {
+            console.log('🎨 Generating image with Gemini AI...')
+            
+            // Generate image using Gemini API
+            const imageDataUrl = await generateImage(aiPrompt)
+            
+            // Add the generated image to the hotspot
+            onAddImage(imageDataUrl)
+            
+            // Clear the prompt
+            setAiPrompt('')
+            
+            console.log('✅ Image generated and added successfully!')
+        } catch (error) {
+            console.error('❌ Error generating image:', error)
+            alert('Failed to generate image: ' + error.message)
+        } finally {
+            setGenerating(false)
+        }
     }
 
     const handleFileSelect = async (e) => {
@@ -347,22 +386,71 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
                             ))}
                         </div>
                         
-                        <div className="metadata-add-image">
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                onChange={handleFileSelect}
-                                className="metadata-file-input"
-                                id="image-upload"
-                            />
-                            <label htmlFor="image-upload" className="metadata-upload-label">
-                                <ImageIcon size={16} strokeWidth={2} />
-                                Choose Images
-                            </label>
-                            {uploading && <span className="metadata-uploading">Uploading...</span>}
+                        <div className="image-mode-toggle">
+                            <button 
+                                className={`mode-btn ${imageMode === 'upload' ? 'active' : ''}`}
+                                onClick={() => setImageMode('upload')}
+                            >
+                                <ImageIcon size={14} strokeWidth={2} />
+                                Upload
+                            </button>
+                            <button 
+                                className={`mode-btn ${imageMode === 'generate' ? 'active' : ''}`}
+                                onClick={() => setImageMode('generate')}
+                            >
+                                <Zap size={14} strokeWidth={2} />
+                                AI Generate
+                            </button>
                         </div>
+
+                        {imageMode === 'upload' ? (
+                            <div className="metadata-add-image">
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={handleFileSelect}
+                                    className="metadata-file-input"
+                                    id="image-upload"
+                                />
+                                <label htmlFor="image-upload" className="metadata-upload-label">
+                                    <ImageIcon size={16} strokeWidth={2} />
+                                    Choose Images
+                                </label>
+                                {uploading && <span className="metadata-uploading">Uploading...</span>}
+                            </div>
+                        ) : (
+                            <div className="ai-generate-section">
+                                <textarea
+                                    value={aiPrompt}
+                                    onChange={(e) => setAiPrompt(e.target.value)}
+                                    placeholder="Describe the image you want to generate... (e.g., 'Professional product photo of blue denim jeans on white background')"
+                                    className="ai-prompt-input"
+                                    rows="3"
+                                />
+                                <button 
+                                    className="ai-generate-btn"
+                                    onClick={handleGenerateImage}
+                                    disabled={generating || !aiPrompt.trim()}
+                                >
+                                    {generating ? (
+                                        <>
+                                            <RefreshCw size={16} strokeWidth={2} className="spinning" />
+                                            Generating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Zap size={16} strokeWidth={2} />
+                                            Generate Image
+                                        </>
+                                    )}
+                                </button>
+                                <p className="ai-hint">
+                                    💡 Tip: Be specific about style, lighting, and background for best results
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
