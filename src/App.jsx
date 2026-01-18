@@ -49,7 +49,7 @@ function App() {
         setCartItems(prevItems => {
             // Check if item already exists in cart
             const existingItemIndex = prevItems.findIndex(item => item.hotspotId === hotspot.id)
-            
+
             if (existingItemIndex > -1) {
                 // Item exists, increment quantity
                 const updatedItems = [...prevItems]
@@ -81,8 +81,8 @@ function App() {
             removeFromCart(cartItemId)
             return
         }
-        setCartItems(prevItems => 
-            prevItems.map(item => 
+        setCartItems(prevItems =>
+            prevItems.map(item =>
                 item.id === cartItemId ? { ...item, quantity: newQuantity } : item
             )
         )
@@ -107,7 +107,7 @@ function App() {
             })
 
             const { url } = await response.json()
-            
+
             // Redirect to Stripe Checkout
             window.location.href = url
         } catch (error) {
@@ -128,7 +128,7 @@ function App() {
                 .then(res => res.json())
                 .then(data => {
                     const session = data.session
-                    
+
                     // Calculate total
                     const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
                     const tax = subtotal * 0.13

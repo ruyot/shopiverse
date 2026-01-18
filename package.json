@@ -13,6 +13,7 @@
     "dependencies": {
         "@google/genai": "^1.37.0",
         "@mkkellogg/gaussian-splats-3d": "^0.4.7",
+        "@sparkjsdev/spark": "^0.1.10",
         "@stripe/react-stripe-js": "^5.4.1",
         "@stripe/stripe-js": "^8.6.1",
         "cors": "^2.8.5",

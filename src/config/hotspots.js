@@ -3,59 +3,33 @@
  * Manages hotspot data with localStorage persistence
  */
 
-const HOTSPOTS_KEY = 'shopiverse_hotspots_v5'
+const HOTSPOTS_KEY = 'shopiverse_hotspots_v7'
 
-// Default hotspots from original navigation config
+// Default hotspots - all using 3D positions for orb rendering
 const defaultHotspots = {
     storeP1: [
-        {
-            id: 'jeans-main',
-            x: 65, y: 50,
-            label: 'Classic Denim',
-            title: 'Classic Denim Jeans',
-            description: 'Premium raw denim with a classic straight leg fit.',
-            price: '$129.00',
-            images: []
-        },
-        {
-            id: 'shirt-main',
-            x: 35, y: 50,
-            label: 'Summer Shirt',
-            title: 'Linen Summer Shirt',
-            description: 'Lightweight linen shirt perfect for warm weather.',
-            price: '$89.00',
-            images: []
-        },
-        // Test hotspot center
-        {
-            id: 'test-center',
-            x: 50, y: 50,
-            label: 'Center Item',
-            title: 'Featured Collection',
-            description: 'New arrivals for the season.',
-            price: '$49.00',
-            images: []
-        }
+        // Single hotspot for main store view - position needs verification with P key
+        { id: 'featured-item', position: [0, 0.2, -3.0], label: 'Featured', title: 'Featured Collection', description: 'New arrivals for the season.', price: '$99.00', images: [] }
     ],
     storeP1Left: [
-        { id: 'jeans-1', x: 38, y: 42, label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] },
-        { id: 'jeans-2', x: 28, y: 42, label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] },
-        { id: 'jeans-3', x: 28, y: 65, label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] },
-        { id: 'jeans-4', x: 39, y: 64, label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] }
+        { id: 'jeans-1', position: [-0.5, 0.3, -3.5], label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] },
+        { id: 'jeans-2', position: [-1.0, 0.3, -3.0], label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] },
+        { id: 'jeans-3', position: [-1.0, -0.2, -3.0], label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] },
+        { id: 'jeans-4', position: [-0.5, -0.2, -3.5], label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] }
     ],
     storeP1Right: [
-        { id: 'item-r1-1', x: 30, y: 35, label: 'Wallet', title: 'Wallet', images: ['/wallet-black.png', '/wallet-dark-brown.jpg', '/wallet-grey.jpg', '/wallet-light-brown.jpg'] },
-        { id: 'item-r1-2', x: 50, y: 45, label: 'Product 2', title: 'Product 2', images: [] },
-        { id: 'item-r1-3', x: 70, y: 40, label: 'Product 3', title: 'Product 3', images: [] }
+        { id: 'item-r1-1', position: [-0.8, 0.4, -3.0], label: 'Wallet', title: 'Wallet', images: ['/wallet-black.png', '/wallet-dark-brown.jpg', '/wallet-grey.jpg', '/wallet-light-brown.jpg'] },
+        { id: 'item-r1-2', position: [0, 0.2, -3.5], label: 'Product 2', title: 'Product 2', images: [] },
+        { id: 'item-r1-3', position: [0.8, 0.3, -3.0], label: 'Product 3', title: 'Product 3', images: [] }
     ],
     storeP2Left: [
         // User-verified coordinate from P key
         { id: 'item-l2-1', position: [-1.59639, 0.25532, -4.51801], label: 'Wallet', title: 'Wallet', images: ['/wallet-black.png', '/wallet-dark-brown.jpg', '/wallet-grey.jpg', '/wallet-light-brown.jpg'] }
     ],
     storeP2Right: [
-        { id: 'item-r2-1', x: 39, y: 50, label: 'Wallet', title: 'Wallet', images: ['/wallet-black.png', '/wallet-dark-brown.jpg', '/wallet-grey.jpg', '/wallet-light-brown.jpg'] },
-        { id: 'item-r2-2', x: 57, y: 46, label: 'Product 2', title: 'Product 2', images: [] },
-        { id: 'item-r2-3', x: 68, y: 42, label: 'Product 3', title: 'Product 3', images: [] }
+        { id: 'item-r2-1', position: [-0.5, 0.2, -3.5], label: 'Wallet', title: 'Wallet', images: ['/wallet-black.png', '/wallet-dark-brown.jpg', '/wallet-grey.jpg', '/wallet-light-brown.jpg'] },
+        { id: 'item-r2-2', position: [0.3, 0.1, -4.0], label: 'Product 2', title: 'Product 2', images: [] },
+        { id: 'item-r2-3', position: [0.8, 0.2, -4.5], label: 'Product 3', title: 'Product 3', images: [] }
     ]
 }
 
