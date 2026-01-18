@@ -74,7 +74,7 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
                 console.log('Splat loaded successfully')
                 setIsLoaded(true)
                 viewer.start()
-                
+
                 // Delay showing arrows/hotspots to match splat loading feel
                 setTimeout(() => {
                     setShowContent(true)
