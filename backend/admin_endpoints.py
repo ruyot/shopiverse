@@ -96,6 +96,9 @@ class Hotspot(BaseModel):
 class AnalyticsEvent(BaseModel):
     action: str  # e.g., "add_to_cart", "navigate", "view_product", "checkout"
     timestamp: Optional[str] = None
+    sessionId: Optional[str] = None  # Unique session identifier
+    userId: Optional[str] = None  # Persistent user identifier
+    sessionDuration: Optional[int] = None  # Seconds since session start
     data: Optional[dict] = None  # Additional event data (product id, scene id, etc.)
 
 
@@ -325,13 +328,16 @@ def delete_file(filename: str):
 
 # ============== ANALYTICS ENDPOINTS ==============
 
+ANALYTICS_HEADERS = ['timestamp', 'session_id', 'user_id', 'session_duration', 'action', 'data']
+
+
 def ensure_analytics_file():
     """Create analytics CSV with headers if it doesn't exist"""
     ensure_data_dir()
     if not os.path.exists(ANALYTICS_FILE):
         with open(ANALYTICS_FILE, 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['timestamp', 'action', 'data'])
+            writer.writerow(ANALYTICS_HEADERS)
 
 
 @app.post("/api/analytics")
@@ -339,16 +345,25 @@ def track_event(event: AnalyticsEvent):
     """
     Track a frontend event and append it to the CSV file.
 
-    Request body: { "action": "add_to_cart", "data": { "productId": "p1-1", "price": 49.99 } }
+    Request body: {
+        "action": "navigate",
+        "sessionId": "session_123",
+        "userId": "user_456",
+        "sessionDuration": 120,
+        "data": { "fromScene": "storeFront", "toScene": "storeP1", "timeInPreviousScene": 45 }
+    }
     """
     ensure_analytics_file()
 
     timestamp = event.timestamp or datetime.now().isoformat()
+    session_id = event.sessionId or ""
+    user_id = event.userId or ""
+    session_duration = event.sessionDuration if event.sessionDuration is not None else ""
     data_json = json.dumps(event.data) if event.data else ""
 
     with open(ANALYTICS_FILE, 'a', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow([timestamp, event.action, data_json])
+        writer.writerow([timestamp, session_id, user_id, session_duration, event.action, data_json])
 
     return {"success": True, "message": f"Tracked event: {event.action}"}
 
@@ -363,13 +378,71 @@ def get_analytics():
         reader = csv.DictReader(f)
         for row in reader:
             event = {
-                'timestamp': row['timestamp'],
-                'action': row['action'],
-                'data': json.loads(row['data']) if row['data'] else None
+                'timestamp': row.get('timestamp', ''),
+                'sessionId': row.get('session_id', ''),
+                'userId': row.get('user_id', ''),
+                'sessionDuration': int(row['session_duration']) if row.get('session_duration') else None,
+                'action': row.get('action', ''),
+                'data': json.loads(row['data']) if row.get('data') else None
             }
             events.append(event)
 
     return {"events": events, "count": len(events)}
+
+
+@app.get("/api/analytics/summary")
+def get_analytics_summary():
+    """Get aggregated analytics summary by session and user"""
+    ensure_analytics_file()
+
+    sessions = {}
+    users = {}
+
+    with open(ANALYTICS_FILE, 'r', newline='') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            session_id = row.get('session_id', '')
+            user_id = row.get('user_id', '')
+            action = row.get('action', '')
+            data = json.loads(row['data']) if row.get('data') else {}
+
+            # Track sessions
+            if session_id:
+                if session_id not in sessions:
+                    sessions[session_id] = {
+                        'userId': user_id,
+                        'startTime': row.get('timestamp'),
+                        'actions': [],
+                        'scenes': {},
+                        'totalDuration': 0
+                    }
+                sessions[session_id]['actions'].append(action)
+
+                # Track time in scenes
+                if action == 'navigate' and 'timeInPreviousScene' in data:
+                    from_scene = data.get('fromScene', 'unknown')
+                    if from_scene not in sessions[session_id]['scenes']:
+                        sessions[session_id]['scenes'][from_scene] = 0
+                    sessions[session_id]['scenes'][from_scene] += data['timeInPreviousScene']
+
+                # Track session end
+                if action == 'session_end' and 'totalDuration' in data:
+                    sessions[session_id]['totalDuration'] = data['totalDuration']
+
+            # Track users
+            if user_id:
+                if user_id not in users:
+                    users[user_id] = {'sessions': [], 'totalActions': 0}
+                if session_id and session_id not in users[user_id]['sessions']:
+                    users[user_id]['sessions'].append(session_id)
+                users[user_id]['totalActions'] += 1
+
+    return {
+        'sessions': sessions,
+        'users': users,
+        'totalSessions': len(sessions),
+        'totalUsers': len(users)
+    }
 
 
 @app.delete("/api/analytics")
@@ -378,7 +451,7 @@ def clear_analytics():
     ensure_analytics_file()
     with open(ANALYTICS_FILE, 'w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(['timestamp', 'action', 'data'])
+        writer.writerow(ANALYTICS_HEADERS)
     return {"success": True, "message": "Analytics data cleared"}
 
 
