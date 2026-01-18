@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { navigationConfig, initialViewpoint } from './config/navigation'
 import { PLYViewer } from './components/PLYViewer'
-import { ProductDetail } from './components/ProductDetail'
+import { ProductCard } from './components/ProductCard'
 import { Terminal, X } from 'lucide-react'
 import { getSettings } from './config/settings'
 import { getSceneHotspots } from './config/hotspots'
@@ -297,8 +297,9 @@ function App() {
 
             {/* Product Detail Modal */}
             {selectedHotspot && (
-                <ProductDetail
+                <ProductCard
                     hotspot={selectedHotspot}
+                    position={{ x: selectedHotspot.x, y: selectedHotspot.y }}
                     onClose={() => setSelectedHotspot(null)}
                 />
             )}
