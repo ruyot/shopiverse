@@ -42,10 +42,16 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
             splatRef.current = null
         }
 
-        // Create renderer
-        const renderer = new THREE.WebGLRenderer({ antialias: true })
+        // Create renderer with Spark-optimized settings
+        const renderer = new THREE.WebGLRenderer({ 
+            antialias: false, // Splats don't benefit from MSAA, adds overhead
+            powerPreference: 'high-performance',
+            stencil: false,
+            depth: true
+        })
         renderer.setSize(canvasContainerRef.current.clientWidth, canvasContainerRef.current.clientHeight)
-        renderer.setPixelRatio(window.devicePixelRatio)
+        // Limit pixel ratio - splats are dense enough without high DPI
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
         canvasContainerRef.current.appendChild(renderer.domElement)
         rendererRef.current = renderer
 
@@ -98,8 +104,11 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
         }
         hotspotMeshesRef.current = hotspotMeshes
 
-        // Load splat using Spark
-        const splat = new SplatMesh({ url: plyPath })
+        // Load splat using Spark with performance optimizations
+        const splat = new SplatMesh({ 
+            url: plyPath,
+            maxStdDev: Math.sqrt(5) // Reduce Gaussian extent for better perf (default: sqrt(8))
+        })
         splat.quaternion.set(1, 0, 0, 0) // 180 deg X rotation
         splat.scale.set(2.5, 2.5, 2.5)
         scene.add(splat)

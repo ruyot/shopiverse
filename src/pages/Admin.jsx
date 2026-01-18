@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BarChart3, Palette, Zap, Gamepad2, Camera, RefreshCw, Settings, X, ChevronDown, ChevronRight, Download, Upload, Plus } from 'lucide-react'
+import { BarChart3, Palette, Zap, Gamepad2, Camera, RefreshCw, TrendingUp, X, ChevronDown, ChevronRight, Download, Upload, Plus } from 'lucide-react'
 import { getSettings, updateSettings } from '../config/settings'
 import { navigationConfig } from '../config/navigation'
 import { getSceneHotspots, saveSceneHotspots, exportHotspots, importHotspots } from '../config/hotspots'
@@ -41,10 +41,10 @@ export default function Admin() {
                     3D Scenes
                 </button>
                 <button 
-                    className={`admin-tab ${activeTab === 'settings' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('settings')}
+                    className={`admin-tab ${activeTab === 'insights' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('insights')}
                 >
-                    Settings
+                    Insights
                 </button>
             </nav>
 
@@ -52,7 +52,7 @@ export default function Admin() {
             <main className="admin-content">
                 {activeTab === 'overview' && <OverviewTab />}
                 {activeTab === 'scenes' && <ScenesTab />}
-                {activeTab === 'settings' && <SettingsTab />}
+                {activeTab === 'insights' && <InsightsTab />}
             </main>
         </div>
     )
@@ -277,7 +277,7 @@ function OverviewTab() {
                         <RefreshCw size={16} strokeWidth={2} /> Refresh All Scenes
                     </button>
                     <button className="action-btn">
-                        <Settings size={16} strokeWidth={2} /> Configure Settings
+                        <TrendingUp size={16} strokeWidth={2} /> View Insights
                     </button>
                 </div>
             </div>
@@ -973,7 +973,7 @@ function ScenesTab() {
                                     className="action-btn-grid"
                                     onClick={() => setRoomToggleWarning(scene)}
                                 >
-                                    <Settings size={16} strokeWidth={2} />
+                                    <Zap size={16} strokeWidth={2} />
                                     Toggle Room
                                 </button>
                             </div>
@@ -1238,89 +1238,138 @@ function ScenesTab() {
     )
 }
 
-function SettingsTab() {
-    const [settings, setSettings] = useState(() => getSettings())
+function InsightsTab() {
+    const [timeRange, setTimeRange] = useState('7d')
+    
+    // Sample insights data
+    const topProducts = [
+        { name: 'Denim Jeans', views: 342, clicks: 89, conversions: 23 },
+        { name: 'Leather Wallet', views: 298, clicks: 76, conversions: 19 },
+        { name: 'Canvas Sneakers', views: 267, clicks: 65, conversions: 15 },
+        { name: 'Cotton T-Shirt', views: 234, clicks: 54, conversions: 12 },
+        { name: 'Wool Sweater', views: 189, clicks: 42, conversions: 8 }
+    ]
 
-    const handleToggle = (key) => {
-        const updated = updateSettings({ [key]: !settings[key] })
-        setSettings(updated)
+    const sceneMetrics = [
+        { scene: 'Living Room', avgTime: '2m 34s', bounceRate: '23%', engagement: 87 },
+        { scene: 'Bedroom', avgTime: '1m 58s', bounceRate: '31%', engagement: 76 },
+        { scene: 'Kitchen', avgTime: '1m 42s', bounceRate: '28%', engagement: 72 },
+        { scene: 'Bathroom', avgTime: '1m 15s', bounceRate: '42%', engagement: 58 }
+    ]
+
+    const userBehavior = {
+        avgSessionTime: '5m 23s',
+        pagesPerSession: 3.4,
+        returnRate: '34%',
+        mobileUsers: '62%'
     }
 
     return (
         <div className="admin-tab-content">
-            <h2>Settings</h2>
-            
-            <div className="settings-section">
-                <h3>Display</h3>
-                <div className="setting-item">
-                    <label>
-                        <input 
-                            type="checkbox" 
-                            checked={settings.showHotspots}
-                            onChange={() => handleToggle('showHotspots')}
-                        />
-                        Show Product Hotspots
-                    </label>
-                </div>
-                <div className="setting-item">
-                    <label>
-                        <input 
-                            type="checkbox" 
-                            checked={settings.showNavigation}
-                            onChange={() => handleToggle('showNavigation')}
-                        />
-                        Show Navigation Arrows
-                    </label>
+            <div className="insights-header">
+                <h2>Insights & Analytics</h2>
+                <select 
+                    value={timeRange} 
+                    onChange={(e) => setTimeRange(e.target.value)}
+                    className="time-range-select"
+                >
+                    <option value="24h">Last 24 Hours</option>
+                    <option value="7d">Last 7 Days</option>
+                    <option value="30d">Last 30 Days</option>
+                    <option value="90d">Last 90 Days</option>
+                </select>
+            </div>
+
+            {/* User Behavior Overview */}
+            <div className="insights-section">
+                <h3>User Behavior</h3>
+                <div className="metrics-grid-4">
+                    <div className="metric-card">
+                        <div className="metric-label">Avg Session Time</div>
+                        <div className="metric-value">{userBehavior.avgSessionTime}</div>
+                        <div className="metric-change positive">+12% vs last period</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Pages/Session</div>
+                        <div className="metric-value">{userBehavior.pagesPerSession}</div>
+                        <div className="metric-change positive">+8% vs last period</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Return Rate</div>
+                        <div className="metric-value">{userBehavior.returnRate}</div>
+                        <div className="metric-change negative">-3% vs last period</div>
+                    </div>
+                    <div className="metric-card">
+                        <div className="metric-label">Mobile Users</div>
+                        <div className="metric-value">{userBehavior.mobileUsers}</div>
+                        <div className="metric-change positive">+5% vs last period</div>
+                    </div>
                 </div>
             </div>
 
-            <div className="settings-section">
-                <h3>Rendering</h3>
-                <div className="setting-item">
-                    <label>
-                        <input 
-                            type="checkbox" 
-                            checked={settings.enableAntialiasing}
-                            onChange={() => handleToggle('enableAntialiasing')}
-                        />
-                        Enable Anti-aliasing
-                    </label>
-                </div>
-                <div className="setting-item">
-                    <label>
-                        <input 
-                            type="checkbox" 
-                            checked={settings.progressiveLoading}
-                            onChange={() => handleToggle('progressiveLoading')}
-                        />
-                        Progressive Loading
-                    </label>
-                </div>
-            </div>
-
-            <div className="settings-section">
-                <h3>Controls</h3>
-                <div className="setting-item">
-                    <label>
-                        Movement Speed
-                        <input type="range" min="0.01" max="0.1" step="0.01" defaultValue="0.05" />
-                    </label>
-                </div>
-                <div className="setting-item">
-                    <label>
-                        Rotation Speed
-                        <input type="range" min="0.01" max="0.05" step="0.01" defaultValue="0.02" />
-                    </label>
+            {/* Top Products */}
+            <div className="insights-section">
+                <h3>Top Performing Products</h3>
+                <div className="insights-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Views</th>
+                                <th>Clicks</th>
+                                <th>Conversions</th>
+                                <th>Conv. Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {topProducts.map((product, idx) => (
+                                <tr key={idx}>
+                                    <td className="product-name">{product.name}</td>
+                                    <td>{product.views}</td>
+                                    <td>{product.clicks}</td>
+                                    <td>{product.conversions}</td>
+                                    <td className="conversion-rate">
+                                        {((product.conversions / product.clicks) * 100).toFixed(1)}%
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <div className="settings-section">
-                <h3>Camera</h3>
-                <div className="setting-item">
-                    <label>
-                        Initial Position Z
-                        <input type="number" step="0.1" defaultValue="1" />
-                    </label>
+            {/* Scene Performance */}
+            <div className="insights-section">
+                <h3>Scene Performance</h3>
+                <div className="insights-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Scene</th>
+                                <th>Avg Time</th>
+                                <th>Bounce Rate</th>
+                                <th>Engagement</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {sceneMetrics.map((scene, idx) => (
+                                <tr key={idx}>
+                                    <td className="scene-name">{scene.scene}</td>
+                                    <td>{scene.avgTime}</td>
+                                    <td>{scene.bounceRate}</td>
+                                    <td>
+                                        <div className="engagement-bar">
+                                            <div 
+                                                className="engagement-fill" 
+                                                style={{ width: `${scene.engagement}%` }}
+                                            />
+                                            <span className="engagement-text">{scene.engagement}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
