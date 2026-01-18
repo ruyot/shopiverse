@@ -40,3 +40,7 @@ timestamp,action,data
 2026-01-18T09:45:12.815Z,enter_scene,"{""sceneId"": ""storeFront""}"
 2026-01-18T09:45:12.900Z,enter_scene,"{""sceneId"": ""storeFront""}"
 2026-01-18T09:45:25.086Z,enter_scene,"{""sceneId"": ""storeFront""}"
+2026-01-18T09:46:24.972Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 60}"
+2026-01-18T09:46:31.763Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Right"", ""timeInPreviousScene"": 7}"
+2026-01-18T09:46:39.515Z,view_product,"{""productId"": ""item-r1-2"", ""title"": ""Product 2"", ""scene"": ""storeP1Right""}"
+2026-01-18T09:46:41.647Z,view_product,"{""productId"": ""item-r1-3"", ""title"": ""Product 3"", ""scene"": ""storeP1Right""}"
