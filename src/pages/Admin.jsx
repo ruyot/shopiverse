@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BarChart3, Palette, Zap, Gamepad2, Camera, RefreshCw, Settings, Terminal, X, ChevronDown, ChevronRight, Download, Upload } from 'lucide-react'
+import { BarChart3, Palette, Zap, Gamepad2, Camera, RefreshCw, Settings, X, ChevronDown, ChevronRight, Download, Upload } from 'lucide-react'
 import { getSettings, updateSettings } from '../config/settings'
 import { navigationConfig } from '../config/navigation'
 import { getSceneHotspots, saveSceneHotspots, exportHotspots, importHotspots } from '../config/hotspots'
@@ -13,7 +13,6 @@ import './Admin.css'
  */
 export default function Admin() {
     const [activeTab, setActiveTab] = useState('overview')
-    const [showCommands, setShowCommands] = useState(false)
 
     return (
         <div className="admin-page">
@@ -55,85 +54,6 @@ export default function Admin() {
                 {activeTab === 'scenes' && <ScenesTab />}
                 {activeTab === 'settings' && <SettingsTab />}
             </main>
-
-            {/* Command Palette Toggle */}
-            <button 
-                className="command-toggle"
-                onClick={() => setShowCommands(!showCommands)}
-                title="Show Commands"
-            >
-                <Terminal size={20} strokeWidth={2} />
-            </button>
-
-            {/* Command Palette */}
-            {showCommands && (
-                <div className="command-palette">
-                    <div className="command-header">
-                        <h3>SYSTEM COMMANDS</h3>
-                        <button 
-                            className="command-close"
-                            onClick={() => setShowCommands(false)}
-                        >
-                            <X size={18} strokeWidth={2} />
-                        </button>
-                    </div>
-                    <div className="command-list">
-                        <div className="command-section">
-                            <div className="command-section-title">NAVIGATION</div>
-                            <div className="command-item">
-                                <span className="command-key">W</span>
-                                <span className="command-desc">Move Forward</span>
-                            </div>
-                            <div className="command-item">
-                                <span className="command-key">A</span>
-                                <span className="command-desc">Move Left</span>
-                            </div>
-                            <div className="command-item">
-                                <span className="command-key">S</span>
-                                <span className="command-desc">Move Backward</span>
-                            </div>
-                            <div className="command-item">
-                                <span className="command-key">D</span>
-                                <span className="command-desc">Move Right</span>
-                            </div>
-                            <div className="command-item">
-                                <span className="command-key">MOUSE</span>
-                                <span className="command-desc">Look Around</span>
-                            </div>
-                        </div>
-                        <div className="command-section">
-                            <div className="command-section-title">SHORTCUTS</div>
-                            <div className="command-item">
-                                <span className="command-key">ESC</span>
-                                <span className="command-desc">Exit Store View</span>
-                            </div>
-                            <div className="command-item">
-                                <span className="command-key">SPACE</span>
-                                <span className="command-desc">Interact</span>
-                            </div>
-                            <div className="command-item">
-                                <span className="command-key">TAB</span>
-                                <span className="command-desc">Toggle UI</span>
-                            </div>
-                        </div>
-                        <div className="command-section">
-                            <div className="command-section-title">ADMIN</div>
-                            <div className="command-item">
-                                <span className="command-key">CTRL+R</span>
-                                <span className="command-desc">Refresh Scenes</span>
-                            </div>
-                            <div className="command-item">
-                                <span className="command-key">CTRL+N</span>
-                                <span className="command-desc">New Scene</span>
-                            </div>
-                            <div className="command-item">
-                                <span className="command-key">CTRL+S</span>
-                                <span className="command-desc">Save Settings</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     )
 }
