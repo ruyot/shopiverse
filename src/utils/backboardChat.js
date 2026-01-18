@@ -47,9 +47,6 @@ Return ONLY the SINGLE BEST matching product ID. Select the most relevant produc
   ];
 
   try {
-    // Add 900ms delay before making API call to simulate thinking time
-    await new Promise(resolve => setTimeout(resolve, 900));
-
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,
       {
