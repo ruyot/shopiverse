@@ -1,11 +1,12 @@
 /**
  * Hotspot Storage Manager
- * Manages hotspot data with localStorage persistence
+ * Fetches hotspot data from backend API with localStorage fallback
  */
 
+const API_BASE = 'http://localhost:5000/api'
 const HOTSPOTS_KEY = 'shopiverse_hotspots_v2'
 
-// Default hotspots from original navigation config
+// Default hotspots (fallback if API unavailable)
 const defaultHotspots = {
     storeP1: [
         {
@@ -61,36 +62,94 @@ const defaultHotspots = {
 }
 
 /**
- * Get all hotspots from storage
+ * Get all hotspots from API (with localStorage fallback)
  */
-export const getAllHotspots = () => {
+export const getAllHotspots = async () => {
     try {
+        const response = await fetch(`${API_BASE}/hotspots`)
+        if (response.ok) {
+            const data = await response.json()
+            // Cache in localStorage for offline fallback
+            localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(data))
+            return data
+        }
+        throw new Error('API unavailable')
+    } catch (error) {
+        console.warn('API unavailable, using localStorage fallback:', error.message)
+        // Fallback to localStorage
         const stored = localStorage.getItem(HOTSPOTS_KEY)
         if (stored) {
             return JSON.parse(stored)
         }
-        localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(defaultHotspots))
-        return defaultHotspots
-    } catch (error) {
-        console.error('Error loading hotspots:', error)
         return defaultHotspots
     }
 }
 
 /**
- * Get hotspots for a specific scene
+ * Get all hotspots synchronously (from cache only)
+ */
+export const getAllHotspotsSync = () => {
+    try {
+        const stored = localStorage.getItem(HOTSPOTS_KEY)
+        if (stored) {
+            return JSON.parse(stored)
+        }
+        return defaultHotspots
+    } catch (error) {
+        return defaultHotspots
+    }
+}
+
+/**
+ * Get hotspots for a specific scene (sync version for React)
  */
 export const getSceneHotspots = (sceneId) => {
-    const allHotspots = getAllHotspots()
+    const allHotspots = getAllHotspotsSync()
     return allHotspots[sceneId] || []
 }
 
 /**
- * Save hotspots for a specific scene
+ * Get hotspots for a specific scene (async from API)
  */
-export const saveSceneHotspots = (sceneId, hotspots) => {
+export const getSceneHotspotsAsync = async (sceneId) => {
     try {
-        const allHotspots = getAllHotspots()
+        const response = await fetch(`${API_BASE}/hotspots/${sceneId}`)
+        if (response.ok) {
+            return await response.json()
+        }
+        throw new Error('API unavailable')
+    } catch (error) {
+        return getSceneHotspots(sceneId)
+    }
+}
+
+/**
+ * Save hotspots for a specific scene (to API)
+ */
+export const saveSceneHotspots = async (sceneId, hotspots) => {
+    try {
+        const response = await fetch(`${API_BASE}/hotspots/${sceneId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(hotspots)
+        })
+        
+        if (response.ok) {
+            // Update local cache
+            const allHotspots = getAllHotspotsSync()
+            allHotspots[sceneId] = hotspots
+            localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(allHotspots))
+            
+            window.dispatchEvent(new CustomEvent('hotspotsChanged', { 
+                detail: { sceneId, hotspots } 
+            }))
+            return true
+        }
+        throw new Error('API save failed')
+    } catch (error) {
+        console.warn('API unavailable, saving to localStorage:', error.message)
+        // Fallback to localStorage only
+        const allHotspots = getAllHotspotsSync()
         allHotspots[sceneId] = hotspots
         localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(allHotspots))
         
@@ -98,17 +157,73 @@ export const saveSceneHotspots = (sceneId, hotspots) => {
             detail: { sceneId, hotspots } 
         }))
         return true
+    }
+}
+
+/**
+ * Update images for a specific hotspot (API)
+ */
+export const updateHotspotImages = async (sceneId, hotspotId, images) => {
+    try {
+        const response = await fetch(`${API_BASE}/hotspots/${sceneId}/${hotspotId}/images`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ images })
+        })
+        
+        if (response.ok) {
+            // Update local cache
+            const allHotspots = getAllHotspotsSync()
+            const sceneHotspots = allHotspots[sceneId] || []
+            const hotspotIndex = sceneHotspots.findIndex(h => h.id === hotspotId)
+            if (hotspotIndex >= 0) {
+                sceneHotspots[hotspotIndex].images = images
+                allHotspots[sceneId] = sceneHotspots
+                localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(allHotspots))
+            }
+            
+            window.dispatchEvent(new CustomEvent('hotspotsChanged', { 
+                detail: { sceneId, hotspotId, images } 
+            }))
+            return true
+        }
+        throw new Error('API update failed')
     } catch (error) {
-        console.error('Error saving hotspots:', error)
+        console.warn('API unavailable for image update:', error.message)
         return false
     }
 }
 
 /**
- * Delete all hotspots for a scene
+ * Delete an image from a hotspot (API)
  */
-export const deleteSceneHotspots = (sceneId) => {
-    return saveSceneHotspots(sceneId, [])
+export const deleteHotspotImage = async (sceneId, hotspotId, imageIndex) => {
+    try {
+        const response = await fetch(`${API_BASE}/hotspots/${sceneId}/${hotspotId}/images/${imageIndex}`, {
+            method: 'DELETE'
+        })
+        
+        if (response.ok) {
+            // Update local cache
+            const allHotspots = getAllHotspotsSync()
+            const sceneHotspots = allHotspots[sceneId] || []
+            const hotspotIndex = sceneHotspots.findIndex(h => h.id === hotspotId)
+            if (hotspotIndex >= 0) {
+                sceneHotspots[hotspotIndex].images.splice(imageIndex, 1)
+                allHotspots[sceneId] = sceneHotspots
+                localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(allHotspots))
+            }
+            
+            window.dispatchEvent(new CustomEvent('hotspotsChanged', { 
+                detail: { sceneId, hotspotId, imageIndex, deleted: true } 
+            }))
+            return true
+        }
+        throw new Error('API delete failed')
+    } catch (error) {
+        console.warn('API unavailable for image delete:', error.message)
+        return false
+    }
 }
 
 /**
@@ -132,12 +247,15 @@ export const exportHotspots = () => {
 /**
  * Import hotspots from JSON file
  */
-export const importHotspots = (jsonData) => {
+export const importHotspots = async (jsonData) => {
     try {
         const hotspots = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData
-        localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(hotspots))
+        
+        // Try to save each scene to API
+        for (const [sceneId, sceneHotspots] of Object.entries(hotspots)) {
+            await saveSceneHotspots(sceneId, sceneHotspots)
+        }
 
-        // Notify all components
         window.dispatchEvent(new CustomEvent('hotspotsChanged', {
             detail: { imported: true }
         }))
@@ -152,9 +270,33 @@ export const importHotspots = (jsonData) => {
 /**
  * Reset hotspots to defaults
  */
-export const resetHotspots = () => {
-    localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(defaultHotspots))
-    window.dispatchEvent(new CustomEvent('hotspotsChanged', {
-        detail: { reset: true }
-    }))
+export const resetHotspots = async () => {
+    try {
+        const response = await fetch(`${API_BASE}/hotspots/reset`, {
+            method: 'POST'
+        })
+        
+        if (response.ok) {
+            localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(defaultHotspots))
+            window.dispatchEvent(new CustomEvent('hotspotsChanged', {
+                detail: { reset: true }
+            }))
+            return true
+        }
+        throw new Error('API reset failed')
+    } catch (error) {
+        console.warn('API unavailable, resetting localStorage only:', error.message)
+        localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(defaultHotspots))
+        window.dispatchEvent(new CustomEvent('hotspotsChanged', {
+            detail: { reset: true }
+        }))
+        return true
+    }
+}
+
+/**
+ * Delete all hotspots for a scene
+ */
+export const deleteSceneHotspots = (sceneId) => {
+    return saveSceneHotspots(sceneId, [])
 }
