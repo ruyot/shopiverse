@@ -82,6 +82,7 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
                     const moveSpeed = 0.05
 
                     if (keys.size > 0 && viewer.camera) {
+                        const camera = viewer.camera
                         const controls = viewer.controls
 
                         // Get camera's forward and right vectors
@@ -119,16 +120,17 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
                         }
 
                         // Q/E - move up/down
+                        // User requested: Q = up, E = down
                         if (keys.has('q')) {
-                            camera.position.y -= moveSpeed
-                            if (controls?.target) {
-                                controls.target.y -= moveSpeed
-                            }
-                        }
-                        if (keys.has('e')) {
                             camera.position.y += moveSpeed
                             if (controls?.target) {
                                 controls.target.y += moveSpeed
+                            }
+                        }
+                        if (keys.has('e')) {
+                            camera.position.y -= moveSpeed
+                            if (controls?.target) {
+                                controls.target.y -= moveSpeed
                             }
                         }
                     }
