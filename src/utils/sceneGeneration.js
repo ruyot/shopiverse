@@ -6,7 +6,17 @@ function resolveSharpEndpoint() {
         throw new Error('Sharp API URL not configured. Add VITE_SHARP_API_URL to your .env file.')
     }
     const trimmed = SHARP_API_URL.replace(/\/+$/, '')
-    if (trimmed.endsWith('/generate')) return trimmed
+    try {
+        const parsed = new URL(trimmed)
+        if (parsed.pathname && parsed.pathname !== '/' && parsed.pathname.endsWith('/generate')) {
+            return trimmed
+        }
+        if (parsed.hostname.endsWith('.modal.run') && parsed.pathname === '/') {
+            return trimmed
+        }
+    } catch (error) {
+        if (trimmed.endsWith('/generate')) return trimmed
+    }
     return `${trimmed}/generate`
 }
 

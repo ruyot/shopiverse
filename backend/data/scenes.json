@@ -1,0 +1,18 @@
+{
+  "customScene_backroom_1768737499220": {
+    "image": "/scene_1768737286769.png",
+    "ply": "/scenes/backroom_1768737465861.ply",
+    "name": "backroom"
+  },
+  "customScene_warehouse_1768737786028": {
+    "image": "/scene_1768737746684.png",
+    "ply": "/scenes/warehouse_1768737780761.ply",
+    "name": "warehouse"
+  },
+  "customScene_w_1768738210540": {
+    "image": "/scene_1768738146267.png",
+    "ply": "/scenes/w_1768738197125.ply",
+    "name": "w"
+  },
+  "storeP2": {}
+}
