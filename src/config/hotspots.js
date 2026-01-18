@@ -31,9 +31,9 @@ const defaultHotspots = {
     ],
     storeP2Right: [
         // User-verified coordinates from P key
-        { id: 'item-r2-1', position: [-1.12000, -0.00000, -8.96000], label: 'Product 1', title: 'Product 1', images: [] },
-        { id: 'item-r2-2', position: [1.17060, 0.23128, -19.74972], label: 'Product 2', title: 'Product 2', images: [] },
-        { id: 'item-r2-3', position: [2.40998, 0.05270, -8.33690], label: 'Product 3', title: 'Product 3', images: [] }
+        { id: 'item-r2-1', position: [-1.12000, -0.00000, -8.96000], label: 'Hoodies', title: 'Hoodies', price: '$74.99', images: ['/p2Right-Hoodie-1.png', '/p2Right-Hoodie-2.jpg', '/p2Right-Hoodie-3.jpg'] },
+        { id: 'item-r2-2', position: [1.17060, 0.23128, -19.74972], label: 'Shirts', title: 'Shirts', price: '$54.99', images: [] },
+        { id: 'item-r2-3', position: [2.40998, 0.05270, -8.33690], label: 'Purses', title: 'Purses', price: '$249.99', images: [] }
     ]
 }
 

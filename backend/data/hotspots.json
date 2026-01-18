@@ -143,12 +143,14 @@
         0.0,
         -8.96
       ],
-      "label": "Product 1",
-      "title": "Product 1",
+      "label": "Hoodies",
+      "title": "Hoodies",
       "images": [
-        "/white shirt.jpg"
+        "/p2Right-Hoodie-1.png",
+        "/p2Right-Hoodie-2.jpg",
+        "/p2Right-Hoodie-3.jpg"
       ],
-      "price": ""
+      "price": "$74.99"
     },
     {
       "id": "item-r2-2",
@@ -157,9 +159,10 @@
         0.23128,
         -19.74972
       ],
-      "label": "Product 2",
-      "title": "Product 2",
-      "images": []
+      "label": "Shirts",
+      "title": "Shirts",
+      "images": [],
+      "price": "$54.99"
     },
     {
       "id": "item-r2-3",
@@ -168,9 +171,10 @@
         0.0527,
         -8.3369
       ],
-      "label": "Product 3",
-      "title": "Product 3",
-      "images": []
+      "label": "Purses",
+      "title": "Purses",
+      "images": [],
+      "price": "$249.99"
     }
   ]
 }
