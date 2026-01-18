@@ -1,12 +1,16 @@
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_IMAGE_API_KEY;
+const BACKBOARD_API_KEY = import.meta.env.VITE_BACKBOARD_API_KEY;
+const BACKBOARD_BASE_URL = 'https://app.backboard.io/api';
 
-let conversationHistory = [];
+let assistantId = null;
+let threadId = null;
 let currentInventory = {};
 
 export async function sendChatMessage(message, onChunk, inventory = {}) {
-  if (!GEMINI_API_KEY) {
-    throw new Error('Gemini API key not configured');
+  if (!BACKBOARD_API_KEY) {
+    throw new Error('Backboard API key not configured');
   }
+
+  console.log('[Chat] Using Backboard API');
 
   // Store inventory for product extraction
   currentInventory = inventory;
@@ -20,60 +24,43 @@ export async function sendChatMessage(message, onChunk, inventory = {}) {
     .filter(Boolean)
     .join('\n');
 
-  // Add user message to history
-  conversationHistory.push({
-    role: 'user',
-    parts: [{ text: message }]
-  });
-
-  // System prompt with inventory and JSON instruction
   const systemPrompt = `You are Lobo, a professional shopping assistant. Use formal, polite language. Keep responses to 1 brief sentence.
-
-Available Products:
-${inventoryText}
 
 CRITICAL: When user mentions ANY product, ALWAYS end with:
 PRODUCTS: ["item-id-1"]
 
 Return ONLY the SINGLE BEST matching product ID. Select the most relevant product.`;
 
-  // Build contents for API
-  const contents = [
-    {
-      role: 'user',
-      parts: [{ text: systemPrompt }]
-    },
-    ...conversationHistory
-  ];
+  const inventoryBlock = inventoryText || 'None listed.';
+  const userContent = `Available Products:
+${inventoryBlock}
+
+User: ${message}`;
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,
-      {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-goog-api-key': GEMINI_API_KEY
-        },
-        body: JSON.stringify({
-          contents: contents
-        })
-      }
-    );
+    await ensureAssistant(systemPrompt);
+    await ensureThread();
+
+    const formData = new FormData();
+    formData.append('content', userContent);
+    formData.append('stream', 'false');
+    formData.append('memory', 'off');
+
+    const response = await fetch(`${BACKBOARD_BASE_URL}/threads/${threadId}/messages`, {
+      method: 'POST',
+      headers: {
+        'X-API-Key': BACKBOARD_API_KEY
+      },
+      body: formData
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
+      throw new Error(`Backboard API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't generate a response.";
-
-    // Add assistant response to history
-    conversationHistory.push({
-      role: 'model',
-      parts: [{ text: aiResponse }]
-    });
+    const aiResponse = data.content || data.message || "I'm sorry, I couldn't generate a response.";
 
     // Extract product IDs from response
     const productIds = extractProductIds(aiResponse);
@@ -90,13 +77,13 @@ Return ONLY the SINGLE BEST matching product ID. Select the most relevant produc
 
     return { text: displayText, products };
   } catch (error) {
-    console.error('Gemini API error:', error);
+    console.error('Backboard API error:', error);
     throw error;
   }
 }
 
 export function resetThread() {
-  conversationHistory = [];
+  threadId = null;
 }
 
 // Extract product IDs from LLM response
@@ -146,6 +133,60 @@ export async function loadInventory() {
   } catch (error) {
     console.error('Error loading inventory:', error)
     return {}
+  }
+}
+
+async function ensureAssistant(systemPrompt) {
+  if (assistantId) return;
+
+  const response = await fetch(`${BACKBOARD_BASE_URL}/assistants`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': BACKBOARD_API_KEY
+    },
+    body: JSON.stringify({
+      name: 'Shopiverse Assistant',
+      system_prompt: systemPrompt
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Backboard API error: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  assistantId = data.assistant_id || data.assistantId;
+  if (!assistantId) {
+    throw new Error('Backboard API error: missing assistant_id');
+  }
+}
+
+async function ensureThread() {
+  if (threadId) return;
+  if (!assistantId) {
+    throw new Error('Backboard API error: assistant not initialized');
+  }
+
+  const response = await fetch(`${BACKBOARD_BASE_URL}/assistants/${assistantId}/threads`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': BACKBOARD_API_KEY
+    },
+    body: JSON.stringify({})
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Backboard API error: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  threadId = data.thread_id || data.threadId;
+  if (!threadId) {
+    throw new Error('Backboard API error: missing thread_id');
   }
 }
 
