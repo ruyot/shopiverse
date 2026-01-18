@@ -238,27 +238,20 @@ function App() {
         try {
             let streamedContent = ''
             
-            // Get AI response with streaming and memory
+            // Get AI response with streaming
             await sendChatMessage(
                 userMessage,
-                inventory,
                 (chunk) => {
-                    if (chunk.type === 'content') {
-                        // Update the assistant message with streamed content
-                        streamedContent += chunk.content
-                        setChatMessages(msgs => {
-                            const updated = [...msgs]
-                            updated[assistantMessageIndex] = {
-                                role: 'assistant',
-                                content: streamedContent
-                            }
-                            return updated
-                        })
-                    } else if (chunk.type === 'memory') {
-                        console.log(`[Memory] Retrieved ${chunk.count} memories from past conversations`)
-                    } else if (chunk.type === 'memory_saved') {
-                        console.log(`[Memory] Saved conversation context (ID: ${chunk.operationId})`)
-                    }
+                    // Update the assistant message with streamed content
+                    streamedContent += chunk
+                    setChatMessages(msgs => {
+                        const updated = [...msgs]
+                        updated[assistantMessageIndex] = {
+                            role: 'assistant',
+                            content: streamedContent
+                        }
+                        return updated
+                    })
                 }
             )
         } catch (error) {
@@ -344,7 +337,6 @@ function App() {
                     if (connections.right) navigateTo(connections.right)
                     break
                 case 'Enter':
-                case ' ':
                     if (connections.forward) navigateTo(connections.forward)
                     break
             }
