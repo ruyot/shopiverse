@@ -383,6 +383,7 @@ function App() {
                     if (connections.right) navigateTo(connections.right)
                     break
                 case 'Enter':
+                    if (hasPLY) break
                     if (connections.forward) navigateTo(connections.forward)
                     break
             }
@@ -390,7 +391,7 @@ function App() {
 
         window.addEventListener('keydown', handleKeyDown)
         return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [connections, navigateTo])
+    }, [connections, navigateTo, hasPLY])
 
     return (
         <div className="app">
@@ -652,7 +653,7 @@ function App() {
             {showChatbot && (
                 <div className="chatbot-modal">
                     <div className="chatbot-header">
-                        <div className="chatbot-avatar" key="avatar-animation">
+                        <div className="chatbot-avatar">
                             <img src="/lobo.png" alt="Lobo" />
                         </div>
                         <div className="chatbot-title">
