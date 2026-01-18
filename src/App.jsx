@@ -101,7 +101,12 @@ function App() {
     return (
         <div className="app">
             {/* 3D PLY Viewer (shown when PLY model is available) */}
-            <PLYViewer plyPath={currentViewpoint.ply} isActive={hasPLY} />
+            <PLYViewer
+                plyPath={currentViewpoint.ply}
+                isActive={hasPLY}
+                hotspots={showHotspots ? currentHotspots : []}
+                onHotspotClick={setSelectedHotspot}
+            />
 
             {/* Background image (shown when no PLY, or as fallback) */}
             <div
@@ -178,13 +183,13 @@ function App() {
                 </nav>
             )}
 
-            {/* Product hotspots */}
+            {/* Product hotspots (2D - Rendering even in 3D mode as requested) */}
             {showHotspots && currentHotspots.map((hotspot) => {
                 const settings = getSettings()
                 const isDisabled = settings.disabledHotspots[hotspot.id]
-                
+
                 if (isDisabled) return null
-                
+
                 return (
                     <button
                         key={hotspot.id}
@@ -205,7 +210,7 @@ function App() {
             </div>
 
             {/* Command Palette Toggle */}
-            <button 
+            <button
                 className="command-toggle"
                 onClick={() => setShowCommands(!showCommands)}
                 title="Show Controls"
@@ -218,7 +223,7 @@ function App() {
                 <div className="command-palette">
                     <div className="command-header">
                         <h3>CONTROLS</h3>
-                        <button 
+                        <button
                             className="command-close"
                             onClick={() => setShowCommands(false)}
                         >

@@ -31,7 +31,9 @@ export const navigationConfig = {
         ply: '/store_p1_gaussian.ply',
         connections: {
             back: 'storeFront',
-            forward: 'storeP2'
+            forward: 'storeP2',
+            left: 'storeP1Left',
+            right: 'storeP1Right'
         }
     },
 

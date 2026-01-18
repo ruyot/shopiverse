@@ -3,10 +3,40 @@
  * Manages hotspot data with localStorage persistence
  */
 
-const HOTSPOTS_KEY = 'shopiverse_hotspots'
+const HOTSPOTS_KEY = 'shopiverse_hotspots_v2'
 
 // Default hotspots from original navigation config
 const defaultHotspots = {
+    storeP1: [
+        {
+            id: 'jeans-main',
+            x: 65, y: 50,
+            label: 'Classic Denim',
+            title: 'Classic Denim Jeans',
+            description: 'Premium raw denim with a classic straight leg fit.',
+            price: '$129.00',
+            images: []
+        },
+        {
+            id: 'shirt-main',
+            x: 35, y: 50,
+            label: 'Summer Shirt',
+            title: 'Linen Summer Shirt',
+            description: 'Lightweight linen shirt perfect for warm weather.',
+            price: '$89.00',
+            images: []
+        },
+        // Test hotspot center
+        {
+            id: 'test-center',
+            x: 50, y: 50,
+            label: 'Center Item',
+            title: 'Featured Collection',
+            description: 'New arrivals for the season.',
+            price: '$49.00',
+            images: []
+        }
+    ],
     storeP1Left: [
         { id: 'jeans-1', x: 38, y: 42, label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] },
         { id: 'jeans-2', x: 28, y: 42, label: 'Classic Denim', title: 'Classic Denim Jeans', images: [] },
@@ -89,12 +119,12 @@ export const exportHotspots = () => {
     const dataStr = JSON.stringify(allHotspots, null, 2)
     const dataBlob = new Blob([dataStr], { type: 'application/json' })
     const url = URL.createObjectURL(dataBlob)
-    
+
     const link = document.createElement('a')
     link.href = url
     link.download = `shopiverse-hotspots-${Date.now()}.json`
     link.click()
-    
+
     URL.revokeObjectURL(url)
     console.log('📥 Hotspot metadata exported')
 }
@@ -106,9 +136,12 @@ export const importHotspots = (jsonData) => {
     try {
         const hotspots = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData
         localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(hotspots))
-        window.dispatchEvent(new CustomEvent('hotspotsChanged', { 
-            detail: { imported: true } 
+
+        // Notify all components
+        window.dispatchEvent(new CustomEvent('hotspotsChanged', {
+            detail: { imported: true }
         }))
+
         return true
     } catch (error) {
         console.error('Error importing hotspots:', error)
@@ -121,7 +154,7 @@ export const importHotspots = (jsonData) => {
  */
 export const resetHotspots = () => {
     localStorage.setItem(HOTSPOTS_KEY, JSON.stringify(defaultHotspots))
-    window.dispatchEvent(new CustomEvent('hotspotsChanged', { 
-        detail: { reset: true } 
+    window.dispatchEvent(new CustomEvent('hotspotsChanged', {
+        detail: { reset: true }
     }))
 }
