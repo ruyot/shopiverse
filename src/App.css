@@ -758,6 +758,38 @@ body {
     cursor: not-allowed;
 }
 
+/* Product Teleport Buttons */
+.product-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.product-teleport-btn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.product-teleport-btn:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.product-teleport-btn:active {
+    transform: translateY(0);
+}
+
 .chatbot-note {
     padding: 0.5rem 1.25rem;
     text-align: center;

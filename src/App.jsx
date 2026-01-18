@@ -8,6 +8,7 @@ import { Terminal, X, ShoppingCart, Send } from 'lucide-react'
 import { getSettings } from './config/settings'
 import { getSceneHotspotsAsync } from './config/hotspots'
 import { sendChatMessage, loadInventory } from './utils/backboardChat'
+import analytics from './utils/analytics'
 import './App.css'
 
 /**
@@ -53,8 +54,14 @@ function App() {
         localStorage.setItem('shopiverse_cart', JSON.stringify(cartItems))
     }, [cartItems])
 
+    // Track initial scene entry on mount
+    useEffect(() => {
+        analytics.enterScene(initialViewpoint)
+    }, [])
+
     // Add item to cart
     const addToCart = useCallback((hotspot) => {
+        analytics.addToCart(hotspot)
         setCartItems(prevItems => {
             // Check if item already exists in cart
             const existingItemIndex = prevItems.findIndex(item => item.hotspotId === hotspot.id)
@@ -81,7 +88,11 @@ function App() {
 
     // Remove item from cart
     const removeFromCart = useCallback((cartItemId) => {
-        setCartItems(prevItems => prevItems.filter(item => item.id !== cartItemId))
+        setCartItems(prevItems => {
+            const item = prevItems.find(i => i.id === cartItemId)
+            if (item) analytics.removeFromCart(item)
+            return prevItems.filter(item => item.id !== cartItemId)
+        })
     }, [])
 
     // Update item quantity
@@ -90,11 +101,13 @@ function App() {
             removeFromCart(cartItemId)
             return
         }
-        setCartItems(prevItems =>
-            prevItems.map(item =>
+        setCartItems(prevItems => {
+            const item = prevItems.find(i => i.id === cartItemId)
+            if (item) analytics.updateQuantity(item, newQuantity)
+            return prevItems.map(item =>
                 item.id === cartItemId ? { ...item, quantity: newQuantity } : item
             )
-        )
+        })
     }, [removeFromCart])
 
     // Clear entire cart
@@ -102,9 +115,18 @@ function App() {
         setCartItems([])
     }, [])
 
+    // Handle hotspot click (stable reference to prevent PLYViewer re-renders)
+    const handleHotspotClick = useCallback((hotspot) => {
+        analytics.viewProduct(hotspot)
+        setSelectedHotspot(hotspot)
+    }, [])
+
     // Stripe checkout - redirect to Stripe hosted page
     const handleCheckout = useCallback(async () => {
         try {
+            const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+            analytics.startCheckout(cartItems, total)
+
             // Close cart
             setShowCart(false)
 
@@ -155,6 +177,7 @@ function App() {
 
                     setOrderDetails(details)
                     setShowSuccess(true)
+                    analytics.completeCheckout(details.orderNumber, details.total)
                     clearCart()
 
                     // Clean up URL
@@ -224,6 +247,7 @@ function App() {
         if (!chatInput.trim() || isChatLoading) return
 
         const userMessage = chatInput.trim()
+        analytics.sendChatMessage(userMessage)
         setChatInput('')
 
         // Add user message to chat
@@ -238,8 +262,8 @@ function App() {
         try {
             let streamedContent = ''
             
-            // Get AI response with streaming
-            await sendChatMessage(
+            // Get AI response with streaming and inventory
+            const result = await sendChatMessage(
                 userMessage,
                 (chunk) => {
                     // Update the assistant message with streamed content
@@ -252,8 +276,21 @@ function App() {
                         }
                         return updated
                     })
-                }
+                },
+                inventory
             )
+            
+            // Add LLM-selected products to final message
+            if (result.products && result.products.length > 0) {
+                setChatMessages(msgs => {
+                    const updated = [...msgs]
+                    updated[assistantMessageIndex] = {
+                        ...updated[assistantMessageIndex],
+                        products: result.products
+                    }
+                    return updated
+                })
+            }
         } catch (error) {
             console.error('Chat error:', error)
             setChatMessages(msgs => {
@@ -295,6 +332,7 @@ function App() {
     const navigateTo = useCallback((targetId) => {
         if (!targetId || isTransitioning) return
 
+        analytics.navigate(currentId, targetId)
         setIsTransitioning(true)
         setContentVisible(false) // Hide arrows/hotspots during transition
 
@@ -308,7 +346,7 @@ function App() {
                 setContentVisible(true)
             }, 800)
         }, 200)
-    }, [isTransitioning])
+    }, [isTransitioning, currentId])
 
     // Listen for settings changes from admin panel
     useEffect(() => {
@@ -353,7 +391,7 @@ function App() {
                 plyPath={currentViewpoint.ply}
                 isActive={hasPLY}
                 hotspots={showHotspots ? currentHotspots : []}
-                onHotspotClick={setSelectedHotspot}
+                onHotspotClick={handleHotspotClick}
             />
 
             {/* Background image (shown when no PLY, or as fallback) */}
@@ -439,7 +477,10 @@ function App() {
                             opacity: contentVisible ? 1 : 0,
                             transition: 'opacity 0.6s ease-in'
                         }}
-                        onClick={() => setSelectedHotspot(hotspot)}
+                        onClick={() => {
+                            analytics.viewProduct(hotspot)
+                            setSelectedHotspot(hotspot)
+                        }}
                         aria-label={hotspot.label}
                     >
                         <span className="hotspot-ring" />
@@ -454,7 +495,11 @@ function App() {
             {isStoreFront && (
                 <button
                     className="lobo-character"
-                    onClick={() => setShowChatbot(!showChatbot)}
+                    onClick={() => {
+                        const newState = !showChatbot
+                        newState ? analytics.openChatbot() : analytics.closeChatbot()
+                        setShowChatbot(newState)
+                    }}
                     title="Chat with Lobo"
                 >
                     <img src="/lobo.png" alt="Lobo Assistant" />
@@ -464,7 +509,11 @@ function App() {
             {/* Shopping Cart Icon */}
             <button
                 className="cart-icon"
-                onClick={() => setShowCart(!showCart)}
+                onClick={() => {
+                    const newState = !showCart
+                    newState ? analytics.openCart() : analytics.closeCart()
+                    setShowCart(newState)
+                }}
                 title="Shopping Cart"
             >
                 <ShoppingCart size={20} strokeWidth={2} />
@@ -616,6 +665,22 @@ function App() {
                                 )}
                                 <div className="message-bubble">
                                     {message.content}
+                                    {message.products && message.products.length > 0 && (
+                                        <div className="product-buttons">
+                                            {message.products.map((product, idx) => (
+                                                <button 
+                                                    key={idx}
+                                                    className="product-teleport-btn"
+                                                    onClick={() => {
+                                                        navigateTo(product.scene)
+                                                        setShowChatbot(false)
+                                                    }}
+                                                >
+                                                    📍 Go to {product.title} in {product.sceneName}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
