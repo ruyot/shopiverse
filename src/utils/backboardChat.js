@@ -27,15 +27,15 @@ export async function sendChatMessage(message, onChunk, inventory = {}) {
   });
 
   // System prompt with inventory and JSON instruction
-  const systemPrompt = `You are Lobo. Be EXTREMELY brief - max 1 short sentence.
+  const systemPrompt = `You are Lobo, a professional shopping assistant. Use formal, polite language. Keep responses to 1 brief sentence.
 
-Products:
+Available Products:
 ${inventoryText}
 
 CRITICAL: When user mentions ANY product, ALWAYS end with:
 PRODUCTS: ["item-id-1"]
 
-Return ONLY the SINGLE BEST matching product ID. Pick the most relevant one.`;
+Return ONLY the SINGLE BEST matching product ID. Select the most relevant product.`;
 
   // Build contents for API
   const contents = [

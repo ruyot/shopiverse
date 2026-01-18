@@ -115,3 +115,5 @@ timestamp,action,data
 2026-01-18T10:06:53.319Z,send_chat_message,"{""messageLength"": 16, ""scene"": ""storeP1""}"
 2026-01-18T10:06:55.868Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 3}"
 2026-01-18T10:06:57.871Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP2Left"", ""timeInPreviousScene"": 2}"
+2026-01-18T10:07:57.495Z,open_cart,"{""scene"": ""storeP2Left""}"
+2026-01-18T10:08:29.425Z,enter_scene,"{""sceneId"": ""storeFront""}"
