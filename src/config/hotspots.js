@@ -19,9 +19,9 @@ const defaultHotspots = {
     ],
     storeP1Right: [
         // User-verified coordinates from P key
-        { id: 'item-r1-1', position: [3.78809, 0.51201, -10.14587], label: 'Product 1', title: 'Product 1', images: [] },
-        { id: 'item-r1-2', position: [-1.79493, 0.18883, -9.57033], label: 'Product 2', title: 'Product 2', images: [] },
-        { id: 'item-r1-3', position: [1.96905, 0.00492, -12.68238], label: 'Product 3', title: 'Product 3', images: [] }
+        { id: 'item-r1-1', position: [3.78809, 0.51201, -10.14587], label: 'brown cardigan', title: 'brown cardigan', images: ["/card.png"] },
+        { id: 'item-r1-2', position: [-1.79493, 0.18883, -9.57033], label: 'Cheeta Blouse', title: 'Cheeta Blouse', images: ["/cheeta.jpg"] },
+        { id: 'item-r1-3', position: [1.96905, 0.00492, -12.68238], label: 'Green Army Jacket', title: 'Green Army Jacket', images: ["/jacket.jpg"] }
     ],
     storeP2Left: [
         // User-verified coordinates from P key
