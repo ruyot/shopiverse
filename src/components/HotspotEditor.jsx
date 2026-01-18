@@ -268,7 +268,8 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
     const fileInputRef = useRef(null)
 
     const handleSave = () => {
-        onSave({ title, price })
+        // Sync label with title so hotspot marker/sidebar updates too
+        onSave({ title, price, label: title })
     }
 
     const handleGenerateImage = async () => {
