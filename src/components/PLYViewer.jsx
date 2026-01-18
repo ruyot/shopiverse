@@ -154,9 +154,20 @@ export function PLYViewer({ plyPath, isActive, hotspots = [], onHotspotClick }) 
             const intersects = raycaster.intersectObjects(hotspotMeshes)
 
             if (intersects.length > 0) {
-                const clickedHotspot = intersects[0].object.userData.hotspot
+                const clickedMesh = intersects[0].object
+                const clickedHotspot = clickedMesh.userData.hotspot
+                
+                // Calculate 2D screen position from 3D world position
+                const worldPos = clickedMesh.position.clone()
+                const screenPos = worldPos.project(camera)
+                
+                // Convert from normalized device coordinates (-1 to 1) to screen pixels
+                const x = ((screenPos.x + 1) / 2) * rect.width
+                const y = ((-screenPos.y + 1) / 2) * rect.height
+                
                 if (onHotspotClick) {
-                    onHotspotClick(clickedHotspot)
+                    // Add screen position to hotspot data
+                    onHotspotClick({ ...clickedHotspot, x, y })
                 }
             }
         }

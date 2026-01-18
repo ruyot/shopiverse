@@ -12,18 +12,14 @@ export function ProductCard({ hotspot, position, onClose, onAddToCart }) {
     const hasImage = images.length > 0
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
-    // Debug: print image src path
-    if (hasImage) {
-        console.log('[ProductCard] Image src:', images[currentImageIndex]);
-    }
-
     // Determine if card should appear on left or right of hotspot
-    const isLeftSide = position.x > 50
+    // position.x and position.y are now in pixels (from 3D projection)
+    const isLeftSide = position.x > window.innerWidth / 2
     
     // Calculate triangle position - positioned to touch the card
     const triangleStyle = {
-        left: isLeftSide ? `calc(${position.x}% - 40px)` : `calc(${position.x}% + 12px)`,
-        top: `${position.y}%`,
+        left: isLeftSide ? `${position.x - 40}px` : `${position.x + 12}px`,
+        top: `${position.y}px`,
         transform: 'translateY(-50%)',
     }
 
@@ -62,8 +58,8 @@ export function ProductCard({ hotspot, position, onClose, onAddToCart }) {
             <div 
                 className={`product-card ${isLeftSide ? 'left-side' : 'right-side'}`}
                 style={{
-                    left: isLeftSide ? `calc(${position.x}% - 250px)` : `calc(${position.x}% + 50px)`,
-                    top: `${position.y}%`,
+                    left: isLeftSide ? `${position.x - 250}px` : `${position.x + 50}px`,
+                    top: `${position.y}px`,
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
@@ -78,12 +74,10 @@ export function ProductCard({ hotspot, position, onClose, onAddToCart }) {
                 {/* Product image carousel */}
                 {hasImage && (
                     <div className="card-image-container">
-                        {/* Debug: print image src path */}
                         <img
                             src={images[currentImageIndex]}
                             alt={hotspot.title || hotspot.label}
                             className="card-image"
-                            onError={() => console.log('[ProductCard] Broken image src:', images[currentImageIndex])}
                         />
                         {images.length > 1 && (
                             <>
