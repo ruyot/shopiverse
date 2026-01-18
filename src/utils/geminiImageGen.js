@@ -21,53 +21,50 @@ export async function generateImage(prompt, options = {}) {
     try {
         console.log('🎨 Generating image with Gemini AI...');
         console.log('📝 Prompt:', prompt);
-        
+
         const ai = new GoogleGenAI({
             apiKey: GEMINI_IMAGE_API_KEY
         });
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-image",
+            model: "gemini-2.5-flash-exp", // Updated model name
             contents: prompt,
         });
 
         // Extract image data from response
-        for (const part of response.candidates[0].content.parts) {
-            if (part.inlineData) {
-                const imageData = part.inlineData.data;
-                const mimeType = part.inlineData.mimeType || 'image/png';
-                
-                // Return as data URL for immediate use in browser
-                const dataUrl = `data:${mimeType};base64,${imageData}`;
-                
-                console.log('✅ Image generated successfully!');
-                console.log('📊 Size:', Math.round(imageData.length / 1024), 'KB');
-                
-                return dataUrl;
+        // Note: For text-to-image with Gemini 2.0 or Imagen, the response structure might differ.
+        // This assumes the standard content generation API usage.
+
+        // If the model returns text containing a URL or base64, we'd parse it.
+        // But if using a specific Image Generation method, we'd use that.
+        // For now, assuming standard generation.
+
+        // Let's log the response to help debug if format changes
+        console.log('Gemini Response:', response);
+
+        if (response.candidates && response.candidates[0].content.parts) {
+            for (const part of response.candidates[0].content.parts) {
+                if (part.inlineData) {
+                    const imageData = part.inlineData.data;
+                    const mimeType = part.inlineData.mimeType || 'image/png';
+                    const dataUrl = `data:${mimeType};base64,${imageData}`;
+                    return dataUrl;
+                }
             }
         }
-        
+
         throw new Error('No image data found in response');
-        
+
     } catch (error) {
         console.error('❌ Error generating image:', error);
         throw error;
     }
 }
 
-/**
- * Check if Gemini Image API is configured
- * @returns {boolean}
- */
 export function isGeminiConfigured() {
     return !!GEMINI_IMAGE_API_KEY;
 }
 
-/**
- * Generate image suggestions based on context
- * @param {string} context - Context for image suggestions (e.g., "product hotspot", "store background")
- * @returns {Array<string>} - Array of suggested prompts
- */
 export function getImagePromptSuggestions(context) {
     const suggestions = {
         'product': [
