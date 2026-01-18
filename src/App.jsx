@@ -63,38 +63,67 @@ function App() {
         localStorage.setItem('shopiverse_cart', JSON.stringify(cartItems))
     }, [cartItems])
 
-    // Load scene overrides from the Python server
+    const loadSceneOverrides = useCallback(async () => {
+        try {
+            const response = await fetch(SCENES_API_URL)
+            if (!response.ok) return
+            const overrides = await response.json()
+            let updated = false
+            Object.entries(overrides).forEach(([sceneId, override]) => {
+                if (!override) return
+                const scene = navigationConfig[sceneId]
+                if (!scene) {
+                    navigationConfig[sceneId] = {
+                        id: sceneId,
+                        name: override.name || sceneId,
+                        image: override.image || '',
+                        ply: override.ply || '',
+                        connections: override.connections || {}
+                    }
+                    updated = true
+                    return
+                }
+                if (override.image && override.image !== scene.image) {
+                    scene.image = override.image
+                    updated = true
+                }
+                if (override.ply && override.ply !== scene.ply) {
+                    scene.ply = override.ply
+                    updated = true
+                }
+                if (override.name && override.name !== scene.name) {
+                    scene.name = override.name
+                    updated = true
+                }
+                if (override.connections) {
+                    scene.connections = {
+                        ...(scene.connections || {}),
+                        ...override.connections
+                    }
+                    updated = true
+                }
+            })
+            if (updated) setSceneConfigVersion(prev => prev + 1)
+        } catch (error) {
+            console.warn('Failed to load scene overrides:', error)
+        }
+    }, [])
+
+    // Load scene overrides from the Python server (poll + storage trigger)
     useEffect(() => {
-        const loadSceneOverrides = async () => {
-            try {
-                const response = await fetch(SCENES_API_URL)
-                if (!response.ok) return
-                const overrides = await response.json()
-                let updated = false
-                Object.entries(overrides).forEach(([sceneId, override]) => {
-                    const scene = navigationConfig[sceneId]
-                    if (!scene || !override) return
-                    if (override.image && override.image !== scene.image) {
-                        scene.image = override.image
-                        updated = true
-                    }
-                    if (override.ply && override.ply !== scene.ply) {
-                        scene.ply = override.ply
-                        updated = true
-                    }
-                    if (override.name && override.name !== scene.name) {
-                        scene.name = override.name
-                        updated = true
-                    }
-                })
-                if (updated) setSceneConfigVersion(prev => prev + 1)
-            } catch (error) {
-                console.warn('Failed to load scene overrides:', error)
+        loadSceneOverrides()
+        const interval = setInterval(loadSceneOverrides, 5000)
+        const handleStorage = (event) => {
+            if (event.key === 'scene_overrides_refresh') {
+                loadSceneOverrides()
             }
         }
-
-        loadSceneOverrides()
-    }, [])
+        window.addEventListener('storage', handleStorage)
+        return () => {
+            clearInterval(interval)
+            window.removeEventListener('storage', handleStorage)
+        }
+    }, [loadSceneOverrides])
 
     // Track initial scene entry on mount (guard against StrictMode double-mount)
     const hasTrackedInitialScene = useRef(false)

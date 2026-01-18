@@ -409,6 +409,27 @@ function ScenesTab() {
     const [addSceneWizard, setAddSceneWizard] = useState(null)
 
     const scenes = Object.values(navigationConfig).filter(scene => scene.id)
+    const graphScenes = { ...navigationConfig, ...customScenes }
+    const graphConnections = []
+    const graphConnectionKeys = new Set()
+
+    Object.values(graphScenes).forEach(scene => {
+        Object.entries(scene.connections || {}).forEach(([direction, toId]) => {
+            if (!toId || !graphScenes[toId]) return
+            const key = `${scene.id}->${toId}`
+            if (graphConnectionKeys.has(key)) return
+            graphConnectionKeys.add(key)
+            graphConnections.push({ from: scene.id, to: toId, direction, kind: 'config' })
+        })
+    })
+
+    customConnections.forEach(conn => {
+        if (!conn?.from || !conn?.to || !graphScenes[conn.from] || !graphScenes[conn.to]) return
+        const key = `${conn.from}->${conn.to}`
+        if (graphConnectionKeys.has(key)) return
+        graphConnectionKeys.add(key)
+        graphConnections.push({ ...conn, kind: 'custom' })
+    })
 
     const formatHotspotCoords = (hotspot) => {
         if (hotspot.position && hotspot.position.length === 3) {
@@ -454,7 +475,22 @@ function ScenesTab() {
                 let updated = false
                 Object.entries(overrides).forEach(([sceneId, override]) => {
                     const scene = navigationConfig[sceneId]
-                    if (!scene || !override) return
+                    if (!override) return
+                    if (!scene) {
+                        const newScene = {
+                            id: sceneId,
+                            name: override.name || sceneId,
+                            image: override.image || '',
+                            ply: override.ply || '',
+                            connections: override.connections || {}
+                        }
+                        setCustomScenes(prev => ({
+                            ...prev,
+                            [sceneId]: newScene
+                        }))
+                        updated = true
+                        return
+                    }
                     if (override.image && override.image !== scene.image) {
                         scene.image = override.image
                         updated = true
@@ -465,6 +501,13 @@ function ScenesTab() {
                     }
                     if (override.name && override.name !== scene.name) {
                         scene.name = override.name
+                        updated = true
+                    }
+                    if (override.connections) {
+                        scene.connections = {
+                            ...(scene.connections || {}),
+                            ...override.connections
+                        }
                         updated = true
                     }
                 })
@@ -487,6 +530,7 @@ function ScenesTab() {
             const errorText = await response.text()
             throw new Error(`Failed to save scene override: ${response.status} - ${errorText}`)
         }
+        localStorage.setItem('scene_overrides_refresh', Date.now().toString())
         setSceneOverridesVersion(prev => prev + 1)
     }
 
@@ -700,7 +744,8 @@ function ScenesTab() {
             await saveSceneOverride(newId, {
                 name: newScene.name,
                 image: newScene.image,
-                ply: newScene.ply
+                ply: newScene.ply,
+                connections: newScene.connections
             })
         } catch (error) {
             console.warn('Failed to persist new scene override:', error)
@@ -788,8 +833,38 @@ function ScenesTab() {
                         to: nodeId,
                         direction: direction
                     }
-                    
+
                     setCustomConnections(prev => [...prev, newConnection])
+                    if (customScenes[connectingFrom]) {
+                        setCustomScenes(prev => {
+                            const fromScene = prev[connectingFrom]
+                            if (!fromScene) return prev
+                            const updatedConnections = {
+                                ...(fromScene.connections || {}),
+                                [direction]: nodeId
+                            }
+                            const updatedScene = {
+                                ...prev,
+                                [connectingFrom]: {
+                                    ...fromScene,
+                                    connections: updatedConnections
+                                }
+                            }
+                            saveSceneOverride(connectingFrom, { connections: updatedConnections }).catch((error) => {
+                                console.warn('Failed to persist connection:', error)
+                            })
+                            return updatedScene
+                        })
+                    } else if (navigationConfig[connectingFrom]) {
+                        const updatedConnections = {
+                            ...(navigationConfig[connectingFrom].connections || {}),
+                            [direction]: nodeId
+                        }
+                        navigationConfig[connectingFrom].connections = updatedConnections
+                        saveSceneOverride(connectingFrom, { connections: updatedConnections }).catch((error) => {
+                            console.warn('Failed to persist connection:', error)
+                        })
+                    }
                     
                     // Ask for bidirectional
                     const bidirectional = confirm('Create return path?')
@@ -808,6 +883,36 @@ function ScenesTab() {
                         }
                         
                         setCustomConnections(prev => [...prev, returnConnection])
+                        if (customScenes[nodeId]) {
+                            setCustomScenes(prev => {
+                                const toScene = prev[nodeId]
+                                if (!toScene) return prev
+                                const updatedConnections = {
+                                    ...(toScene.connections || {}),
+                                    [oppositeDir]: connectingFrom
+                                }
+                                const updatedScene = {
+                                    ...prev,
+                                    [nodeId]: {
+                                        ...toScene,
+                                        connections: updatedConnections
+                                    }
+                                }
+                                saveSceneOverride(nodeId, { connections: updatedConnections }).catch((error) => {
+                                    console.warn('Failed to persist connection:', error)
+                                })
+                                return updatedScene
+                            })
+                        } else if (navigationConfig[nodeId]) {
+                            const updatedConnections = {
+                                ...(navigationConfig[nodeId].connections || {}),
+                                [oppositeDir]: connectingFrom
+                            }
+                            navigationConfig[nodeId].connections = updatedConnections
+                            saveSceneOverride(nodeId, { connections: updatedConnections }).catch((error) => {
+                                console.warn('Failed to persist connection:', error)
+                            })
+                        }
                     }
                     
                     console.log('✅ Created connection:', connectingFrom, '→', nodeId, `(${direction})`)
@@ -1031,89 +1136,22 @@ function ScenesTab() {
                     </g>
                     
                     {/* Connection lines - dynamically positioned */}
-                    {/* storeFront -> storeP1 */}
-                    <line 
-                        x1={nodePositions.storeFront.x} 
-                        y1={nodePositions.storeFront.y + 30} 
-                        x2={nodePositions.storeP1.x} 
-                        y2={nodePositions.storeP1.y - 30} 
-                        stroke="#FF6B35" 
-                        strokeWidth="2" 
-                        markerEnd="url(#arrowhead)" 
-                    />
-                    
-                    {/* storeP1 -> storeP2 */}
-                    <line 
-                        x1={nodePositions.storeP1.x} 
-                        y1={nodePositions.storeP1.y + 30} 
-                        x2={nodePositions.storeP2.x} 
-                        y2={nodePositions.storeP2.y - 30} 
-                        stroke="#FF6B35" 
-                        strokeWidth="2" 
-                        markerEnd="url(#arrowhead)" 
-                    />
-                    
-                    {/* storeP1 -> storeP1Left */}
-                    <line 
-                        x1={nodePositions.storeP1.x - 40} 
-                        y1={nodePositions.storeP1.y + 20} 
-                        x2={nodePositions.storeP1Left.x + 40} 
-                        y2={nodePositions.storeP1Left.y - 20} 
-                        stroke="#FF6B35" 
-                        strokeWidth="2" 
-                        markerEnd="url(#arrowhead)" 
-                    />
-                    
-                    {/* storeP1 -> storeP1Right */}
-                    <line 
-                        x1={nodePositions.storeP1.x + 40} 
-                        y1={nodePositions.storeP1.y + 20} 
-                        x2={nodePositions.storeP1Right.x - 40} 
-                        y2={nodePositions.storeP1Right.y - 20} 
-                        stroke="#FF6B35" 
-                        strokeWidth="2" 
-                        markerEnd="url(#arrowhead)" 
-                    />
-                    
-                    {/* storeP2 -> storeP2Left */}
-                    <line 
-                        x1={nodePositions.storeP2.x - 40} 
-                        y1={nodePositions.storeP2.y + 20} 
-                        x2={nodePositions.storeP2Left.x + 40} 
-                        y2={nodePositions.storeP2Left.y - 20} 
-                        stroke="#FF6B35" 
-                        strokeWidth="2" 
-                        markerEnd="url(#arrowhead)" 
-                    />
-                    
-                    {/* storeP2 -> storeP2Right */}
-                    <line 
-                        x1={nodePositions.storeP2.x + 40} 
-                        y1={nodePositions.storeP2.y + 20} 
-                        x2={nodePositions.storeP2Right.x - 40} 
-                        y2={nodePositions.storeP2Right.y - 20} 
-                        stroke="#FF6B35" 
-                        strokeWidth="2" 
-                        markerEnd="url(#arrowhead)" 
-                    />
-                    
-                    {/* Custom connections created by user */}
-                    {customConnections.map((conn, idx) => {
+                    {graphConnections.map((conn, idx) => {
                         const fromPos = nodePositions[conn.from]
                         const toPos = nodePositions[conn.to]
                         if (!fromPos || !toPos) return null
-                        
+
                         return (
                             <line 
-                                key={idx}
+                                key={`${conn.from}-${conn.to}-${idx}`}
                                 x1={fromPos.x} 
                                 y1={fromPos.y} 
                                 x2={toPos.x} 
                                 y2={toPos.y} 
-                                stroke="#10B981" 
+                                stroke={conn.kind === 'custom' ? '#10B981' : '#FF6B35'} 
                                 strokeWidth="2" 
                                 markerEnd="url(#arrowhead)" 
-                                strokeDasharray="5,5"
+                                strokeDasharray={conn.kind === 'custom' ? '5,5' : 'none'}
                             />
                         )
                     })}
