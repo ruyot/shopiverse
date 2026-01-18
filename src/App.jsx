@@ -1,12 +1,13 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { navigationConfig, initialViewpoint } from './config/navigation'
 import { PLYViewer } from './components/PLYViewer'
 import { ProductCard } from './components/ProductCard'
 import { CartSidebar } from './components/CartSidebar'
 import { SuccessModal } from './components/SuccessModal'
-import { Terminal, X, ShoppingCart } from 'lucide-react'
+import { Terminal, X, ShoppingCart, Send } from 'lucide-react'
 import { getSettings } from './config/settings'
 import { getSceneHotspotsAsync } from './config/hotspots'
+import { sendChatMessage, loadInventory } from './utils/backboardChat'
 import './App.css'
 
 /**
@@ -33,6 +34,14 @@ function App() {
     const [showCart, setShowCart] = useState(false)
     const [showSuccess, setShowSuccess] = useState(false)
     const [orderDetails, setOrderDetails] = useState(null)
+    const [showChatbot, setShowChatbot] = useState(false)
+    const [chatMessages, setChatMessages] = useState([
+        { role: 'assistant', content: "Hi! I'm Lobo, your shopping assistant. How can I help you today?" }
+    ])
+    const [chatInput, setChatInput] = useState('')
+    const [isChatLoading, setIsChatLoading] = useState(false)
+    const [inventory, setInventory] = useState({})
+    const chatMessagesEndRef = useRef(null)
 
     const currentViewpoint = navigationConfig[currentId]
     const connections = currentViewpoint?.connections || {}
@@ -197,6 +206,83 @@ function App() {
             return () => clearTimeout(timer)
         }
     }, [hasPLY])
+
+    // Load inventory when chatbot opens
+    useEffect(() => {
+        if (showChatbot && Object.keys(inventory).length === 0) {
+            loadInventory().then(setInventory)
+        }
+    }, [showChatbot])
+
+    // Scroll to bottom of chat messages
+    useEffect(() => {
+        chatMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, [chatMessages])
+
+    // Handle sending chat message with streaming
+    const handleSendMessage = async () => {
+        if (!chatInput.trim() || isChatLoading) return
+
+        const userMessage = chatInput.trim()
+        setChatInput('')
+
+        // Add user message to chat
+        const newMessages = [...chatMessages, { role: 'user', content: userMessage }]
+        setChatMessages(newMessages)
+        setIsChatLoading(true)
+
+        // Add placeholder for assistant response
+        const assistantMessageIndex = newMessages.length
+        setChatMessages([...newMessages, { role: 'assistant', content: '' }])
+
+        try {
+            let streamedContent = ''
+            
+            // Get AI response with streaming and memory
+            await sendChatMessage(
+                userMessage,
+                inventory,
+                (chunk) => {
+                    if (chunk.type === 'content') {
+                        // Update the assistant message with streamed content
+                        streamedContent += chunk.content
+                        setChatMessages(msgs => {
+                            const updated = [...msgs]
+                            updated[assistantMessageIndex] = {
+                                role: 'assistant',
+                                content: streamedContent
+                            }
+                            return updated
+                        })
+                    } else if (chunk.type === 'memory') {
+                        console.log(`[Memory] Retrieved ${chunk.count} memories from past conversations`)
+                    } else if (chunk.type === 'memory_saved') {
+                        console.log(`[Memory] Saved conversation context (ID: ${chunk.operationId})`)
+                    }
+                }
+            )
+        } catch (error) {
+            console.error('Chat error:', error)
+            setChatMessages(msgs => {
+                const updated = [...msgs]
+                updated[assistantMessageIndex] = {
+                    role: 'assistant',
+                    content: "I'm sorry, I encountered an error. Please try again."
+                }
+                return updated
+            })
+        } finally {
+            setIsChatLoading(false)
+        }
+    }
+
+    // Handle Enter key in chat input
+    const handleChatKeyPress = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            handleSendMessage()
+        }
+    }
 
     // Listen for hotspot changes
     useEffect(() => {
@@ -372,6 +458,17 @@ function App() {
 
 
 
+            {/* Lobo Chatbot Character - Only on Storefront */}
+            {isStoreFront && (
+                <button
+                    className="lobo-character"
+                    onClick={() => setShowChatbot(!showChatbot)}
+                    title="Chat with Lobo"
+                >
+                    <img src="/lobo.png" alt="Lobo Assistant" />
+                </button>
+            )}
+
             {/* Shopping Cart Icon */}
             <button
                 className="cart-icon"
@@ -501,6 +598,65 @@ function App() {
                 onClose={handleSuccessClose}
                 orderDetails={orderDetails}
             />
+
+            {/* Lobo Chatbot Modal */}
+            {showChatbot && (
+                <div className="chatbot-modal">
+                    <div className="chatbot-header">
+                        <div className="chatbot-avatar">
+                            <img src="/lobo.png" alt="Lobo" />
+                        </div>
+                        <div className="chatbot-title">
+                            <h3>Lobo Assistant</h3>
+                            <span className="chatbot-status">Online</span>
+                        </div>
+                        <button className="chatbot-close" onClick={() => setShowChatbot(false)}>
+                            <X size={20} strokeWidth={2} />
+                        </button>
+                    </div>
+                    <div className="chatbot-messages">
+                        {chatMessages.map((message, index) => (
+                            <div key={index} className={`chatbot-message ${message.role === 'assistant' ? 'bot' : 'user'}`}>
+                                {message.role === 'assistant' && (
+                                    <div className="message-avatar">
+                                        <img src="/lobo.png" alt="Lobo" />
+                                    </div>
+                                )}
+                                <div className="message-bubble">
+                                    {message.content}
+                                </div>
+                            </div>
+                        ))}
+                        {isChatLoading && (
+                            <div className="chatbot-message bot">
+                                <div className="message-avatar">
+                                    <img src="/lobo.png" alt="Lobo" />
+                                </div>
+                                <div className="message-bubble typing">
+                                    <span></span><span></span><span></span>
+                                </div>
+                            </div>
+                        )}
+                        <div ref={chatMessagesEndRef} />
+                    </div>
+                    <div className="chatbot-input">
+                        <input 
+                            type="text" 
+                            placeholder="Type your message..." 
+                            value={chatInput}
+                            onChange={(e) => setChatInput(e.target.value)}
+                            onKeyPress={handleChatKeyPress}
+                            disabled={isChatLoading}
+                        />
+                        <button 
+                            onClick={handleSendMessage}
+                            disabled={isChatLoading || !chatInput.trim()}
+                        >
+                            <Send size={18} strokeWidth={2} />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
