@@ -760,6 +760,28 @@ function ScenesTab() {
                         markerEnd="url(#arrowhead)" 
                     />
                     
+                    {/* storeP1 -> storeP1Left */}
+                    <line 
+                        x1={nodePositions.storeP1.x - 40} 
+                        y1={nodePositions.storeP1.y + 20} 
+                        x2={nodePositions.storeP1Left.x + 40} 
+                        y2={nodePositions.storeP1Left.y - 20} 
+                        stroke="#FF6B35" 
+                        strokeWidth="2" 
+                        markerEnd="url(#arrowhead)" 
+                    />
+                    
+                    {/* storeP1 -> storeP1Right */}
+                    <line 
+                        x1={nodePositions.storeP1.x + 40} 
+                        y1={nodePositions.storeP1.y + 20} 
+                        x2={nodePositions.storeP1Right.x - 40} 
+                        y2={nodePositions.storeP1Right.y - 20} 
+                        stroke="#FF6B35" 
+                        strokeWidth="2" 
+                        markerEnd="url(#arrowhead)" 
+                    />
+                    
                     {/* storeP2 -> storeP2Left */}
                     <line 
                         x1={nodePositions.storeP2.x - 40} 
