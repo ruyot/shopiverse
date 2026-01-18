@@ -7,7 +7,7 @@ import './ProductCard.css'
  * Floating glassmorphism card that appears next to hotspots
  * Features a connecting triangle and image carousel
  */
-export function ProductCard({ hotspot, position, onClose }) {
+export function ProductCard({ hotspot, position, onClose, onAddToCart }) {
     const images = hotspot.images || []
     const hasImage = images.length > 0
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -34,9 +34,13 @@ export function ProductCard({ hotspot, position, onClose }) {
 
     const handleAddToCart = (e) => {
         e.stopPropagation()
-        console.log('Added to cart:', hotspot.title || hotspot.label)
-        // TODO: Implement cart functionality
-        alert(`Added "${hotspot.title || hotspot.label}" to cart!`)
+        if (onAddToCart) {
+            onAddToCart(hotspot)
+            // Close the card after adding to cart for better UX
+            setTimeout(() => {
+                onClose()
+            }, 300)
+        }
     }
 
     return (
