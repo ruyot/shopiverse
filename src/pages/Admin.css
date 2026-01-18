@@ -1074,10 +1074,11 @@ body {
 
 /* Store Layout Graph */
 .store-graph-container {
-    background: white;
-    border-radius: 12px;
+    background: linear-gradient(140deg, #fffaf3 0%, #f7efe2 100%);
+    border-radius: 16px;
     padding: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 12px 30px rgba(100, 78, 55, 0.15);
+    border: 1px solid #ead7c0;
     display: flex;
     flex-direction: column;
 }
@@ -1166,6 +1167,7 @@ body {
     width: 100%;
     height: auto;
     flex: 1;
+    border-radius: 18px;
 }
 
 .scene-node {
@@ -1176,6 +1178,55 @@ body {
 
 .scene-node:hover {
     filter: drop-shadow(0 4px 8px rgba(255, 107, 53, 0.3));
+}
+
+.store-floorplan {
+    pointer-events: none;
+}
+
+.floor-border {
+    fill: none;
+    stroke: #d9c2a5;
+    stroke-width: 3;
+}
+
+.floor-entrance {
+    fill: #ffe2c4;
+    stroke: #f4b37e;
+    stroke-width: 2;
+}
+
+.floor-aisle {
+    fill: #fff7eb;
+    stroke: #e8c7a5;
+    stroke-width: 2;
+}
+
+.floor-shelf {
+    fill: #f7d9bd;
+    stroke: #e8b88f;
+    stroke-width: 2;
+}
+
+.floor-checkout {
+    fill: #ffd4a8;
+    stroke: #f0a869;
+    stroke-width: 2;
+}
+
+.floor-path {
+    stroke: #cfae8d;
+    stroke-width: 2;
+    stroke-dasharray: 6 8;
+    opacity: 0.6;
+}
+
+.floor-label {
+    fill: #8b5e3c;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 /* Scene Details Panel */
