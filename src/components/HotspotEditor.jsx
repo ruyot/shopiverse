@@ -35,23 +35,23 @@ export function HotspotEditor({ scene, onSave, onClose }) {
     }
 
     const updateHotspotLabel = (id, label) => {
-        setHotspots(hotspots.map(h => 
+        setHotspots(hotspots.map(h =>
             h.id === id ? { ...h, label } : h
         ))
     }
 
     const updateHotspotMetadata = (id, metadata) => {
-        setHotspots(hotspots.map(h => 
+        setHotspots(hotspots.map(h =>
             h.id === id ? { ...h, ...metadata } : h
         ))
     }
 
     const addImageToHotspot = async (id, imageUrl) => {
         // Update local state
-        setHotspots(hotspots.map(h => 
+        setHotspots(hotspots.map(h =>
             h.id === id ? { ...h, images: [...(h.images || []), imageUrl] } : h
         ))
-        
+
         // Persist to API immediately
         try {
             const response = await fetch(`http://localhost:5000/api/hotspots/${scene.id}/${id}/images`, {
@@ -71,12 +71,12 @@ export function HotspotEditor({ scene, onSave, onClose }) {
         // Get the image path before removing
         const hotspot = hotspots.find(h => h.id === id)
         const imagePath = hotspot?.images?.[imageIndex]
-        
+
         // Remove from state
-        setHotspots(hotspots.map(h => 
+        setHotspots(hotspots.map(h =>
             h.id === id ? { ...h, images: h.images.filter((_, i) => i !== imageIndex) } : h
         ))
-        
+
         // Delete from API
         try {
             const response = await fetch(`http://localhost:5000/api/hotspots/${scene.id}/${id}/images/${imageIndex}`, {
@@ -88,7 +88,7 @@ export function HotspotEditor({ scene, onSave, onClose }) {
         } catch (error) {
             console.error('Failed to remove image from API:', error)
         }
-        
+
         // Delete file from server if it's an uploaded file (starts with / and has underscore pattern)
         if (imagePath && imagePath.startsWith('/') && imagePath.includes('_')) {
             const filename = imagePath.substring(1) // Remove leading /
@@ -147,7 +147,7 @@ export function HotspotEditor({ scene, onSave, onClose }) {
                             className="editor-image"
                             onDoubleClick={handleDoubleClick}
                         />
-                        
+
                         {hotspots.map((hotspot) => (
                             <div
                                 key={hotspot.id}
@@ -172,7 +172,7 @@ export function HotspotEditor({ scene, onSave, onClose }) {
                                             placeholder="Enter label..."
                                         />
                                     ) : (
-                                        <div 
+                                        <div
                                             className="editor-hotspot-label"
                                             onDoubleClick={(e) => {
                                                 e.stopPropagation()
@@ -278,7 +278,7 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
         }
 
         const apiKey = import.meta.env.VITE_GEMINI_IMAGE_API_KEY
-        
+
         if (!apiKey) {
             alert('AI Image Generation: Please configure Gemini Image API in your .env file.\n\nAdd VITE_GEMINI_IMAGE_API_KEY to enable this feature.')
             return
@@ -287,16 +287,16 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
         setGenerating(true)
         try {
             console.log('🎨 Generating image with Gemini AI...')
-            
+
             // Generate image using Gemini API
             const imageDataUrl = await generateImage(aiPrompt)
-            
+
             // Add the generated image to the hotspot
             onAddImage(imageDataUrl)
-            
+
             // Clear the prompt
             setAiPrompt('')
-            
+
             console.log('✅ Image generated and added successfully!')
         } catch (error) {
             console.error('❌ Error generating image:', error)
@@ -355,14 +355,14 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
                 img.onload = () => {
                     const canvas = document.createElement('canvas')
                     const ctx = canvas.getContext('2d')
-                    
+
                     // Max dimensions
                     const MAX_WIDTH = 1200
                     const MAX_HEIGHT = 1200
-                    
+
                     let width = img.width
                     let height = img.height
-                    
+
                     if (width > height) {
                         if (width > MAX_WIDTH) {
                             height *= MAX_WIDTH / width
@@ -374,11 +374,11 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
                             height = MAX_HEIGHT
                         }
                     }
-                    
+
                     canvas.width = width
                     canvas.height = height
                     ctx.drawImage(img, 0, 0, width, height)
-                    
+
                     canvas.toBlob((blob) => {
                         resolve(blob)
                     }, 'image/jpeg', 0.85)
@@ -438,16 +438,16 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
                                 </div>
                             ))}
                         </div>
-                        
+
                         <div className="image-mode-toggle">
-                            <button 
+                            <button
                                 className={`mode-btn ${imageMode === 'upload' ? 'active' : ''}`}
                                 onClick={() => setImageMode('upload')}
                             >
                                 <ImageIcon size={14} strokeWidth={2} />
                                 Upload
                             </button>
-                            <button 
+                            <button
                                 className={`mode-btn ${imageMode === 'generate' ? 'active' : ''}`}
                                 onClick={() => setImageMode('generate')}
                             >
@@ -482,7 +482,7 @@ function MetadataEditor({ hotspot, onSave, onClose, onAddImage, onRemoveImage })
                                     className="ai-prompt-input"
                                     rows="3"
                                 />
-                                <button 
+                                <button
                                     className="ai-generate-btn"
                                     onClick={handleGenerateImage}
                                     disabled={generating || !aiPrompt.trim()}
