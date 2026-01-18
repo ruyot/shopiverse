@@ -1,0 +1,5 @@
+timestamp,action,data
+2026-01-18T09:38:06.328Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1""}"
+2026-01-18T09:38:07.929Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP2""}"
+2026-01-18T09:38:11.898Z,navigate,"{""fromScene"": ""storeP2"", ""toScene"": ""storeP2Right""}"
+2026-01-18T09:38:16.744Z,view_product,"{""productId"": ""item-r2-3"", ""title"": ""Product 3""}"

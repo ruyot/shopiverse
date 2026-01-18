@@ -21,6 +21,8 @@ from typing import List, Optional, Any
 import json
 import os
 import shutil
+import csv
+from datetime import datetime
 
 app = FastAPI(title="Shopiverse Admin API")
 
@@ -36,6 +38,7 @@ app.add_middleware(
 # Path to store hotspots data
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 HOTSPOTS_FILE = os.path.join(DATA_DIR, 'hotspots.json')
+ANALYTICS_FILE = os.path.join(DATA_DIR, 'analytics.csv')
 
 # Path to public folder (for serving images via Vite)
 PUBLIC_DIR = os.path.join(os.path.dirname(__file__), '..', 'public')
@@ -85,9 +88,15 @@ class Hotspot(BaseModel):
     label: str
     title: str
     images: List[str] = []
-    
+
     class Config:
         extra = "allow"  # Allow additional fields
+
+
+class AnalyticsEvent(BaseModel):
+    action: str  # e.g., "add_to_cart", "navigate", "view_product", "checkout"
+    timestamp: Optional[str] = None
+    data: Optional[dict] = None  # Additional event data (product id, scene id, etc.)
 
 
 def ensure_data_dir():
@@ -312,6 +321,65 @@ def delete_file(filename: str):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete file: {str(e)}")
+
+
+# ============== ANALYTICS ENDPOINTS ==============
+
+def ensure_analytics_file():
+    """Create analytics CSV with headers if it doesn't exist"""
+    ensure_data_dir()
+    if not os.path.exists(ANALYTICS_FILE):
+        with open(ANALYTICS_FILE, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['timestamp', 'action', 'data'])
+
+
+@app.post("/api/analytics")
+def track_event(event: AnalyticsEvent):
+    """
+    Track a frontend event and append it to the CSV file.
+
+    Request body: { "action": "add_to_cart", "data": { "productId": "p1-1", "price": 49.99 } }
+    """
+    ensure_analytics_file()
+
+    timestamp = event.timestamp or datetime.now().isoformat()
+    data_json = json.dumps(event.data) if event.data else ""
+
+    with open(ANALYTICS_FILE, 'a', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow([timestamp, event.action, data_json])
+
+    return {"success": True, "message": f"Tracked event: {event.action}"}
+
+
+@app.get("/api/analytics")
+def get_analytics():
+    """Get all analytics events"""
+    ensure_analytics_file()
+
+    events = []
+    with open(ANALYTICS_FILE, 'r', newline='') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            event = {
+                'timestamp': row['timestamp'],
+                'action': row['action'],
+                'data': json.loads(row['data']) if row['data'] else None
+            }
+            events.append(event)
+
+    return {"events": events, "count": len(events)}
+
+
+@app.delete("/api/analytics")
+def clear_analytics():
+    """Clear all analytics data"""
+    ensure_analytics_file()
+    with open(ANALYTICS_FILE, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(['timestamp', 'action', 'data'])
+    return {"success": True, "message": "Analytics data cleared"}
 
 
 # Health check endpoint
