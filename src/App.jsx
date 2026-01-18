@@ -35,6 +35,16 @@ function App() {
         setCurrentHotspots(hotspots)
     }, [currentId])
 
+    // Set content visible after initial load (for PLY scenes)
+    useEffect(() => {
+        if (hasPLY && !contentVisible) {
+            const timer = setTimeout(() => {
+                setContentVisible(true)
+            }, 1200) // Allow time for splat to load
+            return () => clearTimeout(timer)
+        }
+    }, [hasPLY])
+
     // Listen for hotspot changes
     useEffect(() => {
         const handleHotspotsChange = (event) => {
@@ -60,7 +70,7 @@ function App() {
             setCurrentId(targetId)
             setHistory(prev => [...prev, targetId])
             setIsTransitioning(false)
-            
+
             // Delay showing content to match splat loading
             setTimeout(() => {
                 setContentVisible(true)
@@ -129,20 +139,8 @@ function App() {
                 <span>{currentViewpoint.name}</span>
             </header>
 
-            {/* Store front entrance - pulsating dot */}
-            {isStoreFront && connections.forward && (
-                <button
-                    className="entrance-dot"
-                    onClick={() => navigateTo(connections.forward)}
-                    aria-label="Enter store"
-                >
-                    <span className="dot-ring" />
-                    <span className="dot-core" />
-                </button>
-            )}
-
-            {/* Ground-level navigation arrows (not shown on store front) */}
-            {!isStoreFront && (
+            {/* Ground-level navigation arrows */}
+            {(
                 <nav className="ground-nav" style={{
                     opacity: contentVisible ? 1 : 0,
                     transition: 'opacity 0.6s ease-in'
@@ -204,8 +202,8 @@ function App() {
                     <button
                         key={hotspot.id}
                         className="product-hotspot"
-                        style={{ 
-                            left: `${hotspot.x}%`, 
+                        style={{
+                            left: `${hotspot.x}%`,
                             top: `${hotspot.y}%`,
                             opacity: contentVisible ? 1 : 0,
                             transition: 'opacity 0.6s ease-in'
@@ -219,10 +217,7 @@ function App() {
                 )
             })}
 
-            {/* Keyboard hints */}
-            <div className="keyboard-hints">
-                {isStoreFront ? 'Click the door to enter' : 'Use arrow keys to navigate'}
-            </div>
+
 
             {/* Command Palette Toggle */}
             <button
