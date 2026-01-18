@@ -369,6 +369,16 @@ function ScenesTab() {
 
     const scenes = Object.values(navigationConfig).filter(scene => scene.id)
 
+    const formatHotspotCoords = (hotspot) => {
+        if (hotspot.position && hotspot.position.length === 3) {
+            return `(${hotspot.position.map(v => v.toFixed(4)).join(', ')})`
+        }
+        if (hotspot.x !== undefined && hotspot.y !== undefined) {
+            return `(${hotspot.x}%, ${hotspot.y}%)`
+        }
+        return '(unplaced)'
+    }
+
     useEffect(() => {
         const loadHotspots = async () => {
             const hotspots = {}
@@ -1047,7 +1057,7 @@ function ScenesTab() {
                                                 onChange={() => toggleHotspot(hotspot.id)}
                                             />
                                             <span className="hotspot-compact-name">{hotspot.label}</span>
-                                            <span className="hotspot-compact-coords">({hotspot.x}%, {hotspot.y}%)</span>
+                                            <span className="hotspot-compact-coords">{formatHotspotCoords(hotspot)}</span>
                                         </div>
                                     ))}
                                 </div>

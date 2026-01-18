@@ -51,6 +51,7 @@
 .editor-actions {
     display: flex;
     gap: 0.5rem;
+    align-items: center;
 }
 
 .editor-btn {
@@ -68,6 +69,18 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     font-family: 'Courier New', monospace;
+}
+
+.editor-btn.active {
+    background: #333;
+    border-color: #111;
+    color: #fff;
+}
+
+.editor-mode-toggle {
+    display: flex;
+    gap: 0.4rem;
+    margin-right: 0.5rem;
 }
 
 .editor-btn:hover {
@@ -111,6 +124,63 @@
     display: block;
     cursor: crosshair;
     user-select: none;
+}
+
+.editor-3d-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 2px solid #999;
+    background: #111;
+}
+
+.editor-3d-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 2px solid #666;
+    background: #1b1b1b;
+    color: #eee;
+    font-size: 0.75rem;
+}
+
+.editor-3d-view {
+    flex: 1;
+    position: relative;
+    min-height: 320px;
+}
+
+.editor-3d-view canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.editor-depth-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #ddd;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.editor-depth-control input[type="range"] {
+    width: 140px;
+}
+
+.editor-depth-control span {
+    min-width: 3rem;
+    text-align: right;
+    color: #ffb089;
+}
+
+.editor-placement-hint {
+    margin-left: auto;
+    color: #ffb089;
+    font-size: 0.7rem;
 }
 
 /* Editor Hotspots */

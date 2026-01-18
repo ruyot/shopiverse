@@ -1,158 +1,177 @@
-timestamp,action,data
-2026-01-18T09:38:06.328Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1""}"
-2026-01-18T09:38:07.929Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP2""}"
-2026-01-18T09:38:11.898Z,navigate,"{""fromScene"": ""storeP2"", ""toScene"": ""storeP2Right""}"
-2026-01-18T09:38:16.744Z,view_product,"{""productId"": ""item-r2-3"", ""title"": ""Product 3""}"
-2026-01-18T09:39:54.369Z,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""direct""}"
-2026-01-18T09:40:02.163Z,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""direct""}"
-2026-01-18T09:40:10.456Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 0}"
-2026-01-18T09:40:14.368Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Right"", ""timeInPreviousScene"": 4}"
-2026-01-18T09:40:19.888Z,view_product,"{""productId"": ""item-r1-3"", ""title"": ""Product 3"", ""scene"": ""storeP1Right""}"
-2026-01-18T09:40:23.876Z,add_to_cart,"{""productId"": ""item-r1-3"", ""title"": ""Product 3"", ""scene"": ""storeP1Right""}"
-2026-01-18T09:41:07.892Z,navigate,"{""fromScene"": ""storeP1Right"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 54}"
-2026-01-18T09:41:08.593Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 1}"
-2026-01-18T09:41:09.827Z,open_chatbot,"{""scene"": ""storeFront""}"
-2026-01-18T09:41:14.144Z,send_chat_message,"{""messageLength"": 7, ""scene"": ""storeFront""}"
-2026-01-18T09:41:15.356Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:41:15.434Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:41:16.984Z,open_chatbot,"{""scene"": ""storeFront""}"
-2026-01-18T09:41:20.819Z,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""direct""}"
-2026-01-18T09:41:21.144Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:41:21.197Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:41:34.873Z,open_chatbot,"{""scene"": ""storeFront""}"
-2026-01-18T09:41:40.204Z,send_chat_message,"{""messageLength"": 7, ""scene"": ""storeFront""}"
-2026-01-18T09:42:37.707Z,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""direct""}"
-2026-01-18T09:42:38.062Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:42:38.107Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:42:47.165Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 9}"
-2026-01-18T09:42:53.841Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 7}"
-2026-01-18T09:42:57.705Z,view_product,"{""productId"": ""item-l1-2"", ""title"": ""Product 2"", ""scene"": ""storeP1Left""}"
-2026-01-18T09:44:04.085Z,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""direct""}"
-2026-01-18T09:44:04.619Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:44:04.704Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:44:08.760Z,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""http://localhost:5173/""}"
-2026-01-18T09:44:08.936Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:44:08.976Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:44:14.916Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 10}"
-2026-01-18T09:44:24.249Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 9}"
-2026-01-18T09:44:44.009Z,view_product,"{""productId"": ""item-l1-2"", ""title"": ""Product 2"", ""scene"": ""storeP1Left""}"
-2026-01-18T09:44:53.013Z,view_product,"{""productId"": ""item-l1-1"", ""title"": ""Product 1"", ""scene"": ""storeP1Left""}"
-2026-01-18T09:45:12.815Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:45:12.900Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:45:25.086Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:46:24.972Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 60}"
-2026-01-18T09:46:31.763Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Right"", ""timeInPreviousScene"": 7}"
-2026-01-18T09:46:39.515Z,view_product,"{""productId"": ""item-r1-2"", ""title"": ""Product 2"", ""scene"": ""storeP1Right""}"
-2026-01-18T09:46:41.647Z,view_product,"{""productId"": ""item-r1-3"", ""title"": ""Product 3"", ""scene"": ""storeP1Right""}"
-2026-01-18T09:47:46.831Z,view_product,"{""productId"": ""item-r1-2"", ""title"": ""Product 2"", ""scene"": ""storeP1Right""}"
-2026-01-18T09:47:50.082Z,view_product,"{""productId"": ""item-r1-3"", ""title"": ""Product 3"", ""scene"": ""storeP1Right""}"
-2026-01-18T09:47:52.338Z,view_product,"{""productId"": ""item-r1-1"", ""title"": ""Product 1"", ""scene"": ""storeP1Right""}"
-2026-01-18T09:49:00.918Z,navigate,"{""fromScene"": ""storeP1Right"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 149}"
-2026-01-18T09:49:03.618Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 3}"
-2026-01-18T09:49:16.924Z,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""direct""}"
-2026-01-18T09:49:17.174Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:49:17.213Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:49:22.370Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 5}"
-2026-01-18T09:49:26.059Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 4}"
-2026-01-18T09:49:32.281Z,view_product,"{""productId"": ""item-l1-4"", ""title"": ""Product 4"", ""scene"": ""storeP1Left""}"
-2026-01-18T09:50:45.055Z,view_product,"{""productId"": ""item-l1-2"", ""title"": ""Product 2"", ""scene"": ""storeP1Left""}"
-2026-01-18T09:50:48.350Z,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""direct""}"
-2026-01-18T09:50:48.571Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:50:48.615Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:50:52.139Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 4}"
-2026-01-18T09:50:55.440Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 3}"
-2026-01-18T09:51:02.378Z,view_product,"{""productId"": ""item-l1-4"", ""title"": ""Product 4"", ""scene"": ""storeP1Left""}"
-2026-01-18T09:51:13.727Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:51:42.205Z,open_cart,"{""scene"": ""storeFront""}"
-2026-01-18T09:51:43.724Z,start_checkout,"{""itemCount"": 1, ""items"": [{""id"": ""item-r1-3"", ""title"": ""Product 3"", ""qty"": 1, ""price"": 49.99}], ""total"": 49.99}"
-2026-01-18T09:51:57.812Z,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""direct""}"
-2026-01-18T09:51:58.028Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:51:58.065Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:51:58.379Z,complete_checkout,"{""orderNumber"": ""A1J2VOVE"", ""total"": 56.4887, ""sessionDurationAtCheckout"": 1}"
-2026-01-18T09:51:58.463Z,complete_checkout,"{""orderNumber"": ""A1J2VOVE"", ""total"": 56.4887, ""sessionDurationAtCheckout"": 1}"
-2026-01-18T09:53:02.147Z,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""http://localhost:5173/admin.html""}"
-2026-01-18T09:53:02.235Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:53:02.273Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:53:05.041Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 3}"
-2026-01-18T09:53:11.357Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 6}"
-2026-01-18T09:53:18.559Z,view_product,"{""productId"": ""item-l1-4"", ""title"": ""Product 4"", ""scene"": ""storeP1Left""}"
-2026-01-18T09:53:23.931Z,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""http://localhost:5173/admin.html""}"
-2026-01-18T09:53:24.715Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:53:32.675Z,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""http://localhost:5173/admin.html""}"
-2026-01-18T09:53:32.723Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:54:01.821Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:54:28.165Z,open_chatbot,"{""scene"": ""storeFront""}"
-2026-01-18T09:54:31.764Z,send_chat_message,"{""messageLength"": 6, ""scene"": ""storeFront""}"
-2026-01-18T09:56:23.882Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 142}"
-2026-01-18T09:56:53.111Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:56:56.410Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 3}"
-2026-01-18T09:56:58.828Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Right"", ""timeInPreviousScene"": 2}"
-2026-01-18T09:57:04.264Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T09:57:06.947Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 3}"
-2026-01-18T09:57:09.349Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 2}"
-2026-01-18T09:59:08.372Z,view_product,"{""productId"": ""item-l1-2"", ""title"": ""Product 2"", ""scene"": ""storeP1Left""}"
-2026-01-18T09:59:11.172Z,view_product,"{""productId"": ""item-l1-4"", ""title"": ""Product 4"", ""scene"": ""storeP1Left""}"
-2026-01-18T09:59:12.512Z,view_product,"{""productId"": ""item-l1-3"", ""title"": ""Product 3"", ""scene"": ""storeP1Left""}"
-2026-01-18T09:59:13.430Z,view_product,"{""productId"": ""item-l1-1"", ""title"": ""Product 1"", ""scene"": ""storeP1Left""}"
-2026-01-18T09:59:16.178Z,navigate,"{""fromScene"": ""storeP1Left"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 127}"
-2026-01-18T10:02:09.428Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T10:02:12.219Z,open_chatbot,"{""scene"": ""storeFront""}"
-2026-01-18T10:02:17.516Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 8}"
-2026-01-18T10:02:17.519Z,send_chat_message,"{""messageLength"": 15, ""scene"": ""storeP1""}"
-2026-01-18T10:02:22.184Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP2"", ""timeInPreviousScene"": 5}"
-2026-01-18T10:02:25.238Z,navigate,"{""fromScene"": ""storeP2"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 3}"
-2026-01-18T10:02:29.013Z,view_product,"{""productId"": ""item-l1-2"", ""title"": ""Product 2"", ""scene"": ""storeP1Left""}"
-2026-01-18T10:02:30.836Z,view_product,"{""productId"": ""item-l1-4"", ""title"": ""Product 4"", ""scene"": ""storeP1Left""}"
-2026-01-18T10:02:32.317Z,view_product,"{""productId"": ""item-l1-3"", ""title"": ""Product 3"", ""scene"": ""storeP1Left""}"
-2026-01-18T10:02:33.672Z,view_product,"{""productId"": ""item-l1-1"", ""title"": ""Product 1"", ""scene"": ""storeP1Left""}"
-2026-01-18T10:06:18.953Z,navigate,"{""fromScene"": ""storeP1Left"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 234}"
-2026-01-18T10:06:20.696Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 2}"
-2026-01-18T10:06:22.164Z,open_chatbot,"{""scene"": ""storeFront""}"
-2026-01-18T10:06:27.713Z,send_chat_message,"{""messageLength"": 15, ""scene"": ""storeFront""}"
-2026-01-18T10:06:35.152Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T10:06:49.065Z,open_chatbot,"{""scene"": ""storeFront""}"
-2026-01-18T10:06:53.315Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 18}"
-2026-01-18T10:06:53.319Z,send_chat_message,"{""messageLength"": 16, ""scene"": ""storeP1""}"
-2026-01-18T10:06:55.868Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 3}"
-2026-01-18T10:06:57.871Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP2Left"", ""timeInPreviousScene"": 2}"
-2026-01-18T10:07:57.495Z,open_cart,"{""scene"": ""storeP2Left""}"
-2026-01-18T10:08:29.425Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T10:13:00.065Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T10:13:05.446Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T10:13:07.892Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 2}"
-2026-01-18T10:13:09.963Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 2}"
-2026-01-18T10:14:03.140Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T10:14:10.684Z,open_chatbot,"{""scene"": ""storeFront""}"
-2026-01-18T10:14:50.273Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 47}"
-2026-01-18T10:14:54.052Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 4}"
-2026-01-18T10:14:55.565Z,open_chatbot,"{""scene"": ""storeFront""}"
-2026-01-18T10:14:57.840Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 4}"
-2026-01-18T10:14:57.846Z,send_chat_message,"{""messageLength"": 6, ""scene"": ""storeP1""}"
-2026-01-18T10:15:01.118Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP2Left"", ""timeInPreviousScene"": 3}"
-2026-01-18T10:16:02.085Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T10:16:07.749Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T10:16:08.725Z,open_chatbot,"{""scene"": ""storeFront""}"
-2026-01-18T10:18:10.135Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 122}"
-2026-01-18T10:18:13.103Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Right"", ""timeInPreviousScene"": 3}"
-2026-01-18T10:19:59.338Z,navigate,"{""fromScene"": ""storeP1Right"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 106}"
-2026-01-18T10:20:00.616Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 1}"
-2026-01-18T10:20:09.460Z,open_chatbot,"{""scene"": ""storeFront""}"
-2026-01-18T10:20:12.801Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 12}"
-2026-01-18T10:20:13.294Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP2"", ""timeInPreviousScene"": 0}"
-2026-01-18T10:21:34.406Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T10:24:18.590Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T10:25:59.812Z,open_chatbot,"{""scene"": ""storeFront""}"
-2026-01-18T10:26:44.210Z,send_chat_message,"{""messageLength"": 11, ""scene"": ""storeFront""}"
-2026-01-18T10:27:43.729Z,send_chat_message,"{""messageLength"": 6, ""scene"": ""storeFront""}"
-2026-01-18T10:30:18.748Z,enter_scene,"{""sceneId"": ""storeFront""}"
-2026-01-18T10:30:19.544Z,open_chatbot,"{""scene"": ""storeFront""}"
-2026-01-18T10:30:24.635Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 6}"
-2026-01-18T10:30:24.640Z,send_chat_message,"{""messageLength"": 14, ""scene"": ""storeP1""}"
-2026-01-18T10:30:29.453Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP2Left"", ""timeInPreviousScene"": 5}"
-2026-01-18T10:34:13.951Z,navigate,"{""fromScene"": ""storeP2Left"", ""toScene"": ""storeP2"", ""timeInPreviousScene"": 224}"
-2026-01-18T10:34:15.976Z,navigate,"{""fromScene"": ""storeP2"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 2}"
-2026-01-18T10:34:19.814Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP2"", ""timeInPreviousScene"": 4}"
-2026-01-18T10:36:52.352Z,navigate,"{""fromScene"": ""storeP2"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 0}"
-2026-01-18T10:36:52.845Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 0}"
-2026-01-18T10:36:56.212Z,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 3}"
-2026-01-18T10:36:58.155Z,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 0}"
+timestamp,session_id,user_id,session_duration,action,data,event_id,device_type,page,scene,product_id,order_total,cart_value,message_text
+2026-01-18T09:38:06.328Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1""}",evt_3595782161,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T09:38:07.929Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP2""}",evt_1806256785,desktop,store,storeP2,,0.0,0.0,
+2026-01-18T09:38:11.898Z,,,,navigate,"{""fromScene"": ""storeP2"", ""toScene"": ""storeP2Right""}",evt_3061128189,desktop,store,storeP2Right,,0.0,0.0,
+2026-01-18T09:38:16.744Z,,,,view_product,"{""productId"": ""item-r2-3"", ""title"": ""Product 3""}",evt_1467934540,desktop,store,,item-r2-3,0.0,0.0,
+2026-01-18T09:39:54.369Z,,,,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""direct""}",evt_3234483043,desktop,direct,,,0.0,0.0,
+2026-01-18T09:40:02.163Z,,,,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""direct""}",evt_1513229050,desktop,direct,,,0.0,0.0,
+2026-01-18T09:40:10.456Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 0}",evt_4183956075,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T09:40:14.368Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Right"", ""timeInPreviousScene"": 4}",evt_1675752211,desktop,store,storeP1Right,,0.0,0.0,
+2026-01-18T09:40:19.888Z,,,,view_product,"{""productId"": ""item-r1-3"", ""title"": ""Product 3"", ""scene"": ""storeP1Right""}",evt_48253638,desktop,store,storeP1Right,item-r1-3,0.0,0.0,
+2026-01-18T09:40:23.876Z,,,,add_to_cart,"{""productId"": ""item-r1-3"", ""title"": ""Product 3"", ""scene"": ""storeP1Right""}",evt_122427790,desktop,store,storeP1Right,item-r1-3,0.0,48.73,
+2026-01-18T09:41:07.892Z,,,,navigate,"{""fromScene"": ""storeP1Right"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 54}",evt_1925953276,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T09:41:08.593Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 1}",evt_1760357813,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:41:09.827Z,,,,open_chatbot,"{""scene"": ""storeFront""}",evt_971230248,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:41:14.144Z,,,,send_chat_message,"{""messageLength"": 7, ""scene"": ""storeFront""}",evt_1906488505,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:41:15.356Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_587441954,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:41:15.434Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_2289009067,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:41:16.984Z,,,,open_chatbot,"{""scene"": ""storeFront""}",evt_4039427129,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:41:20.819Z,,,,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""direct""}",evt_364257054,desktop,direct,,,0.0,0.0,
+2026-01-18T09:41:21.144Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_277299095,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:41:21.197Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_863174407,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:41:34.873Z,,,,open_chatbot,"{""scene"": ""storeFront""}",evt_3593650820,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:41:40.204Z,,,,send_chat_message,"{""messageLength"": 7, ""scene"": ""storeFront""}",evt_2914508346,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:42:37.707Z,,,,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""direct""}",evt_1349209912,desktop,direct,,,0.0,0.0,
+2026-01-18T09:42:38.062Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_1158696355,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:42:38.107Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_2220270129,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:42:47.165Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 9}",evt_2249994330,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T09:42:53.841Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 7}",evt_2702845720,desktop,store,storeP1Left,,0.0,0.0,
+2026-01-18T09:42:57.705Z,,,,view_product,"{""productId"": ""item-l1-2"", ""title"": ""Product 2"", ""scene"": ""storeP1Left""}",evt_26024064,desktop,store,storeP1Left,item-l1-2,0.0,0.0,
+2026-01-18T09:44:04.085Z,,,,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""direct""}",evt_905925890,desktop,direct,,,0.0,0.0,
+2026-01-18T09:44:04.619Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_3018882653,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:44:04.704Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_3206548802,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:44:08.760Z,,,,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""http://localhost:5173/""}",evt_2818798735,desktop,http://localhost:5173/,,,0.0,0.0,
+2026-01-18T09:44:08.936Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_407725777,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:44:08.976Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_524602893,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:44:14.916Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 10}",evt_3397155184,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T09:44:24.249Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 9}",evt_2915449544,desktop,store,storeP1Left,,0.0,0.0,
+2026-01-18T09:44:44.009Z,,,,view_product,"{""productId"": ""item-l1-2"", ""title"": ""Product 2"", ""scene"": ""storeP1Left""}",evt_1662414757,desktop,store,storeP1Left,item-l1-2,0.0,0.0,
+2026-01-18T09:44:53.013Z,,,,view_product,"{""productId"": ""item-l1-1"", ""title"": ""Product 1"", ""scene"": ""storeP1Left""}",evt_592041492,desktop,store,storeP1Left,item-l1-1,0.0,0.0,
+2026-01-18T09:45:12.815Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_2563750536,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:45:12.900Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_1556497311,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:45:25.086Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_1433063438,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:46:24.972Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 60}",evt_3045323485,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T09:46:31.763Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Right"", ""timeInPreviousScene"": 7}",evt_3141485727,desktop,store,storeP1Right,,0.0,0.0,
+2026-01-18T09:46:39.515Z,,,,view_product,"{""productId"": ""item-r1-2"", ""title"": ""Product 2"", ""scene"": ""storeP1Right""}",evt_2926624634,desktop,store,storeP1Right,item-r1-2,0.0,0.0,
+2026-01-18T09:46:41.647Z,,,,view_product,"{""productId"": ""item-r1-3"", ""title"": ""Product 3"", ""scene"": ""storeP1Right""}",evt_2714504222,desktop,store,storeP1Right,item-r1-3,0.0,0.0,
+2026-01-18T09:47:46.831Z,,,,view_product,"{""productId"": ""item-r1-2"", ""title"": ""Product 2"", ""scene"": ""storeP1Right""}",evt_410578645,desktop,store,storeP1Right,item-r1-2,0.0,0.0,
+2026-01-18T09:47:50.082Z,,,,view_product,"{""productId"": ""item-r1-3"", ""title"": ""Product 3"", ""scene"": ""storeP1Right""}",evt_2325385905,desktop,store,storeP1Right,item-r1-3,0.0,0.0,
+2026-01-18T09:47:52.338Z,,,,view_product,"{""productId"": ""item-r1-1"", ""title"": ""Product 1"", ""scene"": ""storeP1Right""}",evt_593337151,desktop,store,storeP1Right,item-r1-1,0.0,0.0,
+2026-01-18T09:49:00.918Z,,,,navigate,"{""fromScene"": ""storeP1Right"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 149}",evt_2555836939,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T09:49:03.618Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 3}",evt_1184995571,desktop,store,storeP1Left,,0.0,0.0,
+2026-01-18T09:49:16.924Z,,,,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""direct""}",evt_1183572983,desktop,direct,,,0.0,0.0,
+2026-01-18T09:49:17.174Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_1319688790,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:49:17.213Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_399613901,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:49:22.370Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 5}",evt_3790101751,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T09:49:26.059Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 4}",evt_3129663016,desktop,store,storeP1Left,,0.0,0.0,
+2026-01-18T09:49:32.281Z,,,,view_product,"{""productId"": ""item-l1-4"", ""title"": ""Product 4"", ""scene"": ""storeP1Left""}",evt_3982771802,desktop,store,storeP1Left,item-l1-4,0.0,0.0,
+2026-01-18T09:50:45.055Z,,,,view_product,"{""productId"": ""item-l1-2"", ""title"": ""Product 2"", ""scene"": ""storeP1Left""}",evt_2954496981,desktop,store,storeP1Left,item-l1-2,0.0,0.0,
+2026-01-18T09:50:48.350Z,,,,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""direct""}",evt_1665549216,desktop,direct,,,0.0,0.0,
+2026-01-18T09:50:48.571Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_1555233107,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:50:48.615Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_786886411,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:50:52.139Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 4}",evt_468476930,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T09:50:55.440Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 3}",evt_3854174532,desktop,store,storeP1Left,,0.0,0.0,
+2026-01-18T09:51:02.378Z,,,,view_product,"{""productId"": ""item-l1-4"", ""title"": ""Product 4"", ""scene"": ""storeP1Left""}",evt_3937668848,desktop,store,storeP1Left,item-l1-4,0.0,0.0,
+2026-01-18T09:51:13.727Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_2309922706,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:51:42.205Z,,,,open_cart,"{""scene"": ""storeFront""}",evt_379987278,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:51:43.724Z,,,,start_checkout,"{""itemCount"": 1, ""items"": [{""id"": ""item-r1-3"", ""title"": ""Product 3"", ""qty"": 1, ""price"": 49.99}], ""total"": 49.99}",evt_4038845430,desktop,store,,,49.99,49.99,
+2026-01-18T09:51:57.812Z,,,,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""direct""}",evt_3240272861,desktop,direct,,,0.0,0.0,
+2026-01-18T09:51:58.028Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_225013556,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:51:58.065Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_3217996197,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:51:58.379Z,,,,complete_checkout,"{""orderNumber"": ""A1J2VOVE"", ""total"": 56.4887, ""sessionDurationAtCheckout"": 1}",evt_799600,desktop,store,,,56.4887,56.4887,
+2026-01-18T09:51:58.463Z,,,,complete_checkout,"{""orderNumber"": ""A1J2VOVE"", ""total"": 56.4887, ""sessionDurationAtCheckout"": 1}",evt_1727433076,desktop,store,,,56.4887,56.4887,
+2026-01-18T09:53:02.147Z,,,,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""http://localhost:5173/admin.html""}",evt_3952430187,desktop,http://localhost:5173/admin.html,,,0.0,0.0,
+2026-01-18T09:53:02.235Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_3461977986,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:53:02.273Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_2668271832,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:53:05.041Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 3}",evt_410434608,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T09:53:11.357Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 6}",evt_1623037901,desktop,store,storeP1Left,,0.0,0.0,
+2026-01-18T09:53:18.559Z,,,,view_product,"{""productId"": ""item-l1-4"", ""title"": ""Product 4"", ""scene"": ""storeP1Left""}",evt_4233802839,desktop,store,storeP1Left,item-l1-4,0.0,0.0,
+2026-01-18T09:53:23.931Z,,,,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""http://localhost:5173/admin.html""}",evt_569841419,desktop,http://localhost:5173/admin.html,,,0.0,0.0,
+2026-01-18T09:53:24.715Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_3150266858,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:53:32.675Z,,,,session_start,"{""userAgent"": ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"", ""screenWidth"": 1646, ""screenHeight"": 1029, ""language"": ""en-US"", ""referrer"": ""http://localhost:5173/admin.html""}",evt_2010821268,desktop,http://localhost:5173/admin.html,,,0.0,0.0,
+2026-01-18T09:53:32.723Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_2683809948,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:54:01.821Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_650102706,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:54:28.165Z,,,,open_chatbot,"{""scene"": ""storeFront""}",evt_2286068993,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:54:31.764Z,,,,send_chat_message,"{""messageLength"": 6, ""scene"": ""storeFront""}",evt_894079456,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:56:23.882Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 142}",evt_4104423683,desktop,store,storeP1Left,,0.0,0.0,
+2026-01-18T09:56:53.111Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_1761054795,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:56:56.410Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 3}",evt_385859723,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T09:56:58.828Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Right"", ""timeInPreviousScene"": 2}",evt_2898012690,desktop,store,storeP1Right,,0.0,0.0,
+2026-01-18T09:57:04.264Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_1513936441,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T09:57:06.947Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 3}",evt_3898374046,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T09:57:09.349Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 2}",evt_3895724193,desktop,store,storeP1Left,,0.0,0.0,
+2026-01-18T09:59:08.372Z,,,,view_product,"{""productId"": ""item-l1-2"", ""title"": ""Product 2"", ""scene"": ""storeP1Left""}",evt_169371396,desktop,store,storeP1Left,item-l1-2,0.0,0.0,
+2026-01-18T09:59:11.172Z,,,,view_product,"{""productId"": ""item-l1-4"", ""title"": ""Product 4"", ""scene"": ""storeP1Left""}",evt_560592371,desktop,store,storeP1Left,item-l1-4,0.0,0.0,
+2026-01-18T09:59:12.512Z,,,,view_product,"{""productId"": ""item-l1-3"", ""title"": ""Product 3"", ""scene"": ""storeP1Left""}",evt_739404984,desktop,store,storeP1Left,item-l1-3,0.0,0.0,
+2026-01-18T09:59:13.430Z,,,,view_product,"{""productId"": ""item-l1-1"", ""title"": ""Product 1"", ""scene"": ""storeP1Left""}",evt_1849716372,desktop,store,storeP1Left,item-l1-1,0.0,0.0,
+2026-01-18T09:59:16.178Z,,,,navigate,"{""fromScene"": ""storeP1Left"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 127}",evt_3330485697,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:02:09.428Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_2230587636,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:02:12.219Z,,,,open_chatbot,"{""scene"": ""storeFront""}",evt_1987197767,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:02:17.516Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 8}",evt_1022398082,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:02:17.519Z,,,,send_chat_message,"{""messageLength"": 15, ""scene"": ""storeP1""}",evt_3144192589,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:02:22.184Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP2"", ""timeInPreviousScene"": 5}",evt_4015049718,desktop,store,storeP2,,0.0,0.0,
+2026-01-18T10:02:25.238Z,,,,navigate,"{""fromScene"": ""storeP2"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 3}",evt_1073804365,desktop,store,storeP1Left,,0.0,0.0,
+2026-01-18T10:02:29.013Z,,,,view_product,"{""productId"": ""item-l1-2"", ""title"": ""Product 2"", ""scene"": ""storeP1Left""}",evt_2109468952,desktop,store,storeP1Left,item-l1-2,0.0,0.0,
+2026-01-18T10:02:30.836Z,,,,view_product,"{""productId"": ""item-l1-4"", ""title"": ""Product 4"", ""scene"": ""storeP1Left""}",evt_1199874976,desktop,store,storeP1Left,item-l1-4,0.0,0.0,
+2026-01-18T10:02:32.317Z,,,,view_product,"{""productId"": ""item-l1-3"", ""title"": ""Product 3"", ""scene"": ""storeP1Left""}",evt_3352453253,desktop,store,storeP1Left,item-l1-3,0.0,0.0,
+2026-01-18T10:02:33.672Z,,,,view_product,"{""productId"": ""item-l1-1"", ""title"": ""Product 1"", ""scene"": ""storeP1Left""}",evt_1118489573,desktop,store,storeP1Left,item-l1-1,0.0,0.0,
+2026-01-18T10:06:18.953Z,,,,navigate,"{""fromScene"": ""storeP1Left"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 234}",evt_2699202170,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:06:20.696Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 2}",evt_1364659197,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:06:22.164Z,,,,open_chatbot,"{""scene"": ""storeFront""}",evt_3089283056,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:06:27.713Z,,,,send_chat_message,"{""messageLength"": 15, ""scene"": ""storeFront""}",evt_2274032093,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:06:35.152Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_1464636707,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:06:49.065Z,,,,open_chatbot,"{""scene"": ""storeFront""}",evt_278012973,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:06:53.315Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 18}",evt_8697236,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:06:53.319Z,,,,send_chat_message,"{""messageLength"": 16, ""scene"": ""storeP1""}",evt_2888956568,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:06:55.868Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 3}",evt_2973612352,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:06:57.871Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP2Left"", ""timeInPreviousScene"": 2}",evt_754305333,desktop,store,storeP2Left,,0.0,0.0,
+2026-01-18T10:07:57.495Z,,,,open_cart,"{""scene"": ""storeP2Left""}",evt_531270336,desktop,store,storeP2Left,,0.0,0.0,
+2026-01-18T10:08:29.425Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_871101710,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:13:00.065Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_1720156039,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:13:05.446Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_2441215694,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:13:07.892Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 2}",evt_4197168682,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:13:09.963Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 2}",evt_1792722499,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:14:03.140Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_1111304110,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:14:10.684Z,,,,open_chatbot,"{""scene"": ""storeFront""}",evt_2457819757,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:14:50.273Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 47}",evt_2907650259,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:14:54.052Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 4}",evt_2252887905,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:14:55.565Z,,,,open_chatbot,"{""scene"": ""storeFront""}",evt_936205416,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:14:57.840Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 4}",evt_4137420181,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:14:57.846Z,,,,send_chat_message,"{""messageLength"": 6, ""scene"": ""storeP1""}",evt_2697372179,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:15:01.118Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP2Left"", ""timeInPreviousScene"": 3}",evt_3600603653,desktop,store,storeP2Left,,0.0,0.0,
+2026-01-18T10:16:02.085Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_1799796425,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:16:07.749Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_66300331,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:16:08.725Z,,,,open_chatbot,"{""scene"": ""storeFront""}",evt_1520249024,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:18:10.135Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 122}",evt_4241641312,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:18:13.103Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Right"", ""timeInPreviousScene"": 3}",evt_777659409,desktop,store,storeP1Right,,0.0,0.0,
+2026-01-18T10:19:59.338Z,,,,navigate,"{""fromScene"": ""storeP1Right"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 106}",evt_659462206,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:20:00.616Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 1}",evt_3207914203,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:20:09.460Z,,,,open_chatbot,"{""scene"": ""storeFront""}",evt_1629997723,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:20:12.801Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 12}",evt_4208444327,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:20:13.294Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP2"", ""timeInPreviousScene"": 0}",evt_747650988,desktop,store,storeP2,,0.0,0.0,
+2026-01-18T10:21:34.406Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_2851933359,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:24:18.590Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_3791676382,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:25:59.812Z,,,,open_chatbot,"{""scene"": ""storeFront""}",evt_69692364,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:26:44.210Z,,,,send_chat_message,"{""messageLength"": 11, ""scene"": ""storeFront""}",evt_2059980165,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:27:43.729Z,,,,send_chat_message,"{""messageLength"": 6, ""scene"": ""storeFront""}",evt_2498501724,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:30:18.748Z,,,,enter_scene,"{""sceneId"": ""storeFront""}",evt_975603772,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:30:19.544Z,,,,open_chatbot,"{""scene"": ""storeFront""}",evt_4157004830,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:30:24.635Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 6}",evt_1951489399,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:30:24.640Z,,,,send_chat_message,"{""messageLength"": 14, ""scene"": ""storeP1""}",evt_208256951,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:30:29.453Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP2Left"", ""timeInPreviousScene"": 5}",evt_806444310,desktop,store,storeP2Left,,0.0,0.0,
+2026-01-18T10:34:13.951Z,,,,navigate,"{""fromScene"": ""storeP2Left"", ""toScene"": ""storeP2"", ""timeInPreviousScene"": 224}",evt_1037209534,desktop,store,storeP2,,0.0,0.0,
+2026-01-18T10:34:15.976Z,,,,navigate,"{""fromScene"": ""storeP2"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 2}",evt_2806918666,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:34:19.814Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP2"", ""timeInPreviousScene"": 4}",evt_1586206500,desktop,store,storeP2,,0.0,0.0,
+2026-01-18T10:36:52.352Z,,,,navigate,"{""fromScene"": ""storeP2"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 0}",evt_1755833129,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:36:52.845Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 0}",evt_4045773016,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:36:56.212Z,,,,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 3}",evt_1283681926,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:36:58.155Z,,,,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeFront"", ""timeInPreviousScene"": 0}",evt_745840131,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:43:28.193Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3004,enter_scene,"{""sceneId"": ""storeFront""}",evt_121278338,desktop,store,storeFront,,0.0,0.0,
+2026-01-18T10:43:33.088Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3009,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 5}",evt_2432737388,desktop,store,storeP1,,0.0,0.0,
+2026-01-18T10:43:41.198Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3017,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Left"", ""timeInPreviousScene"": 8}",evt_2685481659,desktop,store,storeP1Left,,0.0,0.0,
+2026-01-18T10:43:45.483Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3022,view_product,"{""productId"": ""item-l1-2"", ""title"": ""Product 2"", ""scene"": ""storeP1Left""}",evt_3999806307,desktop,store,storeP1Left,item-l1-2,0.0,0.0,
+2026-01-18T10:43:48.778Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3025,view_product,"{""productId"": ""item-l1-4"", ""title"": ""Product 4"", ""scene"": ""storeP1Left""}",evt_2833977765,desktop,store,storeP1Left,item-l1-4,0.0,0.0,
+2026-01-18T10:43:49.915Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3026,view_product,"{""productId"": ""item-l1-3"", ""title"": ""Product 3"", ""scene"": ""storeP1Left""}",evt_843823052,desktop,store,storeP1Left,item-l1-3,0.0,0.0,
+2026-01-18T10:43:50.867Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3027,view_product,"{""productId"": ""item-l1-1"", ""title"": ""Product 1"", ""scene"": ""storeP1Left""}",evt_1022820050,desktop,store,storeP1Left,item-l1-1,0.0,0.0,
+2026-01-18T10:43:51.429Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3028,view_product,"{""productId"": ""item-l1-1"", ""title"": ""Product 1"", ""scene"": ""storeP1Left""}",evt_620107677,desktop,store,storeP1Left,item-l1-1,0.0,0.0,
+2026-01-18T10:43:51.800Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3028,view_product,"{""productId"": ""item-l1-1"", ""title"": ""Product 1"", ""scene"": ""storeP1Left""}",evt_3160852226,desktop,store,storeP1Left,item-l1-1,0.0,0.0,
+2026-01-18T10:43:52.476Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3029,view_product,"{""productId"": ""item-l1-1"", ""title"": ""Product 1"", ""scene"": ""storeP1Left""}",evt_590461719,desktop,store,storeP1Left,item-l1-1,0.0,0.0,
+2026-01-18T10:43:56.913Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3033,open_cart,"{""scene"": ""storeP1Left""}",evt_858827051,desktop,store,storeP1Left,,0.0,0.0,
+2026-01-18T10:43:58.964Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3035,open_cart,"{""scene"": ""storeP1Left""}",evt_1127499801,desktop,store,storeP1Left,,0.0,0.0,
+2026-01-18T10:45:31.324Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3127,enter_scene,"{""sceneId"": ""storeFront""}",evt_1768733131324_1,desktop,/,storeFront,,0.0,0.0,
+2026-01-18T10:45:33.902Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3130,navigate,"{""fromScene"": ""storeFront"", ""toScene"": ""storeP1"", ""timeInPreviousScene"": 3}",evt_1768733133902_2,desktop,/,storeP1,,0.0,0.0,
+2026-01-18T10:45:38.741Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3135,navigate,"{""fromScene"": ""storeP1"", ""toScene"": ""storeP1Right"", ""timeInPreviousScene"": 5}",evt_1768733138741_3,desktop,/,storeP1Right,,0.0,0.0,
+2026-01-18T10:45:42.750Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3139,view_product,"{""productId"": ""hotspot-1768733095769"", ""title"": ""Sweater"", ""price"": ""$10,000"", ""scene"": ""storeP1Right""}",evt_1768733142750_4,desktop,/,storeP1Right,hotspot-1768733095769,0.0,0.0,
+2026-01-18T10:46:24.548Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3181,view_product,"{""productId"": ""hotspot-1768733095769"", ""title"": ""Sweater"", ""price"": ""$10,000"", ""scene"": ""storeP1Right""}",evt_1768733184548_5,desktop,/,storeP1Right,hotspot-1768733095769,0.0,0.0,
+2026-01-18T10:46:25.531Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3182,add_to_cart,"{""productId"": ""hotspot-1768733095769"", ""title"": ""Sweater"", ""price"": ""$10,000"", ""scene"": ""storeP1Right""}",evt_1768733185531_6,desktop,/,storeP1Right,hotspot-1768733095769,0.0,27.34,
+2026-01-18T10:48:11.076Z,session_1768729444085_ch2o1qm6u,user_1768729194370_9265m6jj3,3287,view_product,"{""productId"": ""hotspot-1768733095769"", ""title"": ""Sweater"", ""price"": ""$10,000"", ""scene"": ""storeP1Right""}",evt_1768733291076_7,desktop,/,storeP1Right,hotspot-1768733095769,0.0,0.0,

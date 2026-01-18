@@ -1,5 +1,8 @@
-import { useState, useRef } from 'react'
-import { X, Save, Edit2, Image as ImageIcon, Plus, Trash2, Zap, RefreshCw } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { X, Save, Edit2, Image as ImageIcon, Plus, Trash2, Zap, RefreshCw, Crosshair } from 'lucide-react'
+import * as THREE from 'three'
+import { SplatMesh } from '@sparkjsdev/spark'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { generateImage } from '../utils/geminiImageGen'
 import { getSceneHotspotsAsync } from '../config/hotspots.js'
 import './HotspotEditor.css'
@@ -12,9 +15,21 @@ export function HotspotEditor({ scene, onSave, onClose }) {
     const [hotspots, setHotspots] = useState(scene.hotspots || [])
     const [editingHotspot, setEditingHotspot] = useState(null)
     const [editingMetadata, setEditingMetadata] = useState(null)
+    const [editorMode, setEditorMode] = useState(scene.ply ? '3d' : '2d')
+    const [placementMode, setPlacementMode] = useState(null) // 'add' | 'move'
+    const [placementTargetId, setPlacementTargetId] = useState(null)
+    const [placementDepth, setPlacementDepth] = useState(6)
     const imageRef = useRef(null)
+    const hasPLY = Boolean(scene.ply)
+
+    useEffect(() => {
+        setEditorMode(scene.ply ? '3d' : '2d')
+        setPlacementMode(null)
+        setPlacementTargetId(null)
+    }, [scene.id, scene.ply])
 
     const handleDoubleClick = (e) => {
+        if (editorMode !== '2d') return
         if (!imageRef.current) return
 
         const rect = imageRef.current.getBoundingClientRect()
@@ -32,6 +47,30 @@ export function HotspotEditor({ scene, onSave, onClose }) {
 
         setHotspots([...hotspots, newHotspot])
         setEditingHotspot(newHotspot.id)
+    }
+
+    const handlePlace3DHotspot = (position) => {
+        if (!position) return
+        const rounded = position.map((value) => Math.round(value * 100000) / 100000)
+
+        if (placementMode === 'move' && placementTargetId) {
+            setHotspots(hotspots.map(h =>
+                h.id === placementTargetId ? { ...h, position: rounded } : h
+            ))
+        } else {
+            const newHotspot = {
+                id: `hotspot-${Date.now()}`,
+                position: rounded,
+                label: '',
+                title: '',
+                images: []
+            }
+            setHotspots([...hotspots, newHotspot])
+            setEditingHotspot(newHotspot.id)
+        }
+
+        setPlacementMode(null)
+        setPlacementTargetId(null)
     }
 
     const updateHotspotLabel = (id, label) => {
@@ -110,6 +149,16 @@ export function HotspotEditor({ scene, onSave, onClose }) {
         }
     }
 
+    const formatCoords = (hotspot) => {
+        if (hotspot.position && hotspot.position.length === 3) {
+            return `(${hotspot.position.map(v => v.toFixed(5)).join(', ')})`
+        }
+        if (hotspot.x !== undefined && hotspot.y !== undefined) {
+            return `(${hotspot.x}%, ${hotspot.y}%)`
+        }
+        return '(unplaced)'
+    }
+
     const handleSave = async () => {
         // Debug: print full hotspots array being saved
         console.log('[HotspotEditor] Saving hotspots:', JSON.stringify(hotspots, null, 2));
@@ -126,9 +175,29 @@ export function HotspotEditor({ scene, onSave, onClose }) {
                 <div className="editor-header">
                     <div>
                         <h3>Edit Hotspots: {scene.name}</h3>
-                        <p className="editor-instructions">Double-click on the image to add a hotspot</p>
+                        <p className="editor-instructions">
+                            {editorMode === '3d'
+                                ? 'Click "Place Hotspot" then click in the 3D view to drop a marker'
+                                : 'Double-click on the image to add a hotspot'}
+                        </p>
                     </div>
                     <div className="editor-actions">
+                        {hasPLY && (
+                            <div className="editor-mode-toggle">
+                                <button
+                                    className={`editor-btn ${editorMode === '2d' ? 'active' : ''}`}
+                                    onClick={() => setEditorMode('2d')}
+                                >
+                                    2D
+                                </button>
+                                <button
+                                    className={`editor-btn ${editorMode === '3d' ? 'active' : ''}`}
+                                    onClick={() => setEditorMode('3d')}
+                                >
+                                    3D
+                                </button>
+                            </div>
+                        )}
                         <button className="editor-btn save-btn" onClick={handleSave}>
                             <Save size={16} strokeWidth={2} /> Save
                         </button>
@@ -139,59 +208,102 @@ export function HotspotEditor({ scene, onSave, onClose }) {
                 </div>
 
                 <div className="editor-content">
-                    <div className="editor-image-container">
-                        <img
-                            ref={imageRef}
-                            src={scene.image}
-                            alt={scene.name}
-                            className="editor-image"
-                            onDoubleClick={handleDoubleClick}
-                        />
+                    {editorMode === '2d' ? (
+                        <div className="editor-image-container">
+                            <img
+                                ref={imageRef}
+                                src={scene.image}
+                                alt={scene.name}
+                                className="editor-image"
+                                onDoubleClick={handleDoubleClick}
+                            />
 
-                        {hotspots.map((hotspot) => (
-                            <div
-                                key={hotspot.id}
-                                className="editor-hotspot"
-                                style={{ left: `${hotspot.x}%`, top: `${hotspot.y}%` }}
-                            >
-                                <div className="editor-hotspot-marker" />
-                                <div className="editor-hotspot-label-container">
-                                    {editingHotspot === hotspot.id ? (
-                                        <input
-                                            type="text"
-                                            className="editor-hotspot-input"
-                                            value={hotspot.label}
-                                            onChange={(e) => updateHotspotLabel(hotspot.id, e.target.value)}
-                                            onBlur={() => setEditingHotspot(null)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') {
-                                                    setEditingHotspot(null)
-                                                }
-                                            }}
-                                            autoFocus
-                                            placeholder="Enter label..."
-                                        />
-                                    ) : (
-                                        <div
-                                            className="editor-hotspot-label"
-                                            onDoubleClick={(e) => {
-                                                e.stopPropagation()
-                                                setEditingHotspot(hotspot.id)
-                                            }}
+                            {hotspots.filter(h => h.x !== undefined && h.y !== undefined).map((hotspot) => (
+                                <div
+                                    key={hotspot.id}
+                                    className="editor-hotspot"
+                                    style={{ left: `${hotspot.x}%`, top: `${hotspot.y}%` }}
+                                >
+                                    <div className="editor-hotspot-marker" />
+                                    <div className="editor-hotspot-label-container">
+                                        {editingHotspot === hotspot.id ? (
+                                            <input
+                                                type="text"
+                                                className="editor-hotspot-input"
+                                                value={hotspot.label}
+                                                onChange={(e) => updateHotspotLabel(hotspot.id, e.target.value)}
+                                                onBlur={() => setEditingHotspot(null)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        setEditingHotspot(null)
+                                                    }
+                                                }}
+                                                autoFocus
+                                                placeholder="Enter label..."
+                                            />
+                                        ) : (
+                                            <div
+                                                className="editor-hotspot-label"
+                                                onDoubleClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setEditingHotspot(hotspot.id)
+                                                }}
+                                            >
+                                                {hotspot.label || 'Unnamed'}
+                                            </div>
+                                        )}
+                                        <button
+                                            className="editor-hotspot-delete"
+                                            onClick={() => deleteHotspot(hotspot.id)}
                                         >
-                                            {hotspot.label || 'Unnamed'}
-                                        </div>
-                                    )}
-                                    <button
-                                        className="editor-hotspot-delete"
-                                        onClick={() => deleteHotspot(hotspot.id)}
-                                    >
-                                        <X size={12} strokeWidth={2} />
-                                    </button>
+                                            <X size={12} strokeWidth={2} />
+                                        </button>
+                                    </div>
                                 </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="editor-3d-container">
+                            <div className="editor-3d-toolbar">
+                                <button
+                                    className={`editor-btn ${placementMode === 'add' ? 'active' : ''}`}
+                                    onClick={() => {
+                                        setEditorMode('3d')
+                                        setPlacementMode(placementMode === 'add' ? null : 'add')
+                                        setPlacementTargetId(null)
+                                    }}
+                                >
+                                    <Plus size={14} strokeWidth={2} />
+                                    Place Hotspot
+                                </button>
+                                <div className="editor-depth-control">
+                                    <label>Depth</label>
+                                    <input
+                                        type="range"
+                                        min="1"
+                                        max="30"
+                                        step="0.1"
+                                        value={placementDepth}
+                                        onChange={(e) => setPlacementDepth(parseFloat(e.target.value))}
+                                    />
+                                    <span>{placementDepth.toFixed(1)}</span>
+                                </div>
+                                {placementMode && (
+                                    <div className="editor-placement-hint">
+                                        {placementMode === 'add' ? 'Click in the 3D view to place a new hotspot' : 'Click in the 3D view to reposition'}
+                                    </div>
+                                )}
                             </div>
-                        ))}
-                    </div>
+                            <Hotspot3DView
+                                plyPath={scene.ply}
+                                hotspots={hotspots}
+                                placementMode={placementMode}
+                                placementTargetId={placementTargetId}
+                                placementDepth={placementDepth}
+                                onPlace={handlePlace3DHotspot}
+                            />
+                        </div>
+                    )}
 
                     <div className="editor-sidebar">
                         <h4>Hotspots ({hotspots.length})</h4>
@@ -203,13 +315,26 @@ export function HotspotEditor({ scene, onSave, onClose }) {
                                             {hotspot.label || 'Unnamed'}
                                         </div>
                                         <div className="editor-hotspot-item-coords">
-                                            ({hotspot.x}%, {hotspot.y}%)
+                                            {formatCoords(hotspot)}
                                         </div>
                                         <div className="editor-hotspot-item-id">
                                             {hotspot.id}
                                         </div>
                                     </div>
                                     <div className="editor-hotspot-item-actions">
+                                        {hasPLY && (
+                                            <button
+                                                className="editor-hotspot-item-edit"
+                                                onClick={() => {
+                                                    setEditorMode('3d')
+                                                    setPlacementMode('move')
+                                                    setPlacementTargetId(hotspot.id)
+                                                }}
+                                                title="Reposition in 3D"
+                                            >
+                                                <Crosshair size={14} strokeWidth={2} />
+                                            </button>
+                                        )}
                                         <button
                                             className="editor-hotspot-item-edit"
                                             onClick={() => setEditingMetadata(hotspot)}
@@ -251,6 +376,217 @@ export function HotspotEditor({ scene, onSave, onClose }) {
                 )}
             </div>
         </div>
+    )
+}
+
+function Hotspot3DView({ plyPath, hotspots, placementMode, placementTargetId, placementDepth, onPlace }) {
+    const containerRef = useRef(null)
+    const rendererRef = useRef(null)
+    const sceneRef = useRef(null)
+    const cameraRef = useRef(null)
+    const controlsRef = useRef(null)
+    const splatRef = useRef(null)
+    const hotspotMeshesRef = useRef([])
+    const previewMeshRef = useRef(null)
+    const previewGeometryRef = useRef(null)
+    const previewMaterialRef = useRef(null)
+    const placementModeRef = useRef(placementMode)
+    const placementDepthRef = useRef(placementDepth)
+    const placementTargetRef = useRef(placementTargetId)
+    const onPlaceRef = useRef(onPlace)
+    const animationIdRef = useRef(null)
+
+    useEffect(() => {
+        placementModeRef.current = placementMode
+    }, [placementMode])
+
+    useEffect(() => {
+        placementDepthRef.current = placementDepth
+    }, [placementDepth])
+
+    useEffect(() => {
+        placementTargetRef.current = placementTargetId
+    }, [placementTargetId])
+
+    useEffect(() => {
+        onPlaceRef.current = onPlace
+    }, [onPlace])
+
+    useEffect(() => {
+        if (!containerRef.current || !plyPath) return
+
+        const renderer = new THREE.WebGLRenderer({
+            antialias: false,
+            powerPreference: 'high-performance',
+            stencil: false,
+            depth: true
+        })
+        renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight)
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
+        containerRef.current.appendChild(renderer.domElement)
+        rendererRef.current = renderer
+
+        const scene = new THREE.Scene()
+        scene.background = new THREE.Color(0x000000)
+        sceneRef.current = scene
+
+        const camera = new THREE.PerspectiveCamera(
+            40,
+            containerRef.current.clientWidth / containerRef.current.clientHeight,
+            0.1,
+            1000
+        )
+        camera.position.set(0, 0, 0)
+        camera.up.set(0, 1, 0)
+        cameraRef.current = camera
+
+        const controls = new OrbitControls(camera, renderer.domElement)
+        controls.target.set(0, 0, -2)
+        controls.enableDamping = true
+        controls.dampingFactor = 0.1
+        controls.rotateSpeed = 0.3
+        controls.minAzimuthAngle = -Math.PI / 9
+        controls.maxAzimuthAngle = Math.PI / 9
+        controls.minPolarAngle = (Math.PI / 2) - (Math.PI / 9)
+        controls.maxPolarAngle = (Math.PI / 2) + (Math.PI / 9)
+        controlsRef.current = controls
+
+        const splat = new SplatMesh({
+            url: plyPath,
+            maxStdDev: Math.sqrt(5)
+        })
+        splat.quaternion.set(1, 0, 0, 0)
+        splat.scale.set(2.5, 2.5, 2.5)
+        scene.add(splat)
+        splatRef.current = splat
+
+        const previewGeometry = new THREE.SphereGeometry(0.07, 12, 12)
+        const previewMaterial = new THREE.MeshBasicMaterial({
+            color: 0xff6b35,
+            transparent: true,
+            opacity: 0.85
+        })
+        const previewMesh = new THREE.Mesh(previewGeometry, previewMaterial)
+        previewMesh.visible = false
+        scene.add(previewMesh)
+        previewMeshRef.current = previewMesh
+        previewGeometryRef.current = previewGeometry
+        previewMaterialRef.current = previewMaterial
+
+        const raycaster = new THREE.Raycaster()
+        const mouse = new THREE.Vector2()
+
+        const getWorldPoint = (event) => {
+            const rect = renderer.domElement.getBoundingClientRect()
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
+            raycaster.setFromCamera(mouse, camera)
+            const depth = placementDepthRef.current
+            return raycaster.ray.origin.clone().add(raycaster.ray.direction.clone().multiplyScalar(depth))
+        }
+
+        const handleMouseMove = (event) => {
+            if (!placementModeRef.current || !previewMeshRef.current) return
+            const position = getWorldPoint(event)
+            previewMeshRef.current.visible = true
+            previewMeshRef.current.position.copy(position)
+        }
+
+        const handleClick = (event) => {
+            if (!placementModeRef.current) return
+            const position = getWorldPoint(event)
+            if (onPlaceRef.current) {
+                onPlaceRef.current(position.toArray())
+            }
+        }
+
+        renderer.domElement.addEventListener('mousemove', handleMouseMove)
+        renderer.domElement.addEventListener('click', handleClick)
+
+        const handleResize = () => {
+            if (!containerRef.current) return
+            const width = containerRef.current.clientWidth
+            const height = containerRef.current.clientHeight
+            camera.aspect = width / height
+            camera.updateProjectionMatrix()
+            renderer.setSize(width, height)
+        }
+        window.addEventListener('resize', handleResize)
+
+        const animate = () => {
+            animationIdRef.current = requestAnimationFrame(animate)
+            controls.update()
+            renderer.render(scene, camera)
+        }
+        animate()
+
+        return () => {
+            if (animationIdRef.current) {
+                cancelAnimationFrame(animationIdRef.current)
+            }
+            renderer.domElement.removeEventListener('mousemove', handleMouseMove)
+            renderer.domElement.removeEventListener('click', handleClick)
+            window.removeEventListener('resize', handleResize)
+            controls.dispose()
+            renderer.dispose()
+            if (previewGeometryRef.current) {
+                previewGeometryRef.current.dispose()
+            }
+            if (previewMaterialRef.current) {
+                previewMaterialRef.current.dispose()
+            }
+            if (splatRef.current) {
+                splatRef.current.dispose?.()
+                splatRef.current = null
+            }
+            if (containerRef.current) {
+                containerRef.current.innerHTML = ''
+            }
+        }
+    }, [plyPath])
+
+    useEffect(() => {
+        const scene = sceneRef.current
+        if (!scene) return
+
+        hotspotMeshesRef.current.forEach(mesh => {
+            scene.remove(mesh)
+            mesh.geometry.dispose()
+            if (Array.isArray(mesh.material)) {
+                mesh.material.forEach(material => material.dispose())
+            } else {
+                mesh.material.dispose()
+            }
+        })
+        hotspotMeshesRef.current = []
+
+        if (!hotspots || hotspots.length === 0) return
+
+        hotspots.forEach((hotspot) => {
+            if (!hotspot.position || hotspot.position.length !== 3) return
+            const isActive = hotspot.id === placementTargetRef.current
+            const material = new THREE.MeshBasicMaterial({
+                color: isActive ? 0xff6b35 : 0xffffff,
+                transparent: true,
+                opacity: isActive ? 0.95 : 0.8
+            })
+            const geometry = new THREE.SphereGeometry(0.06, 12, 12)
+            const mesh = new THREE.Mesh(geometry, material)
+            mesh.position.set(...hotspot.position)
+            scene.add(mesh)
+            hotspotMeshesRef.current.push(mesh)
+        })
+    }, [hotspots, placementTargetId])
+
+    useEffect(() => {
+        if (!previewMeshRef.current) return
+        if (!placementMode) {
+            previewMeshRef.current.visible = false
+        }
+    }, [placementMode])
+
+    return (
+        <div className="editor-3d-view" ref={containerRef} />
     )
 }
 
