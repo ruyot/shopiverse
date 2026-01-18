@@ -27,15 +27,15 @@ export async function sendChatMessage(message, onChunk, inventory = {}) {
   });
 
   // System prompt with inventory and JSON instruction
-  const systemPrompt = `You are Lobo, a friendly shopping assistant for Shopiverse. Keep responses under 2 sentences.
+  const systemPrompt = `You are Lobo. Be EXTREMELY brief - max 1 short sentence.
 
-Available Products:
+Products:
 ${inventoryText}
 
-IMPORTANT: If the user asks about products, end your response with a JSON block like this:
-PRODUCTS: ["item-id-1", "item-id-2"]
+CRITICAL: When user mentions ANY product, ALWAYS end with:
+PRODUCTS: ["item-id-1"]
 
-Only include product IDs that are relevant to the user's question.`;
+Return ONLY the SINGLE BEST matching product ID. Pick the most relevant one.`;
 
   // Build contents for API
   const contents = [
