@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BarChart3, Palette, Zap, Gamepad2, Camera, RefreshCw, Settings, X, ChevronDown, ChevronRight, Download, Upload } from 'lucide-react'
+import { BarChart3, Palette, Zap, Gamepad2, Camera, RefreshCw, Settings, X, ChevronDown, ChevronRight, Download, Upload, Plus } from 'lucide-react'
 import { getSettings, updateSettings } from '../config/settings'
 import { navigationConfig } from '../config/navigation'
 import { getSceneHotspots, saveSceneHotspots, exportHotspots, importHotspots } from '../config/hotspots'
@@ -286,37 +286,46 @@ function OverviewTab() {
 }
 
 function ScenesTab() {
-    const [settings, setSettings] = useState(() => getSettings())
+    const [sceneHotspots, setSceneHotspots] = useState({})
     const [expandedScenes, setExpandedScenes] = useState({})
     const [editingScene, setEditingScene] = useState(null)
-    const [sceneHotspots, setSceneHotspots] = useState({})
     const [roomToggleWarning, setRoomToggleWarning] = useState(null)
     const [backgroundChanger, setBackgroundChanger] = useState(null)
+    const [settings, setSettings] = useState(() => getSettings())
+    const [selectedNode, setSelectedNode] = useState(null)
+    const [isGraphFullscreen, setIsGraphFullscreen] = useState(false)
+    const [nodePositions, setNodePositions] = useState({
+        storeFront: { x: 400, y: 50 },
+        storeP1: { x: 400, y: 230 },
+        storeP1Left: { x: 200, y: 230 },
+        storeP1Right: { x: 600, y: 230 },
+        storeP2: { x: 400, y: 430 },
+        storeP2Left: { x: 150, y: 530 },
+        storeP2Right: { x: 650, y: 530 }
+    })
+    const [draggingNode, setDraggingNode] = useState(null)
+    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+    const [connectionEditMode, setConnectionEditMode] = useState(false)
+    const [connectingFrom, setConnectingFrom] = useState(null)
+    const [customScenes, setCustomScenes] = useState({}) // Store custom scenes created in admin
+    const [customConnections, setCustomConnections] = useState([]) // Store custom connections
 
-    const scenes = Object.values(navigationConfig)
+    const scenes = Object.values(navigationConfig).filter(scene => scene.id)
 
-    // Load hotspots from storage on mount
     useEffect(() => {
-        const hotspots = {}
-        scenes.forEach(scene => {
-            hotspots[scene.id] = getSceneHotspots(scene.id)
-        })
-        setSceneHotspots(hotspots)
-    }, [])
-
-    // Listen for hotspot changes
-    useEffect(() => {
-        const handleHotspotsChange = () => {
+        const loadHotspots = () => {
             const hotspots = {}
             scenes.forEach(scene => {
                 hotspots[scene.id] = getSceneHotspots(scene.id)
             })
             setSceneHotspots(hotspots)
         }
+        loadHotspots()
 
-        window.addEventListener('hotspotsChanged', handleHotspotsChange)
-        return () => window.removeEventListener('hotspotsChanged', handleHotspotsChange)
-    }, [scenes])
+        const handleHotspotsChanged = () => loadHotspots()
+        window.addEventListener('hotspotsChanged', handleHotspotsChanged)
+        return () => window.removeEventListener('hotspotsChanged', handleHotspotsChanged)
+    }, [scenes.length])
 
     const toggleScene = (sceneId) => {
         setExpandedScenes(prev => ({
@@ -393,6 +402,267 @@ function ScenesTab() {
         reader.readAsText(file)
     }
 
+    const handleMouseDown = (nodeId, e) => {
+        const svgRect = e.currentTarget.ownerSVGElement.getBoundingClientRect()
+        const pos = nodePositions[nodeId]
+        setDraggingNode(nodeId)
+        setDragOffset({
+            x: (e.clientX - svgRect.left) - pos.x,
+            y: (e.clientY - svgRect.top) - pos.y
+        })
+    }
+
+    const handleMouseMove = (e) => {
+        if (!draggingNode) return
+        const svg = e.currentTarget
+        const svgRect = svg.getBoundingClientRect()
+        const newX = e.clientX - svgRect.left - dragOffset.x
+        const newY = e.clientY - svgRect.top - dragOffset.y
+        
+        setNodePositions(prev => ({
+            ...prev,
+            [draggingNode]: { x: newX, y: newY }
+        }))
+    }
+
+    const handleMouseUp = () => {
+        setDraggingNode(null)
+    }
+
+    const handleAddNode = () => {
+        const newId = `customScene_${Date.now()}`
+        const sceneName = prompt('Enter scene name:') || 'New Scene'
+        
+        // Create new scene object
+        const newScene = {
+            id: newId,
+            name: sceneName,
+            image: `/scenes/${newId}.png`,
+            ply: `/scenes/${newId}.ply`,
+            connections: {}
+        }
+        
+        // Add to custom scenes state
+        setCustomScenes(prev => ({
+            ...prev,
+            [newId]: newScene
+        }))
+        
+        // Add to graph at center position
+        setNodePositions(prev => ({
+            ...prev,
+            [newId]: { x: 400, y: 300 }
+        }))
+        
+        // Initialize empty hotspots
+        setSceneHotspots(prev => ({
+            ...prev,
+            [newId]: []
+        }))
+        
+        console.log('✅ Created new scene:', newId)
+        
+        // TODO: Persist to files
+        // - Add to src/config/navigation.js navigationConfig object
+        // - Add to src/config/hotspots.js defaultHotspots object
+        // - Create/upload PLY file to /public/scenes/
+        // - Requires backend API or manual file update
+    }
+
+    const handleDeleteNode = (nodeId) => {
+        const confirmed = confirm(`Delete scene "${nodeId}"?\n\nThis will remove it from the graph.`)
+        if (!confirmed) return
+        
+        // Remove from custom scenes
+        setCustomScenes(prev => {
+            const newScenes = { ...prev }
+            delete newScenes[nodeId]
+            return newScenes
+        })
+        
+        // Remove from graph positions
+        setNodePositions(prev => {
+            const newPos = { ...prev }
+            delete newPos[nodeId]
+            return newPos
+        })
+        
+        // Remove from hotspots
+        setSceneHotspots(prev => {
+            const newHotspots = { ...prev }
+            delete newHotspots[nodeId]
+            return newHotspots
+        })
+        
+        // Remove any connections to/from this node
+        setCustomConnections(prev => 
+            prev.filter(conn => conn.from !== nodeId && conn.to !== nodeId)
+        )
+        
+        console.log('✅ Deleted scene:', nodeId)
+        
+        // TODO: Persist to files
+        // - Remove from src/config/navigation.js navigationConfig object
+        // - Remove from src/config/hotspots.js defaultHotspots object
+        // - Update all connections in navigationConfig that point to this scene
+        // - Delete PLY file from /public/scenes/
+        // - Requires backend API or manual file update
+    }
+
+    const handleStartConnection = (nodeId) => {
+        if (connectionEditMode) {
+            if (!connectingFrom) {
+                setConnectingFrom(nodeId)
+                console.log('Starting connection from:', nodeId)
+            } else if (connectingFrom !== nodeId) {
+                const direction = prompt('Enter direction (forward/back/left/right):')
+                
+                if (direction && ['forward', 'back', 'left', 'right'].includes(direction)) {
+                    // Create new connection
+                    const newConnection = {
+                        from: connectingFrom,
+                        to: nodeId,
+                        direction: direction
+                    }
+                    
+                    setCustomConnections(prev => [...prev, newConnection])
+                    
+                    // Ask for bidirectional
+                    const bidirectional = confirm('Create return path?')
+                    if (bidirectional) {
+                        const oppositeDir = {
+                            forward: 'back',
+                            back: 'forward',
+                            left: 'right',
+                            right: 'left'
+                        }[direction]
+                        
+                        const returnConnection = {
+                            from: nodeId,
+                            to: connectingFrom,
+                            direction: oppositeDir
+                        }
+                        
+                        setCustomConnections(prev => [...prev, returnConnection])
+                    }
+                    
+                    console.log('✅ Created connection:', connectingFrom, '→', nodeId, `(${direction})`)
+                    
+                    // TODO: Persist to files
+                    // - Update src/config/navigation.js navigationConfig[from].connections[direction] = to
+                    // - Requires backend API or manual file update
+                }
+                
+                setConnectingFrom(null)
+            }
+        }
+    }
+
+    // TODO: Implement delete connection functionality
+    // This will REMOVE A NAVIGATION PATH between rooms in the virtual world
+    // 
+    // Steps to implement:
+    // 1. Make arrow lines clickable (add onClick handler to <line> elements)
+    // 2. When clicked, identify which connection it represents
+    // 3. Confirm deletion with user
+    // 4. Remove from navigationConfig:
+    //    delete navigationConfig[fromNode].connections[direction]
+    //    Example: delete navigationConfig['storeP1'].connections.forward
+    // 5. Remove arrow line from graph visualization
+    // 6. Save updated navigationConfig to file
+    // 7. Users will no longer be able to navigate this path in the virtual store
+    const handleDeleteConnection = (fromNode, toNode) => {
+        console.log('TODO: Delete navigation path from', fromNode, 'to', toNode)
+        alert(`TODO: This will REMOVE the navigation path.\n\nFrom: ${fromNode}\nTo: ${toNode}\n\nImplementation needed:\n- Remove from navigationConfig.connections\n- Update arrow visualization\n- Save to navigation.js\n\nUsers won't be able to use this path anymore!`)
+        // Find which direction this connection is
+        // const scene = navigationConfig[fromNode]
+        // const direction = Object.keys(scene.connections).find(
+        //     dir => scene.connections[dir] === toNode
+        // )
+        // if (direction) {
+        //     const confirmed = confirm(`Delete navigation path?\n${fromNode} → ${toNode} (${direction})`)
+        //     if (confirmed) {
+        //         delete navigationConfig[fromNode].connections[direction]
+        //         // Would need to write to navigation.js file
+        //     }
+        // }
+    }
+
+    // TODO: Implement save layout functionality
+    // This will PERSIST the visual graph layout AND all virtual world changes
+    // 
+    // Steps to implement:
+    // 1. Save nodePositions to localStorage for graph visualization
+    // 2. Export updated navigationConfig to JSON file
+    // 3. Export updated hotspots data
+    // 4. Provide download link for backup files
+    // 5. Optionally: Send to backend API to update actual config files
+    // 6. Show success message with what was saved
+    // 
+    // What gets saved:
+    // - Graph node positions (visual only)
+    // - All scene definitions (affects virtual world)
+    // - All navigation connections (affects virtual world)
+    // - All hotspot data (affects virtual world)
+    const handleSaveLayout = () => {
+        console.log('TODO: Save layout and virtual world configuration')
+        alert('TODO: This will SAVE all changes to the virtual store.\n\nWhat gets saved:\n- Graph layout positions\n- Scene definitions\n- Navigation connections\n- Hotspot data\n\nImplementation needed:\n- Export navigationConfig\n- Export hotspots\n- Save to files or backend')
+        // const layoutData = {
+        //     nodePositions,
+        //     navigationConfig,
+        //     hotspots: getAllHotspots(),
+        //     timestamp: new Date().toISOString()
+        // }
+        // localStorage.setItem('scene_layout', JSON.stringify(nodePositions))
+        // 
+        // // Export as downloadable JSON
+        // const blob = new Blob([JSON.stringify(layoutData, null, 2)], { type: 'application/json' })
+        // const url = URL.createObjectURL(blob)
+        // const a = document.createElement('a')
+        // a.href = url
+        // a.download = `store_layout_${Date.now()}.json`
+        // a.click()
+    }
+
+    // TODO: Implement load layout functionality
+    // This will RESTORE a previously saved virtual world configuration
+    // 
+    // Steps to implement:
+    // 1. Prompt user to upload saved JSON file
+    // 2. Parse and validate the data
+    // 3. Restore nodePositions for graph visualization
+    // 4. Restore navigationConfig (updates virtual world navigation)
+    // 5. Restore hotspots data (updates virtual world products)
+    // 6. Validate all PLY files exist for loaded scenes
+    // 7. Show warning if any scenes are missing files
+    // 8. Refresh the graph and scene list
+    // 
+    // This allows restoring previous virtual store configurations
+    const handleLoadLayout = () => {
+        console.log('TODO: Load saved virtual world configuration')
+        alert('TODO: This will RESTORE a saved virtual store configuration.\n\nWhat gets restored:\n- Graph layout\n- Scene definitions\n- Navigation paths\n- Hotspot data\n\nImplementation needed:\n- File upload dialog\n- Parse and validate JSON\n- Update navigationConfig\n- Refresh visualization')
+        // const input = document.createElement('input')
+        // input.type = 'file'
+        // input.accept = '.json'
+        // input.onchange = (e) => {
+        //     const file = e.target.files[0]
+        //     const reader = new FileReader()
+        //     reader.onload = (event) => {
+        //         try {
+        //             const data = JSON.parse(event.target.result)
+        //             setNodePositions(data.nodePositions)
+        //             // Would need to update navigationConfig and hotspots
+        //             // Validate all PLY files exist
+        //             alert('Layout restored successfully!')
+        //         } catch (error) {
+        //             alert('Error loading layout: ' + error.message)
+        //         }
+        //     }
+        //     reader.readAsText(file)
+        // }
+        // input.click()
+    }
+
     return (
         <div className="admin-tab-content">
             <div className="scenes-header">
@@ -413,88 +683,299 @@ function ScenesTab() {
                 </div>
             </div>
             
-            <div className="scenes-list">
-                {scenes.map(scene => {
-                    const hotspots = sceneHotspots[scene.id] || []
-                    const hasHotspots = hotspots.length > 0
-                    const isExpanded = expandedScenes[scene.id]
+            {/* Store Layout Graph - Side by Side */}
+            <div className={`scenes-layout ${isGraphFullscreen ? 'fullscreen' : ''}`}>
+                <div className="store-graph-container">
+                    <div className="graph-header">
+                        <h3>Store Layout</h3>
+                        <div className="graph-toolbar">
+                            <button 
+                                className="graph-tool-btn"
+                                onClick={handleAddNode}
+                                title="Add New Scene (TODO)"
+                            >
+                                <Plus size={14} strokeWidth={2} />
+                                Add Scene
+                            </button>
+                            <button 
+                                className={`graph-tool-btn ${connectionEditMode ? 'active' : ''}`}
+                                onClick={() => {
+                                    setConnectionEditMode(!connectionEditMode)
+                                    setConnectingFrom(null)
+                                }}
+                                title="Connection Edit Mode (TODO)"
+                            >
+                                <Zap size={14} strokeWidth={2} />
+                                {connectionEditMode ? 'Exit Connect' : 'Connect Nodes'}
+                            </button>
+                            <button 
+                                className="graph-tool-btn"
+                                onClick={handleSaveLayout}
+                                title="Save Layout (TODO)"
+                            >
+                                <Download size={14} strokeWidth={2} />
+                            </button>
+                            <button 
+                                className="expand-graph-btn"
+                                onClick={() => setIsGraphFullscreen(!isGraphFullscreen)}
+                                title={isGraphFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+                            >
+                                {isGraphFullscreen ? <X size={16} strokeWidth={2} /> : <Camera size={16} strokeWidth={2} />}
+                            </button>
+                        </div>
+                    </div>
+                    <svg 
+                        className="store-graph" 
+                        viewBox="0 0 800 600"
+                        onMouseMove={handleMouseMove}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseUp}
+                    >
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#FF6B35" />
+                        </marker>
+                    </defs>
                     
-                    // Create scene object with hotspots for editor
-                    const sceneWithHotspots = { ...scene, hotspots }
+                    {/* Connection lines - dynamically positioned */}
+                    {/* storeFront -> storeP1 */}
+                    <line 
+                        x1={nodePositions.storeFront.x} 
+                        y1={nodePositions.storeFront.y + 30} 
+                        x2={nodePositions.storeP1.x} 
+                        y2={nodePositions.storeP1.y - 30} 
+                        stroke="#FF6B35" 
+                        strokeWidth="2" 
+                        markerEnd="url(#arrowhead)" 
+                    />
                     
-                    return (
-                        <div key={scene.id} className="scene-item-wrapper">
-                            <div className="scene-item">
-                                <div className="scene-info">
-                                    <div className="scene-name">{scene.name}</div>
-                                    <div className="scene-id">{scene.id}</div>
-                                    {hasHotspots && (
-                                        <div className="scene-hotspot-count">
-                                            {hotspots.length} hotspot{hotspots.length !== 1 ? 's' : ''}
-                                        </div>
-                                    )}
+                    {/* storeP1 -> storeP2 */}
+                    <line 
+                        x1={nodePositions.storeP1.x} 
+                        y1={nodePositions.storeP1.y + 30} 
+                        x2={nodePositions.storeP2.x} 
+                        y2={nodePositions.storeP2.y - 30} 
+                        stroke="#FF6B35" 
+                        strokeWidth="2" 
+                        markerEnd="url(#arrowhead)" 
+                    />
+                    
+                    {/* storeP2 -> storeP2Left */}
+                    <line 
+                        x1={nodePositions.storeP2.x - 40} 
+                        y1={nodePositions.storeP2.y + 20} 
+                        x2={nodePositions.storeP2Left.x + 40} 
+                        y2={nodePositions.storeP2Left.y - 20} 
+                        stroke="#FF6B35" 
+                        strokeWidth="2" 
+                        markerEnd="url(#arrowhead)" 
+                    />
+                    
+                    {/* storeP2 -> storeP2Right */}
+                    <line 
+                        x1={nodePositions.storeP2.x + 40} 
+                        y1={nodePositions.storeP2.y + 20} 
+                        x2={nodePositions.storeP2Right.x - 40} 
+                        y2={nodePositions.storeP2Right.y - 20} 
+                        stroke="#FF6B35" 
+                        strokeWidth="2" 
+                        markerEnd="url(#arrowhead)" 
+                    />
+                    
+                    {/* Custom connections created by user */}
+                    {customConnections.map((conn, idx) => {
+                        const fromPos = nodePositions[conn.from]
+                        const toPos = nodePositions[conn.to]
+                        if (!fromPos || !toPos) return null
+                        
+                        return (
+                            <line 
+                                key={idx}
+                                x1={fromPos.x} 
+                                y1={fromPos.y} 
+                                x2={toPos.x} 
+                                y2={toPos.y} 
+                                stroke="#10B981" 
+                                strokeWidth="2" 
+                                markerEnd="url(#arrowhead)" 
+                                strokeDasharray="5,5"
+                            />
+                        )
+                    })}
+                    
+                    {/* Scene nodes - rectangles (includes custom scenes) */}
+                    {Object.keys(nodePositions).map(nodeId => {
+                        const scene = navigationConfig[nodeId] || customScenes[nodeId]
+                        if (!scene) return null
+                        
+                        const hotspots = sceneHotspots[nodeId] || []
+                        const isSelected = selectedNode === nodeId
+                        const pos = nodePositions[nodeId]
+                        const node = { id: nodeId, name: scene.name }
+                        
+                        return (
+                            <g key={node.id}>
+                                <g
+                                    onClick={() => {
+                                        if (connectionEditMode) {
+                                            handleStartConnection(node.id)
+                                        } else {
+                                            setSelectedNode(node.id)
+                                        }
+                                    }} 
+                                    onMouseDown={(e) => !connectionEditMode && handleMouseDown(node.id, e)}
+                                    style={{ 
+                                        cursor: connectionEditMode ? 'crosshair' : (draggingNode === node.id ? 'grabbing' : 'grab')
+                                    }}
+                                >
+                                    <rect
+                                        x={pos.x - 60}
+                                        y={pos.y - 30}
+                                        width="120"
+                                        height="60"
+                                        rx="8"
+                                        fill={connectingFrom === node.id ? '#FFA500' : (isSelected ? '#FF6B35' : '#fff')}
+                                        stroke={connectingFrom === node.id ? '#FF8C00' : '#FF6B35'}
+                                        strokeWidth="3"
+                                        className="scene-node"
+                                    />
+                                    <text
+                                        x={pos.x}
+                                        y={pos.y - 5}
+                                        textAnchor="middle"
+                                        fill={isSelected || connectingFrom === node.id ? '#fff' : '#333'}
+                                        fontSize="12"
+                                        fontWeight="600"
+                                        pointerEvents="none"
+                                    >
+                                        {node.name}
+                                    </text>
+                                    <text
+                                        x={pos.x}
+                                        y={pos.y + 12}
+                                        textAnchor="middle"
+                                        fill={isSelected || connectingFrom === node.id ? '#fff' : '#666'}
+                                        fontSize="10"
+                                        pointerEvents="none"
+                                    >
+                                        {hotspots.length} hotspots
+                                    </text>
+                                </g>
+                                
+                                {/* Delete button (TODO: Implement) */}
+                                <g 
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleDeleteNode(node.id)
+                                    }}
+                                    style={{ cursor: 'pointer' }}
+                                    className="node-delete-btn"
+                                >
+                                    <circle
+                                        cx={pos.x + 50}
+                                        cy={pos.y - 20}
+                                        r="10"
+                                        fill="#EF4444"
+                                        stroke="#fff"
+                                        strokeWidth="2"
+                                    />
+                                    <line
+                                        x1={pos.x + 46}
+                                        y1={pos.y - 24}
+                                        x2={pos.x + 54}
+                                        y2={pos.y - 16}
+                                        stroke="#fff"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                    />
+                                    <line
+                                        x1={pos.x + 54}
+                                        y1={pos.y - 24}
+                                        x2={pos.x + 46}
+                                        y2={pos.y - 16}
+                                        stroke="#fff"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                    />
+                                </g>
+                            </g>
+                        )
+                    })}
+                </svg>
+                </div>
+
+                {/* Selected Scene Details */}
+                {!isGraphFullscreen && selectedNode && (() => {
+                const scene = navigationConfig[selectedNode] || customScenes[selectedNode]
+                if (!scene) return null
+                const hotspots = sceneHotspots[selectedNode] || []
+                const sceneWithHotspots = { ...scene, hotspots }
+                
+                return (
+                    <div className="scene-details-panel">
+                        <div className="scene-details-header">
+                            <div>
+                                <h3>{scene.name}</h3>
+                                <span className="scene-id-badge">{scene.id}</span>
+                            </div>
+                        </div>
+                        
+                        <div className="scene-details-content">
+                            <div className="scene-stats">
+                                <div className="stat-item">
+                                    <span className="stat-label">Hotspots</span>
+                                    <span className="stat-value">{hotspots.length}</span>
                                 </div>
-                                <div className="scene-actions">
-                                    <button 
-                                        className="scene-btn room-toggle"
-                                        onClick={() => setRoomToggleWarning(scene)}
-                                        title="Toggle Room Visibility"
-                                    >
-                                        Toggle Room
-                                    </button>
-                                    <button 
-                                        className="scene-btn bg-changer"
-                                        onClick={() => setBackgroundChanger(scene)}
-                                        title="Change Background"
-                                    >
-                                        Change Background
-                                    </button>
-                                    {hasHotspots && (
-                                        <button 
-                                            className="scene-btn"
-                                            onClick={() => toggleScene(scene.id)}
-                                        >
-                                            {isExpanded ? (
-                                                <ChevronDown size={14} strokeWidth={2} />
-                                            ) : (
-                                                <ChevronRight size={14} strokeWidth={2} />
-                                            )}
-                                            Hotspots
-                                        </button>
-                                    )}
-                                    <button 
-                                        className="scene-btn"
-                                        onClick={() => handleEditScene(sceneWithHotspots)}
-                                    >
-                                        Edit
-                                    </button>
+                                <div className="stat-item">
+                                    <span className="stat-label">Connections</span>
+                                    <span className="stat-value">{Object.keys(scene.connections || {}).length}</span>
                                 </div>
                             </div>
                             
-                            {hasHotspots && isExpanded && (
-                                <div className="hotspots-dropdown">
-                                    <div className="hotspots-header">Product Hotspots</div>
+                            <div className="scene-actions-grid">
+                                <button 
+                                    className="action-btn-grid"
+                                    onClick={() => handleEditScene(sceneWithHotspots)}
+                                >
+                                    <Camera size={16} strokeWidth={2} />
+                                    Edit Hotspots
+                                </button>
+                                <button 
+                                    className="action-btn-grid"
+                                    onClick={() => setBackgroundChanger(scene)}
+                                >
+                                    <Palette size={16} strokeWidth={2} />
+                                    Change Background
+                                </button>
+                                <button 
+                                    className="action-btn-grid"
+                                    onClick={() => setRoomToggleWarning(scene)}
+                                >
+                                    <Settings size={16} strokeWidth={2} />
+                                    Toggle Room
+                                </button>
+                            </div>
+                            
+                            {hotspots.length > 0 && (
+                                <div className="hotspots-list-compact">
+                                    <h4>Product Hotspots</h4>
                                     {hotspots.map(hotspot => (
-                                        <div key={hotspot.id} className="hotspot-item">
-                                            <label className="hotspot-label">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={!settings.disabledHotspots[hotspot.id]}
-                                                    onChange={() => toggleHotspot(hotspot.id)}
-                                                />
-                                                <span className="hotspot-info">
-                                                    <span className="hotspot-name">{hotspot.label}</span>
-                                                    <span className="hotspot-id">{hotspot.id}</span>
-                                                    <span className="hotspot-coords">({hotspot.x}%, {hotspot.y}%)</span>
-                                                </span>
-                                            </label>
+                                        <div key={hotspot.id} className="hotspot-compact">
+                                            <input
+                                                type="checkbox"
+                                                checked={!settings.disabledHotspots[hotspot.id]}
+                                                onChange={() => toggleHotspot(hotspot.id)}
+                                            />
+                                            <span className="hotspot-compact-name">{hotspot.label}</span>
+                                            <span className="hotspot-compact-coords">({hotspot.x}%, {hotspot.y}%)</span>
                                         </div>
                                     ))}
                                 </div>
                             )}
                         </div>
-                    )
-                })}
+                    </div>
+                )
+            })()}
             </div>
 
             {editingScene && (
